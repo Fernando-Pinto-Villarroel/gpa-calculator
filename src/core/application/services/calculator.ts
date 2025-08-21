@@ -7,6 +7,16 @@ import {
 import { objectEntries, objectValues } from "../utils/utils.js";
 import { courseUtils } from "../utils/courseUtils.js";
 
+function shouldExcludeFromGPA(course: Course): boolean {
+  if (!course.courseCode) return false;
+
+  const isESPCourse = course.courseCode.startsWith("ESP");
+  const isLabCourse = course.name.toLowerCase().includes("lab");
+  const isEnglish1 = course.name === "English 1";
+
+  return isESPCourse && isLabCourse && !isEnglish1;
+}
+
 export function calculateBasicStats() {
   const numYears = Object.keys(courseCredits).length;
 
@@ -69,18 +79,19 @@ export function calculateCurrentGPA(): {
   completedCredits: number;
   totalCompletedCourses: number;
 } {
-  let totalPoints = 0;
-  let totalCredits = 0;
+  let totalQualityPoints = 0;
+  let totalAttemptedCredits = 0;
   let totalCompletedCourses = 0;
 
   objectValues(courseCredits).forEach((year) => {
     objectValues(year).forEach((semester) => {
       objectValues(semester).forEach((module: Course[]) => {
         module.forEach((course: Course) => {
-          if (course.grade) {
-            const gradePoints = letterGradesMap[course.grade] * course.credits;
-            totalPoints += gradePoints;
-            totalCredits += course.credits;
+          if (course.grade && !shouldExcludeFromGPA(course)) {
+            const gradePoints = letterGradesMap[course.grade];
+            const qualityPoints = gradePoints * course.credits;
+            totalQualityPoints += qualityPoints;
+            totalAttemptedCredits += course.credits;
             totalCompletedCourses++;
           }
         });
@@ -88,8 +99,13 @@ export function calculateCurrentGPA(): {
     });
   });
 
-  const gpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
-  return { gpa, completedCredits: totalCredits, totalCompletedCourses };
+  const gpa =
+    totalAttemptedCredits > 0 ? totalQualityPoints / totalAttemptedCredits : 0;
+  return {
+    gpa,
+    completedCredits: totalAttemptedCredits,
+    totalCompletedCourses,
+  };
 }
 
 export function getRemainingCourses(): {
@@ -121,7 +137,9 @@ export function calculateModuleStats() {
 
   const moduleStats = Object.keys(completedByModule).reduce(
     (acc, moduleName) => {
-      const completed = completedByModule[moduleName];
+      const completed = completedByModule[moduleName].filter(
+        (course) => !shouldExcludeFromGPA(course)
+      );
       const remaining = remainingByModule[moduleName];
 
       const completedCredits = completed.reduce(
@@ -136,10 +154,11 @@ export function calculateModuleStats() {
 
       let moduleGPA = 0;
       if (completed.length > 0) {
-        const totalPoints = completed.reduce((sum, course) => {
+        const totalQualityPoints = completed.reduce((sum, course) => {
           return sum + letterGradesMap[course.grade!] * course.credits;
         }, 0);
-        moduleGPA = completedCredits > 0 ? totalPoints / completedCredits : 0;
+        moduleGPA =
+          completedCredits > 0 ? totalQualityPoints / completedCredits : 0;
       }
 
       acc[moduleName] = {
@@ -179,10 +198,13 @@ export function calculateMaxCoursesWithGrade(
   const isAlternateLower = alternateGradePoints < defaultGradePoints;
 
   if (isAlternateLower) {
+    const currentQualityPoints = currentGPA * completedCredits;
+    const targetQualityPoints =
+      targetGPA * (completedCredits + remainingCredits);
+    const defaultQualityPoints = defaultGradePoints * remainingCredits;
+
     const maxAlternateCredits = Math.floor(
-      (currentGPA * completedCredits +
-        defaultGradePoints * remainingCredits -
-        targetGPA * (completedCredits + remainingCredits)) /
+      (currentQualityPoints + defaultQualityPoints - targetQualityPoints) /
         (defaultGradePoints - alternateGradePoints)
     );
 

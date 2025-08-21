@@ -1,7 +1,6 @@
 import {
   calculateBasicStats,
   calculateCurrentGPA,
-  calculateModuleStats,
   getRemainingCourses,
 } from "../core/application/services/calculator.js";
 
@@ -22,15 +21,12 @@ export function startCLI(): void {
     calculateCurrentGPA();
   displayUtils.displayCurrentGPA(gpa, completedCredits, totalCompletedCourses);
 
-  // const moduleStats = calculateModuleStats();
-  // displayUtils.displayModuleStats(moduleStats);
-
   const { courses: remainingCourses, totalCredits: remainingCredits } =
     getRemainingCourses();
-  // displayUtils.displayRemainingCourses(
-  //   remainingCourses.length,
-  //   remainingCredits
-  // );
+  displayUtils.displayRemainingCourses(
+    remainingCourses.length,
+    remainingCredits
+  );
 
   promptUtils.promptForTargetGPA(rl, remainingCourses);
 }

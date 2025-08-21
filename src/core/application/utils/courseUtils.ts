@@ -3,6 +3,16 @@ import { Course } from "../../domain/types/course.js";
 import { Module } from "../../domain/types/module.js";
 import { objectValues, objectEntries } from "./utils.js";
 
+function shouldExcludeFromGPA(course: Course): boolean {
+  if (!course.courseCode) return false;
+
+  const isESPCourse = course.courseCode.startsWith("ESP");
+  const isLabCourse = course.name.toLowerCase().includes("lab");
+  const isEnglish1 = course.name === "English 1";
+
+  return isESPCourse && isLabCourse && !isEnglish1;
+}
+
 export const courseUtils = {
   getAllCourses(): Course[] {
     const allCourses: Course[] = [];
@@ -16,6 +26,12 @@ export const courseUtils = {
     });
 
     return allCourses;
+  },
+
+  getAllCoursesForGPA(): Course[] {
+    return this.getAllCourses().filter(
+      (course) => !shouldExcludeFromGPA(course)
+    );
   },
 
   getCoursesByModule(moduleName: string): Course[] {

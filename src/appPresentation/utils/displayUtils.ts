@@ -24,27 +24,12 @@ export const displayUtils = {
     totalCompletedCourses: number
   ): void {
     console.log("\n===== CURRENT GPA =====");
-    console.log(`Current GPA: ${gpa.toFixed(3)}`);
-    console.log(`Completed credits: ${completedCredits}`);
-    console.log(`Completed courses: ${totalCompletedCourses}`);
-  },
-
-  displayModuleStats(moduleStats: Record<string, any>): void {
-    console.log("\n===== MODULE STATISTICS =====");
-    Object.entries(moduleStats).forEach(([moduleName, stats]) => {
-      console.log(`\n--- ${moduleName} ---`);
-      console.log(
-        `Completed courses: ${stats.completedCourses}/${stats.totalCourses}`
-      );
-      console.log(
-        `Completed credits: ${stats.completedCredits}/${stats.totalCredits}`
-      );
-      console.log(`Remaining courses: ${stats.remainingCourses}`);
-      console.log(`Remaining credits: ${stats.remainingCredits}`);
-      if (stats.completedCourses > 0) {
-        console.log(`Module GPA: ${stats.moduleGPA.toFixed(3)}`);
-      }
-    });
+    console.log(`Current GPA: ${gpa.toFixed(2)}`);
+    console.log(`Attempted credits (for GPA): ${completedCredits}`);
+    console.log(`Completed courses (for GPA): ${totalCompletedCourses}`);
+    console.log(`Total quality points: ${(gpa * completedCredits).toFixed(1)}`);
+    console.log("\nNote: ESP Lab courses are excluded from GPA calculation");
+    console.log("(except English 1 which counts toward GPA)");
   },
 
   displayRemainingCourses(
@@ -77,13 +62,13 @@ export const displayUtils = {
 
     if (maxCoursesWithAlternateGrade === 0) {
       console.log(
-        `\n⚠️ WARNING: You cannot afford any course with grade ${alternateGrade} if you want to maintain a GPA of ${targetGPA.toFixed(
+        `\nWARNING: You cannot afford any course with grade ${alternateGrade} if you want to maintain a GPA of ${targetGPA.toFixed(
           2
         )}.`
       );
     } else if (maxCoursesWithAlternateGrade === totalRemainingCourses) {
       console.log(
-        `\n✅ Good news! You can get ${alternateGrade} in all your remaining courses and still maintain a GPA of ${targetGPA.toFixed(
+        `\nGood news! You can get ${alternateGrade} in all your remaining courses and still maintain a GPA of ${targetGPA.toFixed(
           2
         )}.`
       );
