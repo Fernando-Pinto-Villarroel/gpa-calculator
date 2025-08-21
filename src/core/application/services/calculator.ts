@@ -5,56 +5,65 @@ import {
   letterGradesMap,
 } from "../../domain/types/letterGrades.js";
 import { objectEntries, objectValues } from "../utils/utils.js";
+import { courseUtils } from "../utils/courseUtils.js";
 
 export function calculateBasicStats() {
-  const numAnios = Object.keys(courseCredits).length;
+  const numYears = Object.keys(courseCredits).length;
 
-  const numSemestres = objectValues(courseCredits).reduce(
+  const numSemesters = objectValues(courseCredits).reduce(
     (acc, year) => acc + Object.keys(year).length,
     0
   );
 
-  const numMateriasPorSemestre = Object.fromEntries(
-    objectEntries(courseCredits).flatMap(([year, semestres]) =>
-      objectEntries(semestres).map(([semestre, materias]) => [
-        semestre,
-        materias.length,
+  const numModulesPerSemester = Object.fromEntries(
+    objectEntries(courseCredits).flatMap(([yearName, semesters]) =>
+      objectEntries(semesters).map(([semesterName, modules]) => [
+        `${yearName} - ${semesterName}`,
+        Object.keys(modules).length,
       ])
     )
   );
 
-  const numMateriasTotal = objectValues(numMateriasPorSemestre).reduce(
-    (acc, val) => acc + val,
-    0
-  );
+  const totalCourses = objectValues(courseCredits).reduce((yearAcc, year) => {
+    return (
+      yearAcc +
+      objectValues(year).reduce((semesterAcc, semester) => {
+        return (
+          semesterAcc +
+          objectValues(semester).reduce((moduleAcc, module) => {
+            return moduleAcc + module.length;
+          }, 0)
+        );
+      }, 0)
+    );
+  }, 0);
 
-  const creditosPorSemestre = Object.fromEntries(
-    objectEntries(courseCredits).flatMap(([year, semestres]) =>
-      objectEntries(semestres).map(([semestre, materias]) => [
-        semestre,
-        materias.reduce((sum, mat) => sum + mat.creditos, 0),
+  const creditsPerSemester = Object.fromEntries(
+    objectEntries(courseCredits).flatMap(([yearName, semesters]) =>
+      objectEntries(semesters).map(([semesterName, modules]) => [
+        `${yearName} - ${semesterName}`,
+        objectValues(modules).reduce((acc, module) => {
+          return acc + module.reduce((sum, course) => sum + course.credits, 0);
+        }, 0),
       ])
     )
   );
 
-  const creditosTotal = objectValues(creditosPorSemestre).reduce(
+  const totalCredits = objectValues(creditsPerSemester).reduce(
     (acc, val) => acc + val,
     0
   );
 
   return {
-    numAnios,
-    numSemestres,
-    numMateriasPorSemestre,
-    numMateriasTotal,
-    creditosPorSemestre,
-    creditosTotal,
+    numYears,
+    numSemesters,
+    numModulesPerSemester,
+    totalCourses,
+    creditsPerSemester,
+    totalCredits,
   };
 }
 
-/**
- * Calcula el GPA actual basado en cursos completados
- */
 export function calculateCurrentGPA(): {
   gpa: number;
   completedCredits: number;
@@ -66,13 +75,15 @@ export function calculateCurrentGPA(): {
 
   objectValues(courseCredits).forEach((year) => {
     objectValues(year).forEach((semester) => {
-      semester.forEach((course) => {
-        if (course.grade) {
-          const gradePoints = letterGradesMap[course.grade] * course.creditos;
-          totalPoints += gradePoints;
-          totalCredits += course.creditos;
-          totalCompletedCourses++;
-        }
+      objectValues(semester).forEach((module: Course[]) => {
+        module.forEach((course: Course) => {
+          if (course.grade) {
+            const gradePoints = letterGradesMap[course.grade] * course.credits;
+            totalPoints += gradePoints;
+            totalCredits += course.credits;
+            totalCompletedCourses++;
+          }
+        });
       });
     });
   });
@@ -90,16 +101,63 @@ export function getRemainingCourses(): {
 
   objectValues(courseCredits).forEach((year) => {
     objectValues(year).forEach((semester) => {
-      semester.forEach((course) => {
-        if (!course.grade) {
-          remainingCourses.push(course);
-          totalRemainingCredits += course.creditos;
-        }
+      objectValues(semester).forEach((module: Course[]) => {
+        module.forEach((course: Course) => {
+          if (!course.grade) {
+            remainingCourses.push(course);
+            totalRemainingCredits += course.credits;
+          }
+        });
       });
     });
   });
 
   return { courses: remainingCourses, totalCredits: totalRemainingCredits };
+}
+
+export function calculateModuleStats() {
+  const completedByModule = courseUtils.getCompletedCoursesByModule();
+  const remainingByModule = courseUtils.getRemainingCoursesByModule();
+
+  const moduleStats = Object.keys(completedByModule).reduce(
+    (acc, moduleName) => {
+      const completed = completedByModule[moduleName];
+      const remaining = remainingByModule[moduleName];
+
+      const completedCredits = completed.reduce(
+        (sum, course) => sum + course.credits,
+        0
+      );
+      const remainingCredits = remaining.reduce(
+        (sum, course) => sum + course.credits,
+        0
+      );
+      const totalCredits = completedCredits + remainingCredits;
+
+      let moduleGPA = 0;
+      if (completed.length > 0) {
+        const totalPoints = completed.reduce((sum, course) => {
+          return sum + letterGradesMap[course.grade!] * course.credits;
+        }, 0);
+        moduleGPA = completedCredits > 0 ? totalPoints / completedCredits : 0;
+      }
+
+      acc[moduleName] = {
+        completedCourses: completed.length,
+        remainingCourses: remaining.length,
+        totalCourses: completed.length + remaining.length,
+        completedCredits,
+        remainingCredits,
+        totalCredits,
+        moduleGPA,
+      };
+
+      return acc;
+    },
+    {} as Record<string, any>
+  );
+
+  return moduleStats;
 }
 
 export function calculateMaxCoursesWithGrade(
@@ -132,12 +190,12 @@ export function calculateMaxCoursesWithGrade(
     let coursesWithAlternateGrade = 0;
 
     const sortedCourses = [...remainingCourses].sort(
-      (a, b) => a.creditos - b.creditos
+      (a, b) => a.credits - b.credits
     );
 
     for (const course of sortedCourses) {
-      if (creditsAssigned + course.creditos <= maxAlternateCredits) {
-        creditsAssigned += course.creditos;
+      if (creditsAssigned + course.credits <= maxAlternateCredits) {
+        creditsAssigned += course.credits;
         coursesWithAlternateGrade++;
       } else {
         break;

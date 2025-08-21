@@ -1,5 +1,5 @@
-import { Course } from "./course.js";
+import { Module } from "./module.js";
 
 export interface Semester {
-  [semesterName: string]: Course[];
+  [semesterName: string]: Module;
 }

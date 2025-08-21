@@ -1,7 +1,7 @@
 import { LetterGrade } from "./letterGrades.js";
 
 export interface Course {
-  nombre: string;
-  creditos: number;
+  name: string;
+  credits: number;
   grade?: LetterGrade;
 }

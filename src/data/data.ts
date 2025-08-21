@@ -1,100 +1,126 @@
 import { Year } from "../core/domain/types/year.js";
 
 export const courseCredits: Year = {
-  "Primer Año": {
-    "Primer semestre": [
-      { nombre: "Lógica", creditos: 3, grade: "A" },
-      { nombre: "Matemática Discreta", creditos: 3, grade: "A" },
-      { nombre: "Cálculo I", creditos: 3, grade: "A" },
-      {
-        nombre: "Historia de la Ingeniería de Software",
-        creditos: 2,
-        grade: "A",
-      },
-      { nombre: "Programación 1", creditos: 2, grade: "A-" },
-      { nombre: "Desarrollo de Software 1", creditos: 3, grade: "A" },
-      { nombre: "Sistemas operativos 1", creditos: 2, grade: "A" },
-      { nombre: "Base de datos 1", creditos: 2, grade: "A" },
-    ],
-    "Segundo semestre": [
-      { nombre: "Álgebra lineal", creditos: 3, grade: "A" },
-      { nombre: "Cálculo 2", creditos: 3, grade: "A" },
-      { nombre: "Estadística", creditos: 3, grade: "A" },
-      { nombre: "Comunicación 1", creditos: 3, grade: "A" },
-      { nombre: "Programación 2", creditos: 3, grade: "A" },
-      { nombre: "Desarrollo de Software 2", creditos: 3, grade: "A" },
-      { nombre: "Sistemas operativos 2", creditos: 2, grade: "A" },
-      { nombre: "Base de datos 2", creditos: 2, grade: "A" },
-    ],
+  "First Year": {
+    "First Semester": {
+      "Module 1": [
+        { name: "Logic", credits: 3, grade: "A" },
+        { name: "Programming 1", credits: 2, grade: "A-" },
+        { name: "History of Software Engineering", credits: 2, grade: "A" },
+      ],
+      "Module 2": [
+        { name: "Discrete Mathematics", credits: 3, grade: "A" },
+        { name: "Operating Systems 1", credits: 2, grade: "A" },
+      ],
+      "Module 3": [
+        { name: "Calculus 1", credits: 3, grade: "A" },
+        { name: "Software Development 1", credits: 3, grade: "A" },
+        { name: "Database 1", credits: 2, grade: "A" },
+      ],
+    },
+    "Second Semester": {
+      "Module 1": [
+        { name: "Linear Algebra", credits: 3, grade: "A" },
+        { name: "Programming 2", credits: 3, grade: "A" },
+        { name: "Operating System 2", credits: 2, grade: "A" },
+      ],
+      "Module 2": [
+        { name: "Software Development 2", credits: 3, grade: "A" },
+        { name: "Database 2", credits: 2, grade: "A" },
+      ],
+      "Module 3": [
+        { name: "Communication 1", credits: 3, grade: "A" },
+        { name: "Calculus 2", credits: 3, grade: "A" },
+      ],
+    },
   },
-  "Segundo Año": {
-    "Tercer semestre": [
-      { nombre: "Comunicación 2", creditos: 3, grade: "A" },
-      { nombre: "Escritura y composición 1", creditos: 3, grade: "A" },
-      { nombre: "Programación 3", creditos: 2, grade: "A" },
-      { nombre: "Desarrollo de Software 3", creditos: 3, grade: "A" },
-      { nombre: "Redes de computadores 1", creditos: 2, grade: "A" },
-      {
-        nombre: "Ingeniería de Calidad de Software 1",
-        creditos: 2,
-        grade: "A",
-      },
-      {
-        nombre: "Ingeniería de Calidad de Software 2",
-        creditos: 2,
-        grade: "A",
-      },
-    ],
-    "Cuarto semestre": [
-      { nombre: "Escritura y composición 2", creditos: 3, grade: "A" },
-      { nombre: "Programación 4", creditos: 3, grade: "A" },
-      { nombre: "Algorítmica 1", creditos: 3, grade: "A" },
-      { nombre: "Desarrollo de Software 4", creditos: 2, grade: "A" },
-      { nombre: "Redes de computadores 2", creditos: 2, grade: "A" },
-      {
-        nombre: "Ingeniería de Calidad de Software 3",
-        creditos: 2,
-        grade: "A",
-      },
-      { nombre: "Operaciones de desarrollo (DevOps)", creditos: 2, grade: "A" },
-    ],
+  "Second Year": {
+    "Third Semester": {
+      "Module 1": [
+        { name: "Programming 3", credits: 2, grade: "A" },
+        { name: "Software Quality Engineering 1", credits: 3, grade: "A" },
+        { name: "Communication 2", credits: 3, grade: "A" },
+      ],
+      "Module 2": [
+        { name: "Software Development 3", credits: 3, grade: "A" },
+        { name: "Computer Networks 1", credits: 2, grade: "A" },
+      ],
+      "Module 3": [
+        { name: "Statistics", credits: 3, grade: "A" },
+        { name: "Software Quality Engineering 2", credits: 2, grade: "A" },
+        { name: "Writing & Composition 1", credits: 3, grade: "A" },
+      ],
+    },
+    "Fourth Semester": {
+      "Module 1": [
+        { name: "Algorithmics 1", credits: 3, grade: "A" },
+        { name: "Programming 4", credits: 3, grade: "A" },
+        { name: "Writing & Composition 2", credits: 3, grade: "A" },
+      ],
+      "Module 2": [
+        { name: "Software Development 4", credits: 3, grade: "A" },
+        { name: "Computer Networks 2", credits: 2, grade: "A" },
+      ],
+      "Module 3": [
+        { name: "Development & Operations", credits: 2, grade: "A" },
+        { name: "Software Quality Engineering 3", credits: 2, grade: "A" },
+      ],
+    },
   },
-  "Tercer Año": {
-    "Quinto semestre": [
-      { nombre: "Programación 5", creditos: 3, grade: "A" },
-      { nombre: "Algorítmica 2", creditos: 3, grade: "A" },
-      { nombre: "Desarrollo de Software 5", creditos: 2, grade: "A" },
-      { nombre: "Ciencia de datos", creditos: 2, grade: "A" },
-      { nombre: "Aprendizaje Profundo", creditos: 2, grade: "A" },
-      { nombre: "Arquitectura de software 1", creditos: 3, grade: "A-" },
-      { nombre: "Internet de las cosas", creditos: 2, grade: "A" },
-    ],
-    "Sexto semestre": [
-      { nombre: "Programación 6", creditos: 3 },
-      { nombre: "Lenguajes de programación", creditos: 2 },
-      { nombre: "Desarrollo de Software 6", creditos: 2 },
-      { nombre: "Administración de Sistemas", creditos: 3 },
-      { nombre: "Arquitectura de software 2", creditos: 3 },
-      { nombre: "Desarrollo Web", creditos: 1 },
-      {
-        nombre: "Diseño de interfaz de usuario y experiencia de usuario",
-        creditos: 3,
-      },
-    ],
+  "Third Year": {
+    "Fifth Semester": {
+      "Module 1": [
+        { name: "Algorithmics 2", credits: 2, grade: "A" },
+        { name: "Programming 5", credits: 3, grade: "A" },
+        { name: "Software Architecture 1", credits: 2, grade: "A-" },
+      ],
+      "Module 2": [
+        { name: "Software Development 5", credits: 3, grade: "A" },
+        { name: "Data Science", credits: 2, grade: "A" },
+      ],
+      "Module 3": [
+        { name: "Internet of Things", credits: 2, grade: "A" },
+        { name: "Deep Learning/ Generative AI", credits: 2, grade: "A" },
+      ],
+    },
+    "Sixth Semester": {
+      "Module 1": [
+        { name: "Programming 6", credits: 3 },
+        { name: "Software Architecture 2", credits: 2 },
+        { name: "User Interface & User Experience Design", credits: 2 },
+      ],
+      "Module 2": [
+        { name: "Software Development 6", credits: 3 },
+        { name: "Web Development", credits: 2 },
+      ],
+      "Module 3": [
+        { name: "Programming Languages", credits: 2 },
+        { name: "Systems Administration", credits: 2 },
+      ],
+    },
   },
-  "Cuarto Año": {
-    "Séptimo semestre": [
-      { nombre: "Programación 7", creditos: 3 },
-      { nombre: "Desarrollo de Aplicaciones Móviles", creditos: 2 },
-      { nombre: "Proyecto de Investigación 1", creditos: 4 },
-      { nombre: "Proyecto de Investigación 2", creditos: 4 },
-    ],
-    "Octavo semestre": [
-      { nombre: "Arquitectura de software 3", creditos: 3 },
-      { nombre: "Arquitectura de software 4", creditos: 3 },
-      { nombre: "Proyecto de Investigación 3", creditos: 4 },
-      { nombre: "Proyecto de Investigación 4", creditos: 4 },
-      { nombre: "Proyectos de Software y Startups", creditos: 3 },
-    ],
+  "Fourth Year": {
+    "Seventh Semester": {
+      "Module 1": [
+        { name: "Programming 7", credits: 3 },
+        { name: "Software Architecture 3", credits: 2 },
+      ],
+      "Module 2": [{ name: "Software Architecture 4", credits: 2 }],
+      "Module 3": [
+        { name: "Mobile Application Development", credits: 2 },
+        { name: "Software Projects & Startups", credits: 2 },
+      ],
+    },
+    "Eighth Semester": {
+      "Module 1": [
+        { name: "Research Project on Software Development 1", credits: 4 },
+      ],
+      "Module 2": [
+        { name: "Research Project on Software Development 2", credits: 4 },
+      ],
+      "Module 3": [
+        { name: "Research Project on Software Development 3", credits: 4 },
+      ],
+    },
   },
 };
