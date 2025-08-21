@@ -1,0 +1,11 @@
+node_modules
+dist
+.dockerrc
+cypress
+reports
+.env
+config/environment.json
+.idea
+*.iml
+modules.xml
+vcs.xml
