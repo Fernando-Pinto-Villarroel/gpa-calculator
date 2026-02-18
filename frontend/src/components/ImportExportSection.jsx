@@ -7,8 +7,8 @@ import {
   CheckCircle,
   FileText,
 } from "lucide-react";
-import { useGpa } from "@contexts/GpaContext";
-import { storageService } from "@services/storageService";
+import { useGpa } from "../contexts/GpaContext";
+import { storageService } from "../services/storageService";
 
 function ImportExportSection() {
   const { exportData, importData } = useGpa();
@@ -72,17 +72,17 @@ function ImportExportSection() {
 
     const isSuccess = status.type === "success";
     const Icon = isSuccess ? CheckCircle : AlertCircle;
-    const bgColor = isSuccess ? "bg-green-50" : "bg-red-50";
-    const textColor = isSuccess ? "text-green-800" : "text-red-800";
-    const iconColor = isSuccess ? "text-green-600" : "text-red-600";
-    const borderColor = isSuccess ? "border-green-200" : "border-red-200";
+    const bgColor = isSuccess ? "bg-green-500/20" : "bg-red-500/20";
+    const textColor = isSuccess ? "text-green-400" : "text-red-400";
+    const iconColor = isSuccess ? "text-green-400" : "text-red-400";
+    const borderColor = isSuccess ? "border-green-500/30" : "border-red-500/30";
 
     return (
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className={`${bgColor} ${borderColor} border rounded-lg p-3 flex items-center space-x-2`}
+        className={`${bgColor} ${borderColor} border rounded-lg p-3 flex items-center space-x-2 backdrop-blur-sm`}
       >
         <Icon className={`w-5 h-5 ${iconColor}`} />
         <span className={`text-sm ${textColor}`}>{status.message}</span>
@@ -94,19 +94,19 @@ function ImportExportSection() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-            <Download className="w-5 h-5 text-jala-blue-600" />
+          <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+            <Download className="w-5 h-5 text-jala-blue-400" />
             <span>Export Data</span>
           </h3>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-cosmic-300">
             Download your current grades and settings as a JSON file for backup
             purposes.
           </p>
 
           <button
             onClick={handleExport}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-jala-blue-500 text-white rounded-lg hover:bg-jala-blue-600 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-jala-blue-600/80 text-white rounded-lg hover:bg-jala-blue-500/80 transition-colors backdrop-blur-sm"
           >
             <Download className="w-5 h-5" />
             <span>Export JSON</span>
@@ -116,19 +116,19 @@ function ImportExportSection() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-            <Upload className="w-5 h-5 text-jala-cyan-600" />
+          <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+            <Upload className="w-5 h-5 text-space-400" />
             <span>Import Data</span>
           </h3>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-cosmic-300">
             Upload a previously exported JSON file to restore your grades and
             settings.
           </p>
 
           <button
             onClick={handleImportClick}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-jala-cyan-500 text-white rounded-lg hover:bg-jala-cyan-600 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-space-600/80 text-white rounded-lg hover:bg-space-500/80 transition-colors backdrop-blur-sm"
           >
             <Upload className="w-5 h-5" />
             <span>Import JSON</span>
@@ -146,12 +146,12 @@ function ImportExportSection() {
         </div>
       </div>
 
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 backdrop-blur-sm">
         <div className="flex items-start space-x-3">
-          <FileText className="w-5 h-5 text-yellow-600 mt-0.5" />
+          <FileText className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
           <div className="space-y-2">
-            <h4 className="font-medium text-yellow-800">Important Notes</h4>
-            <ul className="text-sm text-yellow-700 space-y-1">
+            <h4 className="font-medium text-yellow-400">Important Notes</h4>
+            <ul className="text-sm text-cosmic-300 space-y-1">
               <li>
                 • Export your data regularly to avoid losing your progress
               </li>

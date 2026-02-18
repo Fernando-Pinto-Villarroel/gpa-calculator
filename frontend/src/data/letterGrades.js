@@ -19,30 +19,30 @@ export const LETTER_GRADES = Object.keys(LETTER_GRADES_MAP);
 export const getGradeColor = (grade) => {
   switch (grade) {
     case "A":
-      return "text-green-600 bg-green-50 border-green-200";
+      return "text-green-400 bg-green-500/20 border-green-500/30";
     case "A-":
-      return "text-green-600 bg-green-50 border-green-200";
+      return "text-green-400 bg-green-500/20 border-green-500/30";
     case "B+":
-      return "text-blue-600 bg-blue-50 border-blue-200";
+      return "text-jala-blue-400 bg-jala-blue-500/20 border-jala-blue-500/30";
     case "B":
-      return "text-blue-600 bg-blue-50 border-blue-200";
+      return "text-jala-blue-400 bg-jala-blue-500/20 border-jala-blue-500/30";
     case "B-":
-      return "text-blue-600 bg-blue-50 border-blue-200";
+      return "text-jala-blue-400 bg-jala-blue-500/20 border-jala-blue-500/30";
     case "C+":
-      return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
     case "C":
-      return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
     case "C-":
-      return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
     case "D+":
-      return "text-orange-600 bg-orange-50 border-orange-200";
+      return "text-orange-400 bg-orange-500/20 border-orange-500/30";
     case "D":
-      return "text-orange-600 bg-orange-50 border-orange-200";
+      return "text-orange-400 bg-orange-500/20 border-orange-500/30";
     case "D-":
-      return "text-orange-600 bg-orange-50 border-orange-200";
+      return "text-orange-400 bg-orange-500/20 border-orange-500/30";
     case "F":
-      return "text-red-600 bg-red-50 border-red-200";
+      return "text-red-400 bg-red-500/20 border-red-500/30";
     default:
-      return "text-gray-600 bg-gray-50 border-gray-200";
+      return "text-cosmic-300 bg-cosmic-800/40 border-cosmic-600/50";
   }
 };

@@ -7,7 +7,7 @@ export const TERM_STRUCTURES = {
           { name: "Programming 1", credits: 2, courseCode: "CSPR-111" },
           {
             name: "History of Software Engineering",
-            credits: 1,
+            credits: 2,
             courseCode: "HIST-111",
           },
         ],

@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import {
-  LETTER_GRADES,
-  getGradeColor,
-  LETTER_GRADES_MAP,
-} from "@data/letterGrades";
+import { LETTER_GRADES, LETTER_GRADES_MAP } from "../data/letterGrades";
 
 function GradeDropdown({ currentGrade, onGradeChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,18 +28,44 @@ function GradeDropdown({ currentGrade, onGradeChange }) {
     return LETTER_GRADES_MAP[grade];
   };
 
+  const getGradeColor = (grade) => {
+    switch (grade) {
+      case "A":
+      case "A-":
+        return "text-green-400 bg-green-500/20 border-green-500/30";
+      case "B+":
+      case "B":
+      case "B-":
+        return "text-jala-blue-400 bg-jala-blue-500/20 border-jala-blue-500/30";
+      case "C+":
+      case "C":
+      case "C-":
+        return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
+      case "D+":
+      case "D":
+      case "D-":
+        return "text-orange-400 bg-orange-500/20 border-orange-500/30";
+      case "F":
+        return "text-red-400 bg-red-500/20 border-red-500/30";
+      default:
+        return "text-cosmic-300 bg-cosmic-800/40 border-cosmic-600/50";
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-200 min-w-[100px] ${
+        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-200 min-w-[120px] backdrop-blur-sm ${
           currentGrade === "-"
-            ? "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300"
-            : `${getGradeColor(currentGrade)} hover:shadow-sm`
+            ? "bg-cosmic-800/40 border-cosmic-600/50 text-cosmic-300 hover:border-jala-blue-500/50"
+            : `${getGradeColor(
+                currentGrade
+              )} hover:shadow-lg hover:shadow-current/20`
         }`}
       >
-        <span className="font-medium min-w-[24px] text-center">
-          {currentGrade === "-" ? "Set" : currentGrade}
+        <span className="font-medium flex-1 text-center">
+          {currentGrade === "-" ? "Assign" : currentGrade}
         </span>
         <ChevronDown
           className={`w-4 h-4 transition-transform ${
@@ -59,9 +81,9 @@ function GradeDropdown({ currentGrade, onGradeChange }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-2"
+            className="absolute top-full left-0 mt-2 w-64 bg-cosmic-900/95 backdrop-blur-xl border border-cosmic-700/50 rounded-xl shadow-2xl z-50 py-3"
           >
-            <div className="max-h-72 overflow-y-auto">
+            <div className="max-h-80 overflow-y-auto">
               {LETTER_GRADES.map((grade) => {
                 const points = getGradePoints(grade);
                 const isSelected = currentGrade === grade;
@@ -70,24 +92,24 @@ function GradeDropdown({ currentGrade, onGradeChange }) {
                   <motion.button
                     key={grade}
                     onClick={() => handleGradeSelect(grade)}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                    className={`w-full px-4 py-3 text-left hover:bg-cosmic-800/50 transition-colors flex items-center justify-between ${
                       isSelected
-                        ? "bg-jala-blue-50 text-jala-blue-700"
-                        : "text-gray-700"
+                        ? "bg-jala-blue-600/20 text-jala-blue-300"
+                        : "text-cosmic-200"
                     }`}
                     whileHover={{
                       backgroundColor: isSelected
-                        ? "rgb(239 246 255)"
-                        : "rgb(249 250 251)",
+                        ? "rgba(37, 99, 235, 0.2)"
+                        : "rgba(71, 85, 105, 0.3)",
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <span className="flex items-center space-x-3">
-                      <span className="font-medium min-w-[32px]">
+                      <span className="font-medium min-w-[36px]">
                         {grade === "-" ? "None" : grade}
                       </span>
                       {points !== null && (
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-cosmic-400">
                           ({points.toFixed(1)} points)
                         </span>
                       )}
@@ -97,7 +119,7 @@ function GradeDropdown({ currentGrade, onGradeChange }) {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-2 h-2 bg-jala-blue-500 rounded-full"
+                        className="w-2 h-2 bg-jala-blue-400 rounded-full"
                       />
                     )}
                   </motion.button>
@@ -105,9 +127,9 @@ function GradeDropdown({ currentGrade, onGradeChange }) {
               })}
             </div>
 
-            <div className="border-t border-gray-200 mt-2 pt-2 px-4">
-              <div className="text-xs text-gray-500">
-                <div className="flex justify-between mb-1">
+            <div className="border-t border-cosmic-700/50 mt-3 pt-3 px-4">
+              <div className="text-xs text-cosmic-400">
+                <div className="flex justify-between mb-2">
                   <span>A = 4.0</span>
                   <span>B = 3.0</span>
                   <span>C = 2.0</span>

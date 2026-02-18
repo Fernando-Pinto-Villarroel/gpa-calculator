@@ -9,3 +9,6 @@ config/environment.json
 *.iml
 modules.xml
 vcs.xml
+
+ai-context/
+CLAUDE.md
