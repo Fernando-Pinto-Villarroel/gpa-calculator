@@ -5,7 +5,7 @@ import { AnimatedBackground } from "@/shared/components/ui/AnimatedBackground";
 import { BottomNav } from "@/shared/components/layout/BottomNav";
 
 export const metadata: Metadata = {
-  title: "Jala GPA Calculator",
+  title: "Jala U - GPA Calculator",
   description: "Academic GPA Calculator for Jala University",
 };
 

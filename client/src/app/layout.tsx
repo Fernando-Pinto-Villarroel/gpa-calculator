@@ -13,12 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jala GPA Calculator",
+  title: "Jala U - GPA Calculator",
   description: "Academic GPA Calculator for Jala University",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Jala GPA",
+    title: "Jala U - GPA Calculator",
   },
 };
 
@@ -50,7 +50,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+      >
         {children}
       </body>
     </html>

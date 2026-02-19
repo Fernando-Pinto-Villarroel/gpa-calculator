@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Jala GPA Calculator",
-    short_name: "Jala GPA",
+    name: "Jala U - GPA Calculator",
+    short_name: "Jala U - GPA",
     description: "Academic GPA Calculator for Jala University",
     start_url: "/en",
     display: "standalone",

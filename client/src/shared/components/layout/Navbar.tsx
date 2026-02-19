@@ -29,15 +29,19 @@ export function Navbar({ locale }: NavbarProps) {
       <Link href={`/${locale}`} className="flex items-center gap-2.5 min-w-0">
         <Image
           src="/logo192.png"
-          alt="Jala GPA"
+          alt="Jala U - GPA"
           width={32}
           height={32}
           className="rounded-lg shrink-0"
           priority
         />
         <div className="flex flex-col min-w-0">
-          <span className="text-sm font-bold text-text-primary leading-none truncate">{t("app_name")}</span>
-          <span className="hidden sm:block text-[10px] text-text-muted leading-none mt-0.5 truncate">{t("app_subtitle")}</span>
+          <span className="text-sm font-bold text-text-primary leading-none truncate">
+            {t("app_name")}
+          </span>
+          <span className="hidden sm:block text-[10px] text-text-muted leading-none mt-0.5 truncate">
+            {t("app_subtitle")}
+          </span>
         </div>
       </Link>
 
@@ -55,7 +59,7 @@ export function Navbar({ locale }: NavbarProps) {
                   "relative flex items-center gap-2 px-3 h-8 rounded-lg text-sm font-medium transition-colors duration-200",
                   isActive
                     ? "text-white bg-jala-700"
-                    : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                    : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated",
                 )}
               >
                 <Icon size={14} />
