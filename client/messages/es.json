@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Panel",
+    "config": "Ingresar Notas",
+    "statistics": "Estadísticas",
+    "app_name": "Jala U - GPA",
+    "app_subtitle": "Calculadora de GPA Académico"
+  },
+  "home": {
+    "gpa_label": "GPA Acumulado",
+    "no_grades": "Aún no se han ingresado notas",
+    "go_to_config": "Ingresar Notas",
+    "honor": {
+      "summa_cum_laude": "Summa Cum Laude",
+      "magna_cum_laude": "Magna Cum Laude",
+      "cum_laude": "Cum Laude",
+      "good_standing": "Buen Rendimiento",
+      "at_risk": "Riesgo Académico",
+      "academic_failure": "Fracaso Académico"
+    },
+    "alert": {
+      "at_risk": "Tu GPA se está acercando al límite de fracaso académico (2.00).",
+      "academic_failure": "Tu GPA está por debajo del mínimo requerido (2.00). Se necesita acción inmediata."
+    },
+    "stats": {
+      "completed_subjects": "Materias Completadas",
+      "best_subject": "Mejor Materia",
+      "worst_subject": "Peor Materia",
+      "earned_credits": "Créditos Obtenidos",
+      "remaining_credits": "Créditos Restantes",
+      "terms_completed": "Semestres Completados"
+    }
+  },
+  "config": {
+    "title": "Ingresar Notas",
+    "select_term": "Seleccionar Semestre",
+    "no_grade": "—",
+    "import": "Importar",
+    "export": "Exportar",
+    "import_success": "Notas importadas exitosamente",
+    "import_error": "Formato de archivo inválido",
+    "export_success": "Notas exportadas",
+    "reset": "Restablecer Valores",
+    "clear_all": "Borrar Todo",
+    "credits_label": "cr",
+    "module": "Módulo"
+  },
+  "statistics": {
+    "title": "Estadísticas Académicas",
+    "subtitle": "Análisis detallado de tu rendimiento académico",
+    "gpa_progression": "Progresión del GPA",
+    "gpa_progression_desc": "GPA acumulado y por semestre a lo largo del tiempo",
+    "grade_distribution": "Distribución de Notas",
+    "grade_distribution_desc": "Frecuencia de cada nota en todos los cursos",
+    "credit_accumulation": "Acumulación de Créditos",
+    "credit_accumulation_desc": "Créditos obtenidos por semestre",
+    "honor_thresholds": "Umbrales de Honor",
+    "cumulative_gpa": "GPA Acumulado",
+    "term_gpa": "GPA del Semestre",
+    "credits_earned": "Créditos Obtenidos",
+    "no_data": "Aún no hay notas ingresadas. Ve a Ingresar Notas para agregar tus calificaciones.",
+    "overview": {
+      "current_gpa": "GPA Actual",
+      "total_credits": "Total de Créditos Obtenidos",
+      "completion": "Completado",
+      "projected_honor": "Honor Proyectado"
+    }
+  },
+  "settings": {
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "language": "Idioma"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "of": "de"
+  }
+}

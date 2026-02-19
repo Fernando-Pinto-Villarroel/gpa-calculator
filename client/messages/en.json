@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Dashboard",
+    "config": "Grade Entry",
+    "statistics": "Statistics",
+    "app_name": "Jala U - GPA",
+    "app_subtitle": "Academic GPA Calculator"
+  },
+  "home": {
+    "gpa_label": "Cumulative GPA",
+    "no_grades": "No grades entered yet",
+    "go_to_config": "Enter Grades",
+    "honor": {
+      "summa_cum_laude": "Summa Cum Laude",
+      "magna_cum_laude": "Magna Cum Laude",
+      "cum_laude": "Cum Laude",
+      "good_standing": "Good Standing",
+      "at_risk": "Academic Risk",
+      "academic_failure": "Academic Failure"
+    },
+    "alert": {
+      "at_risk": "Your GPA is approaching the academic failure threshold (2.00).",
+      "academic_failure": "Your GPA is below the minimum required (2.00). Immediate action needed."
+    },
+    "stats": {
+      "completed_subjects": "Completed Subjects",
+      "best_subject": "Best Subject",
+      "worst_subject": "Worst Subject",
+      "earned_credits": "Earned Credits",
+      "remaining_credits": "Remaining Credits",
+      "terms_completed": "Terms Completed"
+    }
+  },
+  "config": {
+    "title": "Grade Entry",
+    "select_term": "Select Term",
+    "no_grade": "—",
+    "import": "Import",
+    "export": "Export",
+    "import_success": "Grades imported successfully",
+    "import_error": "Invalid file format",
+    "export_success": "Grades exported",
+    "reset": "Reset to Defaults",
+    "clear_all": "Clear All",
+    "credits_label": "cr",
+    "module": "Module"
+  },
+  "statistics": {
+    "title": "Academic Statistics",
+    "subtitle": "Detailed insights into your academic performance",
+    "gpa_progression": "GPA Progression",
+    "gpa_progression_desc": "Cumulative and term GPA over time",
+    "grade_distribution": "Grade Distribution",
+    "grade_distribution_desc": "Frequency of each grade across all courses",
+    "credit_accumulation": "Credit Accumulation",
+    "credit_accumulation_desc": "Credits earned per term",
+    "honor_thresholds": "Honor Thresholds",
+    "cumulative_gpa": "Cumulative GPA",
+    "term_gpa": "Term GPA",
+    "credits_earned": "Credits Earned",
+    "no_data": "No grades entered yet. Go to Grade Entry to add your grades.",
+    "overview": {
+      "current_gpa": "Current GPA",
+      "total_credits": "Total Credits Earned",
+      "completion": "Completion",
+      "projected_honor": "Projected Honor"
+    }
+  },
+  "settings": {
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "language": "Language"
+  },
+  "common": {
+    "loading": "Loading...",
+    "of": "of"
+  }
+}

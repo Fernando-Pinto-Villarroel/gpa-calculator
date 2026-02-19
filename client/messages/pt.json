@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Painel",
+    "config": "Inserir Notas",
+    "statistics": "Estatísticas",
+    "app_name": "Jala U - GPA",
+    "app_subtitle": "Calculadora de GPA Acadêmico"
+  },
+  "home": {
+    "gpa_label": "GPA Acumulado",
+    "no_grades": "Nenhuma nota inserida ainda",
+    "go_to_config": "Inserir Notas",
+    "honor": {
+      "summa_cum_laude": "Summa Cum Laude",
+      "magna_cum_laude": "Magna Cum Laude",
+      "cum_laude": "Cum Laude",
+      "good_standing": "Bom Desempenho",
+      "at_risk": "Risco Acadêmico",
+      "academic_failure": "Reprovação Acadêmica"
+    },
+    "alert": {
+      "at_risk": "Seu GPA está se aproximando do limite de reprovação acadêmica (2.00).",
+      "academic_failure": "Seu GPA está abaixo do mínimo exigido (2.00). Ação imediata necessária."
+    },
+    "stats": {
+      "completed_subjects": "Disciplinas Concluídas",
+      "best_subject": "Melhor Disciplina",
+      "worst_subject": "Pior Disciplina",
+      "earned_credits": "Créditos Obtidos",
+      "remaining_credits": "Créditos Restantes",
+      "terms_completed": "Termos Concluídos"
+    }
+  },
+  "config": {
+    "title": "Inserir Notas",
+    "select_term": "Selecionar Termo",
+    "no_grade": "—",
+    "import": "Importar",
+    "export": "Exportar",
+    "import_success": "Notas importadas com sucesso",
+    "import_error": "Formato de arquivo inválido",
+    "export_success": "Notas exportadas",
+    "reset": "Redefinir Padrões",
+    "clear_all": "Limpar Tudo",
+    "credits_label": "cr",
+    "module": "Módulo"
+  },
+  "statistics": {
+    "title": "Estatísticas Acadêmicas",
+    "subtitle": "Análise detalhada do seu desempenho acadêmico",
+    "gpa_progression": "Progressão do GPA",
+    "gpa_progression_desc": "GPA acumulado e por termo ao longo do tempo",
+    "grade_distribution": "Distribuição de Notas",
+    "grade_distribution_desc": "Frequência de cada nota em todos os cursos",
+    "credit_accumulation": "Acumulação de Créditos",
+    "credit_accumulation_desc": "Créditos obtidos por termo",
+    "honor_thresholds": "Limiares de Honra",
+    "cumulative_gpa": "GPA Acumulado",
+    "term_gpa": "GPA do Termo",
+    "credits_earned": "Créditos Obtidos",
+    "no_data": "Nenhuma nota inserida ainda. Vá para Inserir Notas para adicionar suas notas.",
+    "overview": {
+      "current_gpa": "GPA Atual",
+      "total_credits": "Total de Créditos Obtidos",
+      "completion": "Conclusão",
+      "projected_honor": "Honra Projetada"
+    }
+  },
+  "settings": {
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "language": "Idioma"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "of": "de"
+  }
+}
