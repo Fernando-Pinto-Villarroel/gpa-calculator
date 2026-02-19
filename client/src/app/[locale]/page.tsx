@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Star, AlertTriangle, CreditCard, BookMarked, Timer } from "lucide-react";
+import { BookOpen, Star, TriangleAlert, CreditCard, BookMarked, Timer } from "lucide-react";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import {
   calculateGpa,
@@ -62,7 +62,7 @@ export default function HomePage({ params }: Props) {
       label: t("stats.worst_subject"),
       value: worst ? `${worst.grade}` : "—",
       subvalue: worst ? worst.name : undefined,
-      icon: AlertTriangle,
+      icon: TriangleAlert,
       variant:
         worst && letterGradesMap[worst.grade!] < 2.0
           ? ("danger" as const)
