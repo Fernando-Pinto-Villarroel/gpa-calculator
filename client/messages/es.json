@@ -31,7 +31,7 @@
       "remaining_credits": "Créditos Restantes",
       "terms_completed": "Semestres Completados",
       "deans_list_terms": "Semestres Lista del Decano",
-      "presidents_list_terms": "Semestres Lista del Rector"
+      "presidents_list_terms": "Semestres Lista del Presidente"
     }
   },
   "config": {
@@ -56,7 +56,7 @@
     "credits_label": "cr",
     "module": "Módulo",
     "deans_list_achieved": "Este semestre califica para la Lista del Decano (GPA ≥ 3.50)",
-    "presidents_list_achieved": "Este semestre califica para la Lista del Rector (GPA = 4.00)",
+    "presidents_list_achieved": "Este semestre califica para la Lista del Presidente (GPA = 4.00)",
     "term_gpa": "GPA del Semestre"
   },
   "statistics": {
@@ -79,7 +79,7 @@
       "completion": "Completado",
       "projected_honor": "Honor Proyectado",
       "deans_list_terms": "Semestres Lista del Decano",
-      "presidents_list_terms": "Semestres Lista del Rector"
+      "presidents_list_terms": "Semestres Lista del Presidente"
     }
   },
   "settings": {
@@ -136,7 +136,7 @@
       "summa": "Summa Cum Laude — GPA Acumulado ≥ 3.80",
       "magna": "Magna Cum Laude — GPA Acumulado ≥ 3.50",
       "cum_laude": "Cum Laude — GPA Acumulado ≥ 3.20",
-      "presidents_list": "Lista del Rector — GPA del Semestre = 4.00 (todas A)",
+      "presidents_list": "Lista del Presidente — GPA del Semestre = 4.00 (todas A)",
       "deans_list": "Lista del Decano — GPA del Semestre entre 3.50 y 3.99"
     },
     "cohorts": {
