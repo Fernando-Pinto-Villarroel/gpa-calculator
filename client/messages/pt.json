@@ -72,6 +72,7 @@
     "cumulative_gpa": "GPA Acumulado",
     "term_gpa": "GPA do Termo",
     "credits_earned": "Créditos Obtidos",
+    "remaining_credits": "Créditos Restantes",
     "no_data": "Nenhuma nota inserida ainda. Vá para Inserir Notas para adicionar suas notas.",
     "overview": {
       "current_gpa": "GPA Atual",

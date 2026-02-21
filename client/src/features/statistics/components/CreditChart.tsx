@@ -61,7 +61,11 @@ export function CreditChart() {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={gridColor}
+          vertical={false}
+        />
         <XAxis
           dataKey="label"
           tick={{ fill: axisColor, fontSize: 10 }}
@@ -74,7 +78,10 @@ export function CreditChart() {
           axisLine={false}
           allowDecimals={false}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(42,79,245,0.08)" }} />
+        <Tooltip
+          content={<CustomTooltip />}
+          cursor={{ fill: "rgba(42,79,245,0.08)" }}
+        />
         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
         <Bar
           dataKey="earned"
@@ -85,8 +92,8 @@ export function CreditChart() {
         />
         <Bar
           dataKey="remaining"
-          name="Remaining"
-          fill={isDark ? "#1e3a6e" : "#e2e8f0"}
+          name={t("remaining_credits")}
+          fill={isDark ? "#475569" : "#94a3b8"}
           radius={[3, 3, 0, 0]}
           stackId="a"
         />

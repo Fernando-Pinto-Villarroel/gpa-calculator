@@ -72,6 +72,7 @@
     "cumulative_gpa": "Cumulative GPA",
     "term_gpa": "Term GPA",
     "credits_earned": "Credits Earned",
+    "remaining_credits": "Remaining Credits",
     "no_data": "No grades entered yet. Go to Grade Entry to add your grades.",
     "overview": {
       "current_gpa": "Current GPA",
