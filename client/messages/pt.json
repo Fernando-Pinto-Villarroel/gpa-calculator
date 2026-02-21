@@ -3,6 +3,7 @@
     "home": "Painel",
     "config": "Inserir Notas",
     "statistics": "Estatísticas",
+    "about": "Sobre",
     "app_name": "Jala U - GPA",
     "app_subtitle": "Calculadora de GPA Acadêmico"
   },
@@ -24,15 +25,18 @@
     },
     "stats": {
       "completed_subjects": "Disciplinas Concluídas",
-      "best_subject": "Melhor Disciplina",
-      "worst_subject": "Pior Disciplina",
+      "best_grade": "Melhor Nota",
+      "worst_grade": "Nota Mais Baixa",
       "earned_credits": "Créditos Obtidos",
       "remaining_credits": "Créditos Restantes",
-      "terms_completed": "Termos Concluídos"
+      "terms_completed": "Termos Concluídos",
+      "deans_list_terms": "Termos Lista do Decano",
+      "presidents_list_terms": "Termos Lista do Reitor"
     }
   },
   "config": {
     "title": "Inserir Notas",
+    "select_cohort": "Selecionar Coorte",
     "select_term": "Selecionar Termo",
     "no_grade": "—",
     "import": "Importar",
@@ -42,8 +46,18 @@
     "export_success": "Notas exportadas",
     "reset": "Redefinir Padrões",
     "clear_all": "Limpar Tudo",
+    "reset_term": "Redefinir Termo",
+    "reset_term_confirm_title": "Tem certeza?",
+    "reset_term_confirm_text": "Isso irá redefinir todas as notas do termo selecionado para seu estado padrão. Esta ação não pode ser desfeita.",
+    "reset_term_success_title": "Dados do termo redefinidos",
+    "reset_term_success_text": "Todas as notas do termo selecionado foram redefinidas para o padrão.",
+    "confirm": "Sim, redefinir",
+    "cancel": "Cancelar",
     "credits_label": "cr",
-    "module": "Módulo"
+    "module": "Módulo",
+    "deans_list_achieved": "Este termo qualifica para a Lista do Decano (GPA ≥ 3.50)",
+    "presidents_list_achieved": "Este termo qualifica para a Lista do Reitor (GPA = 4.00)",
+    "term_gpa": "GPA do Termo"
   },
   "statistics": {
     "title": "Estatísticas Acadêmicas",
@@ -63,7 +77,9 @@
       "current_gpa": "GPA Atual",
       "total_credits": "Total de Créditos Obtidos",
       "completion": "Conclusão",
-      "projected_honor": "Honra Projetada"
+      "projected_honor": "Honra Projetada",
+      "deans_list_terms": "Termos Lista do Decano",
+      "presidents_list_terms": "Termos Lista do Reitor"
     }
   },
   "settings": {
@@ -75,5 +91,69 @@
   "common": {
     "loading": "Carregando...",
     "of": "de"
+  },
+  "about": {
+    "title": "Sobre Esta Ferramenta",
+    "subtitle": "Tudo o que você precisa saber sobre a Calculadora de GPA da Jala U",
+    "unofficial_badge": "Projeto Desenvolvido por Estudante",
+    "project": {
+      "title": "Sobre o Projeto",
+      "description": "Uma calculadora de GPA não oficial criada por um estudante da Jala University. Não é afiliada nem endossada pela Jala University. Todas as notas e configurações são armazenadas exclusivamente no seu navegador.",
+      "developer_label": "Desenvolvedor",
+      "developer_name": "Fernando Pinto Villarroel",
+      "cohort_label": "Coorte",
+      "cohort_value": "Coorte I · 2023"
+    },
+    "purpose": {
+      "title": "Propósito",
+      "p1": "Uma ferramenta de cenário hipotético para estudantes de Engenharia de Software explorarem possibilidades de notas e entenderem sua situação acadêmica sem inserir créditos manualmente.",
+      "p2": "Conecta o sistema de notas numéricas boliviano (0–100) com a escala GPA americana da Jala University (0–4.0), usando créditos pré-carregados para cada coorte.",
+      "p3": "Serve como hub de informações sobre honras acadêmicas, créditos totais, conclusão de cursos e requisitos de graduação."
+    },
+    "grading": {
+      "title": "O Sistema de Notas",
+      "intro": "A Jala University usa o sistema americano de notas por letras. As pontuações numéricas dos cursos (0–100) são convertidas em notas por letras, que carregam valores de pontos de qualidade usados no cálculo do GPA.",
+      "example": "Exemplo: uma pontuação de 92 em Programação I converte-se em A− = 3.7 pontos de qualidade.",
+      "scale_title": "Escala de Notas",
+      "col_grade": "Nota",
+      "col_percentage": "Intervalo de Pontuação",
+      "col_points": "Pontos de Qualidade",
+      "failing_note": "Uma nota D− ou inferior é considerada reprovação e exige repetir o curso em todos os programas."
+    },
+    "gpa_calc": {
+      "title": "Cálculo do GPA",
+      "formula": "GPA = Total de Pontos de Qualidade ÷ Total de Créditos Tentados",
+      "p1": "Os pontos de qualidade de cada curso = valor da nota × créditos do curso. Cursos com mais créditos têm peso proporcionalmente maior no seu GPA.",
+      "p2": "Um GPA acumulado mínimo de 2.0 é necessário para se graduar no programa de Engenharia de Software, além de concluir o programa ESP de inglês.",
+      "credits_note": "Esta calculadora pré-carrega os valores corretos de créditos para cada curso de cada coorte, então você nunca precisa inseri-los manualmente."
+    },
+    "honors": {
+      "title": "Honras Acadêmicas",
+      "career_title": "Honras de Carreira (Graduação)",
+      "career_desc": "Concedidas com base no seu GPA acumulado final no momento da graduação.",
+      "term_title": "Honras por Termo",
+      "term_desc": "Concedidas por termos individuais quando todos os cursos daquele termo foram avaliados.",
+      "summa": "Summa Cum Laude — GPA Acumulado ≥ 3.80",
+      "magna": "Magna Cum Laude — GPA Acumulado ≥ 3.50",
+      "cum_laude": "Cum Laude — GPA Acumulado ≥ 3.20",
+      "presidents_list": "Lista do Reitor — GPA do Termo = 4.00 (todas as notas A)",
+      "deans_list": "Lista do Decano — GPA do Termo entre 3.50 e 3.99"
+    },
+    "cohorts": {
+      "title": "Programas por Coorte",
+      "description": "Cada coorte pode ter cursos ou valores de créditos diferentes devido a atualizações do programa na Jala University. Esta calculadora respeita os requisitos do programa acadêmico vigente no momento da matrícula de cada coorte, garantindo resultados de GPA precisos e específicos por coorte."
+    },
+    "esp": {
+      "title": "Programa ESP de Inglês",
+      "description": "As notas do programa ESP (Inglês para Fins Específicos) não estão incluídas no GPA de Engenharia de Software. O programa ESP tem seu próprio cálculo de GPA separado. Embora concluir o programa ESP seja obrigatório para a graduação, suas notas não afetam o GPA da sua carreira."
+    },
+    "privacy": {
+      "title": "Privacidade e Dados",
+      "description": "Nenhum dado pessoal é enviado a um servidor ou armazenado em qualquer banco de dados. Todas as notas e configurações são salvas exclusivamente no localStorage do seu navegador. Limpar os dados do navegador removerá suas notas salvas. Suas informações nunca saem do seu dispositivo."
+    },
+    "acknowledgments": {
+      "title": "Agradecimentos",
+      "description": "Agradecimento especial à equipe de Serviços Estudantis da Jala University por fornecer informações precisas e resolver pacientemente as dúvidas sobre a metodologia de cálculo do GPA na universidade."
+    }
   }
 }

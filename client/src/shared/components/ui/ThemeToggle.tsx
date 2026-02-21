@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { cn } from "@/core/lib/utils/cn";
 
-export function ThemeToggle() {
+export function ThemeToggle({ onColor = false }: { onColor?: boolean }) {
   const { theme, toggleTheme } = useThemeStore();
 
   return (
@@ -13,9 +13,10 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className={cn(
         "relative flex items-center justify-center w-9 h-9 rounded-lg",
-        "border border-border-base bg-bg-surface",
-        "text-text-secondary hover:text-text-primary hover:border-border-accent",
-        "transition-colors duration-200"
+        "transition-colors duration-200",
+        onColor
+          ? "border border-white/30 bg-white/15 text-white hover:bg-white/25 hover:border-white/50"
+          : "border border-border-base bg-bg-surface text-text-secondary hover:text-text-primary hover:border-border-accent"
       )}
       whileTap={{ scale: 0.92 }}
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}

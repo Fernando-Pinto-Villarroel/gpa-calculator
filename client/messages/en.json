@@ -3,6 +3,7 @@
     "home": "Dashboard",
     "config": "Grade Entry",
     "statistics": "Statistics",
+    "about": "About",
     "app_name": "Jala U - GPA",
     "app_subtitle": "Academic GPA Calculator"
   },
@@ -24,15 +25,18 @@
     },
     "stats": {
       "completed_subjects": "Completed Subjects",
-      "best_subject": "Best Subject",
-      "worst_subject": "Worst Subject",
+      "best_grade": "Best Grade",
+      "worst_grade": "Lowest Grade",
       "earned_credits": "Earned Credits",
       "remaining_credits": "Remaining Credits",
-      "terms_completed": "Terms Completed"
+      "terms_completed": "Terms Completed",
+      "deans_list_terms": "Dean's List Terms",
+      "presidents_list_terms": "President's List Terms"
     }
   },
   "config": {
     "title": "Grade Entry",
+    "select_cohort": "Select Cohort",
     "select_term": "Select Term",
     "no_grade": "—",
     "import": "Import",
@@ -42,8 +46,18 @@
     "export_success": "Grades exported",
     "reset": "Reset to Defaults",
     "clear_all": "Clear All",
+    "reset_term": "Reset Term",
+    "reset_term_confirm_title": "Are you sure?",
+    "reset_term_confirm_text": "This will reset all grades for the currently selected term to their default state. This action cannot be undone.",
+    "reset_term_success_title": "Term data reset",
+    "reset_term_success_text": "All grades for the selected term have been reset to default.",
+    "confirm": "Yes, reset it",
+    "cancel": "Cancel",
     "credits_label": "cr",
-    "module": "Module"
+    "module": "Module",
+    "deans_list_achieved": "This term qualifies for Dean's List (Term GPA ≥ 3.50)",
+    "presidents_list_achieved": "This term qualifies for President's List (Term GPA = 4.00)",
+    "term_gpa": "Term GPA"
   },
   "statistics": {
     "title": "Academic Statistics",
@@ -63,7 +77,9 @@
       "current_gpa": "Current GPA",
       "total_credits": "Total Credits Earned",
       "completion": "Completion",
-      "projected_honor": "Projected Honor"
+      "projected_honor": "Projected Honor",
+      "deans_list_terms": "Dean's List Terms",
+      "presidents_list_terms": "President's List Terms"
     }
   },
   "settings": {
@@ -75,5 +91,69 @@
   "common": {
     "loading": "Loading...",
     "of": "of"
+  },
+  "about": {
+    "title": "About This Tool",
+    "subtitle": "Everything you need to know about the Jala U GPA Calculator",
+    "unofficial_badge": "Student-Developed Project",
+    "project": {
+      "title": "About the Project",
+      "description": "An unofficial GPA calculator built by a Jala University student. It is not affiliated with or endorsed by Jala University. All grades and settings are stored exclusively in your browser.",
+      "developer_label": "Developer",
+      "developer_name": "Fernando Pinto Villarroel",
+      "cohort_label": "Cohort",
+      "cohort_value": "Cohort I · 2023"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "p1": "A what-if scenario tool for Software Engineering students to explore grade possibilities and understand their academic standing without entering course credits manually.",
+      "p2": "Bridges Bolivia's 0–100 numeric grading system with Jala University's American-style 0–4.0 GPA scale, using pre-loaded course credits for every cohort.",
+      "p3": "Serves as an information hub for academic honors, total credits, course completion, and graduation requirements."
+    },
+    "grading": {
+      "title": "The Grading System",
+      "intro": "Jala University uses the American letter grade system. Numeric course scores (0–100) are converted to letter grades, which carry quality point values used in the GPA calculation.",
+      "example": "Example: a score of 92 in Programming I converts to A− = 3.7 quality points.",
+      "scale_title": "Grade Scale",
+      "col_grade": "Grade",
+      "col_percentage": "Score Range",
+      "col_points": "Quality Points",
+      "failing_note": "A grade of D− or lower is considered failing and requires repeating the course in all programs."
+    },
+    "gpa_calc": {
+      "title": "GPA Calculation",
+      "formula": "GPA = Total Quality Points ÷ Total Credits Attempted",
+      "p1": "Each course's quality points = letter grade value × course credit hours. Higher-credit courses carry proportionally more weight in your GPA.",
+      "p2": "A minimum cumulative GPA of 2.0 is required to graduate from the Software Engineering program, in addition to completing the ESP English program.",
+      "credits_note": "This calculator pre-loads the correct credit values for every course in every cohort, so you never need to enter them manually."
+    },
+    "honors": {
+      "title": "Academic Honors",
+      "career_title": "Career (Graduation) Honors",
+      "career_desc": "Awarded based on your final cumulative GPA at the time of graduation.",
+      "term_title": "Term Honors",
+      "term_desc": "Awarded for individual terms when all courses in that term have been graded.",
+      "summa": "Summa Cum Laude — Cumulative GPA ≥ 3.80",
+      "magna": "Magna Cum Laude — Cumulative GPA ≥ 3.50",
+      "cum_laude": "Cum Laude — Cumulative GPA ≥ 3.20",
+      "presidents_list": "President's List — Term GPA = 4.00 (all A grades)",
+      "deans_list": "Dean's List — Term GPA between 3.50 and 3.99"
+    },
+    "cohorts": {
+      "title": "Cohort-Specific Programs",
+      "description": "Each cohort may have different courses or credit values due to program updates at Jala University. This calculator respects the academic program requirements in effect when each cohort enrolled, ensuring accurate and cohort-specific GPA results."
+    },
+    "esp": {
+      "title": "ESP English Program",
+      "description": "ESP (English for Specific Purposes) grades are not included in the Software Engineering GPA. The ESP program has its own separate GPA calculation. While completing the ESP program is mandatory for graduation, its grades do not affect your career GPA."
+    },
+    "privacy": {
+      "title": "Privacy & Data",
+      "description": "No personal data is ever sent to a server or stored in any database. All grades and settings are stored exclusively in your browser's localStorage. Clearing your browser data will remove your saved grades. Your information never leaves your device."
+    },
+    "acknowledgments": {
+      "title": "Acknowledgments",
+      "description": "Special thanks to Jala University's Student Services team for providing accurate information and patiently resolving questions about GPA calculation methodology at the university."
+    }
   }
 }

@@ -3,7 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LetterGrade, ALL_GRADES, letterGradesMap } from "@/core/domain/types/letterGrades";
+import {
+  LetterGrade,
+  ALL_GRADES,
+  letterGradesMap,
+} from "@/core/domain/types/letterGrades";
 import { cn } from "@/core/lib/utils/cn";
 
 interface GradeSelectorProps {
@@ -16,10 +20,14 @@ interface GradeSelectorProps {
 function gradeColor(grade: LetterGrade | null): string {
   if (!grade) return "text-text-muted";
   const pts = letterGradesMap[grade];
-  if (pts >= 3.7) return "text-success";
-  if (pts >= 3.0) return "text-jala-400";
-  if (pts >= 2.0) return "text-warning";
-  return "text-danger";
+  const isExcellent = pts >= 3.7;
+  const isGood = pts >= 3.0 && !isExcellent;
+  const isFailing = grade === "F" || grade === "D-";
+
+  if (isExcellent) return "text-success";
+  if (isGood) return "text-text-accent";
+  if (isFailing) return "text-danger";
+  return "text-warning";
 }
 
 export function GradeSelector({
@@ -54,11 +62,17 @@ export function GradeSelector({
           "flex items-center justify-between gap-1 w-full px-2.5 py-1.5 rounded-md text-xs font-semibold",
           "border border-border-base bg-bg-elevated hover:border-border-accent",
           "transition-colors duration-150",
-          gradeColor(grade)
+          gradeColor(grade),
         )}
       >
         <span>{grade ?? noGradeLabel}</span>
-        <ChevronDown size={12} className={cn("text-text-muted transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          size={12}
+          className={cn(
+            "text-text-muted transition-transform",
+            open && "rotate-180",
+          )}
+        />
       </button>
 
       <AnimatePresence>
@@ -70,14 +84,16 @@ export function GradeSelector({
             transition={{ duration: 0.12 }}
             className={cn(
               "absolute left-0 top-full mt-1 w-24 rounded-lg border border-border-base bg-bg-surface shadow-xl z-20",
-              "overflow-hidden"
+              "overflow-hidden max-h-48 overflow-y-auto",
             )}
           >
             <button
               onClick={() => select(null)}
               className={cn(
                 "w-full px-3 py-1.5 text-xs text-left font-medium transition-colors",
-                !grade ? "bg-border-base text-text-muted" : "text-text-muted hover:bg-bg-elevated"
+                !grade
+                  ? "bg-border-base text-text-muted"
+                  : "text-text-muted hover:bg-bg-elevated",
               )}
             >
               {noGradeLabel}
@@ -88,10 +104,8 @@ export function GradeSelector({
                 onClick={() => select(g)}
                 className={cn(
                   "w-full px-3 py-1.5 text-xs text-left font-semibold transition-colors",
-                  grade === g
-                    ? "bg-jala-700/20 text-text-accent"
-                    : "text-text-secondary hover:bg-bg-elevated",
-                  gradeColor(g)
+                  grade === g ? "bg-jala-700/20" : "hover:bg-bg-elevated",
+                  gradeColor(g),
                 )}
               >
                 {g}

@@ -26,8 +26,8 @@ const statusConfig: Record<
   },
   magna_cum_laude: {
     icon: Award,
-    className: "border-slate-300/40 bg-slate-300/10 text-slate-300",
-    iconClass: "text-slate-300",
+    className: "border-slate-300/40 bg-slate-300/10 text-slate-500",
+    iconClass: "text-slate-500",
   },
   cum_laude: {
     icon: Award,
@@ -56,6 +56,7 @@ export function HonorBadge({ status, label, alertText }: HonorBadgeProps) {
 
   const config = statusConfig[status];
   const Icon = config.icon;
+  const isAlertStatus = status === "at_risk" || status === "academic_failure";
 
   return (
     <motion.div
@@ -64,18 +65,28 @@ export function HonorBadge({ status, label, alertText }: HonorBadgeProps) {
       transition={{ duration: 0.4, delay: 0.3 }}
       className={cn(
         "flex items-center gap-3 px-5 py-3 rounded-full border",
-        config.className
+        config.className,
       )}
     >
-      <Icon size={18} className={config.iconClass} />
-      <div className="text-center">
-        <p className="text-base font-semibold">
-          {label}
-        </p>
-        {alertText && (
-          <p className="text-sm opacity-80 mt-0.5">{alertText}</p>
-        )}
-      </div>
+      {isAlertStatus ? (
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Icon size={18} className={config.iconClass} />
+            <p className="text-base font-semibold">{label}</p>
+          </div>
+          {alertText && <p className="text-sm opacity-80">{alertText}</p>}
+        </div>
+      ) : (
+        <>
+          <Icon size={18} className={config.iconClass} />
+          <div className="text-center">
+            <p className="text-base font-semibold">{label}</p>
+            {alertText && (
+              <p className="text-sm opacity-80 mt-0.5">{alertText}</p>
+            )}
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

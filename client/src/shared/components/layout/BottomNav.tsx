@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Settings, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Settings, BarChart3, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { cn } from "@/core/lib/utils/cn";
@@ -19,6 +19,7 @@ export function BottomNav({ locale }: BottomNavProps) {
     { href: `/${locale}`, label: t("home"), icon: LayoutDashboard },
     { href: `/${locale}/config`, label: t("config"), icon: Settings },
     { href: `/${locale}/statistics`, label: t("statistics"), icon: BarChart3 },
+    { href: `/${locale}/about`, label: t("about"), icon: Info },
   ];
 
   return (

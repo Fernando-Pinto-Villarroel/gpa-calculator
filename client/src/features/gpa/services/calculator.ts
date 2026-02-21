@@ -1,6 +1,5 @@
 import { Course, Term } from "@/core/domain/types/course";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
-import { terms } from "../data/courseData";
 
 export interface GpaResult {
   gpa: number;
@@ -36,7 +35,8 @@ export type HonorStatus =
   | null;
 
 export function calculateGpa(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
 ): GpaResult {
   let totalQualityPoints = 0;
   let totalAttemptedCredits = 0;
@@ -78,13 +78,14 @@ export function getHonorStatus(gpa: number): HonorStatus {
   if (gpa >= 3.8) return "summa_cum_laude";
   if (gpa >= 3.5) return "magna_cum_laude";
   if (gpa >= 3.2) return "cum_laude";
-  if (gpa >= 2.0) return "good_standing";
-  if (gpa >= 1.5) return "at_risk";
+  if (gpa > 2.5) return "good_standing";
+  if (gpa >= 2.0) return "at_risk";
   return "academic_failure";
 }
 
 export function getTermGpaProgression(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
 ): TermGpaResult[] {
   let cumulativeQualityPoints = 0;
   let cumulativeCredits = 0;
@@ -132,7 +133,7 @@ export function getTermGpaProgression(
 }
 
 export function getGradeDistribution(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
 ): Record<LetterGrade, number> {
   const distribution: Record<string, number> = {};
   Object.values(grades).forEach((grade) => {
@@ -144,7 +145,8 @@ export function getGradeDistribution(
 }
 
 export function getBestAndWorstCourses(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
 ): { best: CourseWithGrade | null; worst: CourseWithGrade | null } {
   const coursesWithGrades: CourseWithGrade[] = [];
 
@@ -167,8 +169,7 @@ export function getBestAndWorstCourses(
   if (coursesWithGrades.length === 0) return { best: null, worst: null };
 
   const sorted = [...coursesWithGrades].sort(
-    (a, b) =>
-      letterGradesMap[b.grade!] - letterGradesMap[a.grade!]
+    (a, b) => letterGradesMap[b.grade!] - letterGradesMap[a.grade!],
   );
 
   return {
@@ -178,7 +179,8 @@ export function getBestAndWorstCourses(
 }
 
 export function getCreditsPerTerm(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
 ): { termLabel: string; earned: number; total: number }[] {
   return terms.map((term) => {
     let earned = 0;
@@ -194,7 +196,8 @@ export function getCreditsPerTerm(
 }
 
 export function getCompletedTermsCount(
-  grades: Record<string, LetterGrade | null>
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
 ): number {
   return terms.filter((term) => {
     const allCourses = Object.values(term.modules).flat();
@@ -202,7 +205,64 @@ export function getCompletedTermsCount(
   }).length;
 }
 
-export function buildDefaultGrades(): Record<string, LetterGrade | null> {
+export type TermHonor = "deans_list" | "presidents_list";
+
+export function calculateTermGpa(
+  grades: Record<string, LetterGrade | null>,
+  term: Term,
+): number {
+  const allCourses = Object.values(term.modules).flat();
+  if (allCourses.length === 0) return 0;
+
+  let totalQualityPoints = 0;
+  let totalCredits = 0;
+  allCourses.forEach((course) => {
+    const grade = grades[course.courseCode];
+    if (grade) {
+      totalQualityPoints += letterGradesMap[grade] * course.credits;
+      totalCredits += course.credits;
+    }
+  });
+
+  return totalCredits > 0 ? totalQualityPoints / totalCredits : 0;
+}
+
+export function getTermHonor(
+  grades: Record<string, LetterGrade | null>,
+  term: Term,
+): TermHonor | null {
+  const allCourses = Object.values(term.modules).flat();
+  if (allCourses.length === 0) return null;
+
+  const allHaveGrades = allCourses.every(
+    (c) => grades[c.courseCode] !== null && grades[c.courseCode] !== undefined,
+  );
+  if (!allHaveGrades) return null;
+
+  const termGpa = calculateTermGpa(grades, term);
+
+  if (termGpa >= 4.0) return "presidents_list";
+  if (termGpa >= 3.5) return "deans_list";
+  return null;
+}
+
+export function getTermHonorCounts(
+  grades: Record<string, LetterGrade | null>,
+  terms: Term[],
+): { deansListCount: number; presidentsListCount: number } {
+  let deansListCount = 0;
+  let presidentsListCount = 0;
+  terms.forEach((term) => {
+    const honor = getTermHonor(grades, term);
+    if (honor === "deans_list") deansListCount++;
+    else if (honor === "presidents_list") presidentsListCount++;
+  });
+  return { deansListCount, presidentsListCount };
+}
+
+export function buildDefaultGradesForTerms(
+  terms: Term[],
+): Record<string, LetterGrade | null> {
   const grades: Record<string, LetterGrade | null> = {};
   terms.forEach((term) => {
     Object.values(term.modules).forEach((courses) => {

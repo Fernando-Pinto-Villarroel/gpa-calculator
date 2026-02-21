@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Calendar } from "lucide-react";
+import { ChevronDown, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { cohorts } from "@/features/gpa/data/index";
 import { cn } from "@/core/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 
-export function TermSelector() {
+export function CohortSelector() {
   const t = useTranslations("config");
-  const { selectedTermId, selectedCohortId, setSelectedTermId } = useGpaStore();
+  const { selectedCohortId, setSelectedCohortId } = useGpaStore();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const terms = getTermsByCohortId(selectedCohortId);
-  const selectedTerm = terms.find((t) => t.id === selectedTermId) ?? terms[0];
+  const selectedCohort =
+    cohorts.find((c) => c.id === selectedCohortId) ??
+    cohorts[cohorts.length - 1];
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -38,9 +39,9 @@ export function TermSelector() {
           "transition-colors duration-200 min-w-[140px] sm:min-w-44",
         )}
       >
-        <Calendar size={14} className="text-text-accent shrink-0" />
+        <GraduationCap size={14} className="text-text-accent shrink-0" />
         <span className="flex-1 text-left truncate">
-          {selectedTerm?.label ?? t("select_term")}
+          {selectedCohort.label}
         </span>
         <ChevronDown
           size={14}
@@ -63,21 +64,21 @@ export function TermSelector() {
               "overflow-hidden min-w-52",
             )}
           >
-            {terms.map((term) => (
+            {cohorts.map((cohort) => (
               <button
-                key={term.id}
+                key={cohort.id}
                 onClick={() => {
-                  setSelectedTermId(term.id);
+                  setSelectedCohortId(cohort.id);
                   setOpen(false);
                 }}
                 className={cn(
                   "w-full px-4 py-2.5 text-sm text-left transition-colors",
-                  term.id === selectedTermId
+                  cohort.id === selectedCohortId
                     ? "bg-jala-700/15 text-text-accent font-medium"
                     : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
                 )}
               >
-                {term.label}
+                {cohort.label}
               </button>
             ))}
           </motion.div>

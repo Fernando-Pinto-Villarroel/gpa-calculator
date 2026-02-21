@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Settings, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Settings, BarChart3, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "../ui/ThemeToggle";
@@ -22,31 +22,32 @@ export function Navbar({ locale }: NavbarProps) {
     { href: `/${locale}`, label: t("home"), icon: LayoutDashboard },
     { href: `/${locale}/config`, label: t("config"), icon: Settings },
     { href: `/${locale}/statistics`, label: t("statistics"), icon: BarChart3 },
+    { href: `/${locale}/about`, label: t("about"), icon: Info },
   ];
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-border-base bg-bg-surface/80 backdrop-blur-md shrink-0 z-20">
-      <Link href={`/${locale}`} className="flex items-center gap-2.5 min-w-0">
+    <header className="relative flex items-center justify-between px-4 md:px-6 h-14 border-b border-jala-600/40 bg-jala-700 shrink-0 z-20">
+      <Link href={`/${locale}`} className="flex items-center gap-2 min-w-0">
         <Image
-          src="/logo192.png"
+          src="/logo.png"
           alt="Jala U - GPA"
-          width={32}
-          height={32}
+          width={35}
+          height={35}
           className="rounded-lg shrink-0"
           priority
         />
         <div className="flex flex-col min-w-0">
-          <span className="text-sm font-bold text-text-primary leading-none truncate">
+          <span className="text-sm font-bold text-white leading-none truncate">
             {t("app_name")}
           </span>
-          <span className="hidden sm:block text-[10px] text-text-muted leading-none mt-0.5 truncate">
+          <span className="hidden sm:block text-[10px] text-white/60 leading-none mt-0.5 truncate">
             {t("app_subtitle")}
           </span>
         </div>
       </Link>
 
-      {/* Desktop nav links — hidden on mobile (BottomNav handles mobile nav) */}
-      <nav className="hidden md:flex items-center gap-1">
+      {/* Desktop nav links — absolutely centered, hidden on mobile (BottomNav handles mobile nav) */}
+      <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href ||
@@ -56,10 +57,10 @@ export function Navbar({ locale }: NavbarProps) {
               <motion.div
                 whileTap={{ scale: 0.96 }}
                 className={cn(
-                  "relative flex items-center gap-2 px-3 h-8 rounded-lg text-sm font-medium transition-colors duration-200",
+                  "flex items-center gap-2 px-3 h-8 rounded-lg text-sm font-medium transition-colors duration-200",
                   isActive
-                    ? "text-white bg-jala-700"
-                    : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated",
+                    ? "text-white bg-white/20"
+                    : "text-white/70 hover:text-white hover:bg-white/10",
                 )}
               >
                 <Icon size={14} />
@@ -71,8 +72,8 @@ export function Navbar({ locale }: NavbarProps) {
       </nav>
 
       <div className="flex items-center gap-2">
-        <LocaleSwitcher currentLocale={locale} />
-        <ThemeToggle />
+        <LocaleSwitcher currentLocale={locale} onColor />
+        <ThemeToggle onColor />
       </div>
     </header>
   );

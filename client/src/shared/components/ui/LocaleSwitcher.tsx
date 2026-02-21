@@ -12,7 +12,7 @@ const locales = [
   { code: "pt", label: "PT" },
 ];
 
-export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
+export function LocaleSwitcher({ currentLocale, onColor = false }: { currentLocale: string; onColor?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -39,9 +39,10 @@ export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-sm font-medium",
-          "border border-border-base bg-bg-surface",
-          "text-text-secondary hover:text-text-primary hover:border-border-accent",
-          "transition-colors duration-200"
+          "transition-colors duration-200",
+          onColor
+            ? "border border-white/30 bg-white/15 text-white hover:bg-white/25 hover:border-white/50"
+            : "border border-border-base bg-bg-surface text-text-secondary hover:text-text-primary hover:border-border-accent"
         )}
       >
         <Globe size={14} />

@@ -12,10 +12,19 @@ import {
 } from "recharts";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { getCreditsPerTerm } from "@/features/gpa/services/calculator";
+import { getTermsByCohortId } from "@/features/gpa/data/index";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; fill: string }[]; label?: string }) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { name: string; value: number; fill: string }[];
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="px-3 py-2.5 rounded-xl border border-border-base bg-bg-surface shadow-xl text-xs">
@@ -33,11 +42,13 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export function CreditChart() {
   const grades = useGpaStore((s) => s.grades);
+  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
   const t = useTranslations("statistics");
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
 
-  const raw = getCreditsPerTerm(grades);
+  const terms = getTermsByCohortId(selectedCohortId);
+  const raw = getCreditsPerTerm(grades, terms);
   const data = raw.map((d) => ({
     label: d.termLabel.split(" - ")[0],
     earned: d.earned,
@@ -65,8 +76,20 @@ export function CreditChart() {
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(42,79,245,0.08)" }} />
         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-        <Bar dataKey="earned" name={t("credits_earned")} fill="#2a4ff5" radius={[3, 3, 0, 0]} stackId="a" />
-        <Bar dataKey="remaining" name="Remaining" fill={isDark ? "#1e3a6e" : "#e2e8f0"} radius={[3, 3, 0, 0]} stackId="a" />
+        <Bar
+          dataKey="earned"
+          name={t("credits_earned")}
+          fill="#2a4ff5"
+          radius={[3, 3, 0, 0]}
+          stackId="a"
+        />
+        <Bar
+          dataKey="remaining"
+          name="Remaining"
+          fill={isDark ? "#1e3a6e" : "#e2e8f0"}
+          radius={[3, 3, 0, 0]}
+          stackId="a"
+        />
       </BarChart>
     </ResponsiveContainer>
   );

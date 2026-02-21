@@ -2,16 +2,17 @@
 
 import { use } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Star, TriangleAlert, CreditCard, BookMarked, Timer } from "lucide-react";
+import { BookOpen, Star, TriangleAlert, CreditCard, BookMarked, Timer, Medal, Trophy } from "lucide-react";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import {
   calculateGpa,
   getHonorStatus,
   getBestAndWorstCourses,
   getCompletedTermsCount,
+  getTermHonorCounts,
 } from "@/features/gpa/services/calculator";
+import { getTermsByCohortId } from "@/features/gpa/data/index";
 import { letterGradesMap } from "@/core/domain/types/letterGrades";
-import { getTotalCredits } from "@/features/gpa/data/courseData";
 import { GpaDisplay } from "@/features/dashboard/components/GpaDisplay";
 import { HonorBadge } from "@/features/dashboard/components/HonorBadge";
 import { StatCard } from "@/features/dashboard/components/StatCard";
@@ -25,12 +26,15 @@ export default function HomePage({ params }: Props) {
   const t = useTranslations("home");
   const tc = useTranslations("common");
   const grades = useGpaStore((s) => s.grades);
+  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
+  const terms = getTermsByCohortId(selectedCohortId);
 
-  const { gpa, completedCourses, completedCredits, remainingCredits } = calculateGpa(grades);
+  const { gpa, completedCourses, completedCredits, remainingCredits, totalCredits } =
+    calculateGpa(grades, terms);
   const honorStatus = getHonorStatus(gpa);
-  const { best, worst } = getBestAndWorstCourses(grades);
-  const termsCompleted = getCompletedTermsCount(grades);
-  const totalCredits = getTotalCredits();
+  const { best, worst } = getBestAndWorstCourses(grades, terms);
+  const termsCompleted = getCompletedTermsCount(grades, terms);
+  const { deansListCount, presidentsListCount } = getTermHonorCounts(grades, terms);
 
   const isAtRisk = honorStatus === "at_risk" || honorStatus === "academic_failure";
 
@@ -42,24 +46,33 @@ export default function HomePage({ params }: Props) {
       tooltip: `${completedCourses} courses with grades entered`,
     },
     {
-      label: t("stats.best_subject"),
+      label: t("stats.best_grade"),
       value: best ? `${best.grade}` : "—",
       subvalue: best ? best.name : undefined,
       icon: Star,
-      variant: best && letterGradesMap[best.grade!] >= 3.7 ? ("success" as const) : ("default" as const),
+      variant:
+        best && letterGradesMap[best.grade!] >= 3.7
+          ? ("success" as const)
+          : ("default" as const),
       tooltip: best ? `${best.name} — ${best.termLabel}` : undefined,
     },
     {
       label: t("stats.terms_completed"),
       value: String(termsCompleted),
-      subvalue: `${tc("of")} 8`,
+      subvalue: `${tc("of")} ${terms.length}`,
       icon: Timer,
+    },
+    {
+      label: t("stats.deans_list_terms"),
+      value: String(deansListCount),
+      icon: Medal,
+      variant: deansListCount > 0 ? ("default" as const) : ("default" as const),
     },
   ];
 
   const rightStats = [
     {
-      label: t("stats.worst_subject"),
+      label: t("stats.worst_grade"),
       value: worst ? `${worst.grade}` : "—",
       subvalue: worst ? worst.name : undefined,
       icon: TriangleAlert,
@@ -84,6 +97,12 @@ export default function HomePage({ params }: Props) {
       icon: BookMarked,
       variant: remainingCredits === 0 ? ("success" as const) : ("default" as const),
     },
+    {
+      label: t("stats.presidents_list_terms"),
+      value: String(presidentsListCount),
+      icon: Trophy,
+      variant: presidentsListCount > 0 ? ("gold" as const) : ("default" as const),
+    },
   ];
 
   const thresholds = [
@@ -94,10 +113,9 @@ export default function HomePage({ params }: Props) {
 
   return (
     <>
-      {/* ── Desktop layout (md+) ─────────────────────── */}
       <div className="hidden md:flex flex-col h-full overflow-hidden px-8 py-6">
         <div className="flex-1 flex items-center gap-8 min-h-0">
-          <div className="flex flex-col gap-4 w-72 shrink-0">
+          <div className="flex flex-col gap-3 w-72 shrink-0">
             {leftStats.map((stat, i) => (
               <StatCard key={stat.label} {...stat} delay={i * 0.08} />
             ))}
@@ -110,7 +128,11 @@ export default function HomePage({ params }: Props) {
               <HonorBadge
                 status={honorStatus}
                 label={t(`honor.${honorStatus}`)}
-                alertText={isAtRisk ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`) : undefined}
+                alertText={
+                  isAtRisk
+                    ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`)
+                    : undefined
+                }
               />
             )}
 
@@ -119,19 +141,25 @@ export default function HomePage({ params }: Props) {
                 {thresholds.map(({ threshold, label, color }) => (
                   <div key={label} className="flex flex-col items-center gap-1">
                     <div className="flex items-center gap-1.5">
-                      <div className={`h-0.5 w-8 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`} />
-                      <span className={`text-sm font-medium ${gpa >= threshold ? color : "text-text-muted"}`}>
+                      <div
+                        className={`h-0.5 w-8 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                      />
+                      <span
+                        className={`text-sm font-medium ${gpa >= threshold ? color : "text-text-muted"}`}
+                      >
                         {threshold.toFixed(2)}
                       </span>
                     </div>
-                    <span className={`text-xs ${gpa >= threshold ? color : "text-text-muted"}`}>{label}</span>
+                    <span className={`text-xs ${gpa >= threshold ? color : "text-text-muted"}`}>
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-4 w-72 shrink-0">
+          <div className="flex flex-col gap-3 w-72 shrink-0">
             {rightStats.map((stat, i) => (
               <StatCard key={stat.label} {...stat} delay={i * 0.08 + 0.04} />
             ))}
@@ -139,7 +167,6 @@ export default function HomePage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── Mobile layout (< md) ─────────────────────── */}
       <div className="flex md:hidden flex-col h-full overflow-y-auto px-4 py-5 gap-5 pb-24">
         <div className="flex flex-col items-center gap-3">
           <GpaDisplay gpa={gpa} locale={locale} />
@@ -147,7 +174,11 @@ export default function HomePage({ params }: Props) {
             <HonorBadge
               status={honorStatus}
               label={t(`honor.${honorStatus}`)}
-              alertText={isAtRisk ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`) : undefined}
+              alertText={
+                isAtRisk
+                  ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`)
+                  : undefined
+              }
             />
           )}
         </div>
@@ -157,12 +188,18 @@ export default function HomePage({ params }: Props) {
             {thresholds.map(({ threshold, label, color }) => (
               <div key={label} className="flex flex-col items-center gap-0.5">
                 <div className="flex items-center gap-1">
-                  <div className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`} />
-                  <span className={`text-[10px] font-medium ${gpa >= threshold ? color : "text-text-muted"}`}>
+                  <div
+                    className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                  />
+                  <span
+                    className={`text-[10px] font-medium ${gpa >= threshold ? color : "text-text-muted"}`}
+                  >
                     {threshold.toFixed(1)}
                   </span>
                 </div>
-                <span className={`text-[9px] ${gpa >= threshold ? color : "text-text-muted"}`}>{label}</span>
+                <span className={`text-[9px] ${gpa >= threshold ? color : "text-text-muted"}`}>
+                  {label}
+                </span>
               </div>
             ))}
           </div>

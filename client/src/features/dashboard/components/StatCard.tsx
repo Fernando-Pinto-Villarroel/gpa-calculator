@@ -11,7 +11,7 @@ interface StatCardProps {
   subvalue?: string;
   icon: LucideIcon;
   tooltip?: string;
-  variant?: "default" | "success" | "warning" | "danger";
+  variant?: "default" | "success" | "warning" | "danger" | "gold";
   delay?: number;
 }
 
@@ -20,6 +20,7 @@ const variantStyles = {
   success: "border-success/30",
   warning: "border-warning/30",
   danger: "border-danger/30",
+  gold: "border-amber-400/30",
 };
 
 const iconVariantStyles = {
@@ -27,6 +28,7 @@ const iconVariantStyles = {
   success: "text-success bg-success/10",
   warning: "text-warning bg-warning/10",
   danger: "text-danger bg-danger/10",
+  gold: "text-amber-400 bg-amber-400/10",
 };
 
 export function StatCard({

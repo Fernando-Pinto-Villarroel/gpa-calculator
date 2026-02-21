@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/logo192.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('jala-gpa-theme');var d=t?JSON.parse(t):null;if(d&&d.state&&d.state.theme==='dark'){document.documentElement.classList.add('dark')}else if(!d){document.documentElement.classList.add('dark')}}catch(e){}})();`,

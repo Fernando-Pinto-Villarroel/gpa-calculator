@@ -12,8 +12,9 @@ interface GpaDisplayProps {
 }
 
 function getGpaColor(gpa: number): string {
-  if (gpa >= 3.8) return "text-amber-400";
-  if (gpa >= 3.5) return "text-slate-300";
+  if (gpa >= 3.8)
+    return "text-amber-400 drop-shadow-[0_0_1px_rgba(255,255,255,0.9),0_0_2px_rgba(255,255,255,0.7)]";
+  if (gpa >= 3.5) return "text-slate-500";
   if (gpa >= 3.2) return "text-amber-600";
   if (gpa >= 2.5) return "text-jala-400";
   if (gpa >= 2.0) return "text-text-primary";
