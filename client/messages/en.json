@@ -31,7 +31,8 @@
       "remaining_credits": "Remaining Credits",
       "terms_completed": "Terms Completed",
       "deans_list_terms": "Dean's List Terms",
-      "presidents_list_terms": "President's List Terms"
+      "presidents_list_terms": "President's List Terms",
+      "courses": "courses"
     }
   },
   "config": {

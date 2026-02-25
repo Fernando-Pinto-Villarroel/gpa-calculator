@@ -48,7 +48,10 @@ export default function HomePage({ params }: Props) {
     totalCredits,
   } = calculateGpa(grades, terms);
   const honorStatus = getHonorStatus(gpa);
-  const { best, worst } = getBestAndWorstCourses(grades, terms);
+  const { best, worst, bestCourses, worstCourses } = getBestAndWorstCourses(
+    grades,
+    terms,
+  );
   const termsCompleted = getCompletedTermsCount(grades, terms);
   const { deansListCount, presidentsListCount } = getTermHonorCounts(
     grades,
@@ -68,13 +71,21 @@ export default function HomePage({ params }: Props) {
     {
       label: t("stats.best_grade"),
       value: best ? `${best.grade}` : "—",
-      subvalue: best ? tCourses(best.courseCode) : undefined,
+      subvalue: best
+        ? bestCourses.length > 1
+          ? `${bestCourses.length} ${t("stats.courses")}`
+          : tCourses(best.courseCode)
+        : undefined,
       icon: Star,
       variant:
         best && letterGradesMap[best.grade!] >= 3.7
           ? ("success" as const)
           : ("default" as const),
-      tooltip: best ? `${tCourses(best.courseCode)} — ${tConfig("term_label", { ordinal: best.termOrdinal })}` : undefined,
+      tooltip: best
+        ? bestCourses.length > 1
+          ? `${bestCourses.length} courses`
+          : `${tCourses(best.courseCode)} — ${tConfig("term_label", { ordinal: best.termOrdinal })}`
+        : undefined,
     },
     {
       label: t("stats.terms_completed"),
@@ -94,7 +105,11 @@ export default function HomePage({ params }: Props) {
     {
       label: t("stats.worst_grade"),
       value: worst ? `${worst.grade}` : "—",
-      subvalue: worst ? tCourses(worst.courseCode) : undefined,
+      subvalue: worst
+        ? worstCourses.length > 1
+          ? `${worstCourses.length} ${t("stats.courses")}`
+          : tCourses(worst.courseCode)
+        : undefined,
       icon: TriangleAlert,
       variant:
         worst && letterGradesMap[worst.grade!] < 2.0
@@ -102,7 +117,11 @@ export default function HomePage({ params }: Props) {
           : worst && letterGradesMap[worst.grade!] < 3.0
             ? ("warning" as const)
             : ("default" as const),
-      tooltip: worst ? `${tCourses(worst.courseCode)} — ${tConfig("term_label", { ordinal: worst.termOrdinal })}` : undefined,
+      tooltip: worst
+        ? worstCourses.length > 1
+          ? `${worstCourses.length} courses`
+          : `${tCourses(worst.courseCode)} — ${tConfig("term_label", { ordinal: worst.termOrdinal })}`
+        : undefined,
     },
     {
       label: t("stats.earned_credits"),

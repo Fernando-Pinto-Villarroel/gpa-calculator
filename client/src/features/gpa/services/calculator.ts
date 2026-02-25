@@ -147,7 +147,12 @@ export function getGradeDistribution(
 export function getBestAndWorstCourses(
   grades: Record<string, LetterGrade | null>,
   terms: Term[],
-): { best: CourseWithGrade | null; worst: CourseWithGrade | null } {
+): {
+  best: CourseWithGrade | null;
+  worst: CourseWithGrade | null;
+  bestCourses: CourseWithGrade[];
+  worstCourses: CourseWithGrade[];
+} {
   const coursesWithGrades: CourseWithGrade[] = [];
 
   terms.forEach((term) => {
@@ -166,15 +171,29 @@ export function getBestAndWorstCourses(
     });
   });
 
-  if (coursesWithGrades.length === 0) return { best: null, worst: null };
+  if (coursesWithGrades.length === 0)
+    return {
+      best: null,
+      worst: null,
+      bestCourses: [],
+      worstCourses: [],
+    };
 
   const sorted = [...coursesWithGrades].sort(
     (a, b) => letterGradesMap[b.grade!] - letterGradesMap[a.grade!],
   );
 
+  const bestGrade = sorted[0].grade;
+  const worstGrade = sorted[sorted.length - 1].grade;
+
+  const bestCourses = coursesWithGrades.filter((c) => c.grade === bestGrade);
+  const worstCourses = coursesWithGrades.filter((c) => c.grade === worstGrade);
+
   return {
     best: sorted[0],
     worst: sorted[sorted.length - 1],
+    bestCourses,
+    worstCourses,
   };
 }
 

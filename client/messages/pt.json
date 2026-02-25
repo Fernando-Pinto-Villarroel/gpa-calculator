@@ -31,7 +31,8 @@
       "remaining_credits": "Créditos Restantes",
       "terms_completed": "Termos Concluídos",
       "deans_list_terms": "Termos Lista do Decano",
-      "presidents_list_terms": "Termos Lista do Reitor"
+      "presidents_list_terms": "Termos Lista do Reitor",
+      "courses": "cursos"
     }
   },
   "config": {
