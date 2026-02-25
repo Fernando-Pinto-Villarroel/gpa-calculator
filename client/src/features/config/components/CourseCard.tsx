@@ -34,6 +34,7 @@ function gradeBarColor(grade: LetterGrade | null): string {
 
 export function CourseCard({ course, grade, onChange }: CourseCardProps) {
   const t = useTranslations("config");
+  const tCourses = useTranslations("courses");
 
   return (
     <div
@@ -45,7 +46,7 @@ export function CourseCard({ course, grade, onChange }: CourseCardProps) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-text-primary leading-tight line-clamp-2">
-            {course.name}
+            {tCourses(course.courseCode)}
           </p>
           <p className="text-[10px] text-text-muted mt-0.5 font-mono">
             {course.courseCode}

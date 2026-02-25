@@ -36,12 +36,13 @@ export function CohortSelector() {
           "flex items-center gap-2 px-3 h-9 rounded-lg text-sm font-medium",
           "border border-border-base bg-bg-surface",
           "text-text-primary hover:border-border-accent",
-          "transition-colors duration-200 min-w-[140px] sm:min-w-44",
+          "transition-colors duration-200 min-w-[120px] sm:min-w-[140px] md:min-w-44",
         )}
       >
         <GraduationCap size={14} className="text-text-accent shrink-0" />
         <span className="flex-1 text-left truncate">
-          {selectedCohort.label}
+          {t("cohort_label", { ordinal: selectedCohort.ordinal, year: selectedCohort.year })}
+          {selectedCohort.ongoing ? " +" : ""}
         </span>
         <ChevronDown
           size={14}
@@ -78,7 +79,8 @@ export function CohortSelector() {
                     : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
                 )}
               >
-                {cohort.label}
+                {t("cohort_label", { ordinal: cohort.ordinal, year: cohort.year })}
+                {cohort.ongoing ? " +" : ""}
               </button>
             ))}
           </motion.div>

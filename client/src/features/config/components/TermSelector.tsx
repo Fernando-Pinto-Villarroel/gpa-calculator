@@ -35,12 +35,12 @@ export function TermSelector() {
           "flex items-center gap-2 px-3 h-9 rounded-lg text-sm font-medium",
           "border border-border-base bg-bg-surface",
           "text-text-primary hover:border-border-accent",
-          "transition-colors duration-200 min-w-[140px] sm:min-w-44",
+          "transition-colors duration-200 min-w-[120px] sm:min-w-[140px] md:min-w-44",
         )}
       >
         <Calendar size={14} className="text-text-accent shrink-0" />
         <span className="flex-1 text-left truncate">
-          {selectedTerm?.label ?? t("select_term")}
+          {selectedTerm ? t("term_label", { ordinal: selectedTerm.ordinal }) : t("select_term")}
         </span>
         <ChevronDown
           size={14}
@@ -77,7 +77,7 @@ export function TermSelector() {
                     : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
                 )}
               >
-                {term.label}
+                {t("term_label", { ordinal: term.ordinal })}
               </button>
             ))}
           </motion.div>

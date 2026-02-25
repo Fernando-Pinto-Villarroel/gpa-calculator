@@ -2,7 +2,16 @@
 
 import { use } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Star, TriangleAlert, CreditCard, BookMarked, Timer, Medal, Trophy } from "lucide-react";
+import {
+  BookOpen,
+  Star,
+  TriangleAlert,
+  CreditCard,
+  BookMarked,
+  Timer,
+  Medal,
+  Trophy,
+} from "lucide-react";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import {
   calculateGpa,
@@ -25,18 +34,29 @@ export default function HomePage({ params }: Props) {
   const { locale } = use(params);
   const t = useTranslations("home");
   const tc = useTranslations("common");
+  const tCourses = useTranslations("courses");
+  const tConfig = useTranslations("config");
   const grades = useGpaStore((s) => s.grades);
   const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
   const terms = getTermsByCohortId(selectedCohortId);
 
-  const { gpa, completedCourses, completedCredits, remainingCredits, totalCredits } =
-    calculateGpa(grades, terms);
+  const {
+    gpa,
+    completedCourses,
+    completedCredits,
+    remainingCredits,
+    totalCredits,
+  } = calculateGpa(grades, terms);
   const honorStatus = getHonorStatus(gpa);
   const { best, worst } = getBestAndWorstCourses(grades, terms);
   const termsCompleted = getCompletedTermsCount(grades, terms);
-  const { deansListCount, presidentsListCount } = getTermHonorCounts(grades, terms);
+  const { deansListCount, presidentsListCount } = getTermHonorCounts(
+    grades,
+    terms,
+  );
 
-  const isAtRisk = honorStatus === "at_risk" || honorStatus === "academic_failure";
+  const isAtRisk =
+    honorStatus === "at_risk" || honorStatus === "academic_failure";
 
   const leftStats = [
     {
@@ -48,13 +68,13 @@ export default function HomePage({ params }: Props) {
     {
       label: t("stats.best_grade"),
       value: best ? `${best.grade}` : "—",
-      subvalue: best ? best.name : undefined,
+      subvalue: best ? tCourses(best.courseCode) : undefined,
       icon: Star,
       variant:
         best && letterGradesMap[best.grade!] >= 3.7
           ? ("success" as const)
           : ("default" as const),
-      tooltip: best ? `${best.name} — ${best.termLabel}` : undefined,
+      tooltip: best ? `${tCourses(best.courseCode)} — ${tConfig("term_label", { ordinal: best.termOrdinal })}` : undefined,
     },
     {
       label: t("stats.terms_completed"),
@@ -74,7 +94,7 @@ export default function HomePage({ params }: Props) {
     {
       label: t("stats.worst_grade"),
       value: worst ? `${worst.grade}` : "—",
-      subvalue: worst ? worst.name : undefined,
+      subvalue: worst ? tCourses(worst.courseCode) : undefined,
       icon: TriangleAlert,
       variant:
         worst && letterGradesMap[worst.grade!] < 2.0
@@ -82,7 +102,7 @@ export default function HomePage({ params }: Props) {
           : worst && letterGradesMap[worst.grade!] < 3.0
             ? ("warning" as const)
             : ("default" as const),
-      tooltip: worst ? `${worst.name} — ${worst.termLabel}` : undefined,
+      tooltip: worst ? `${tCourses(worst.courseCode)} — ${tConfig("term_label", { ordinal: worst.termOrdinal })}` : undefined,
     },
     {
       label: t("stats.earned_credits"),
@@ -95,13 +115,15 @@ export default function HomePage({ params }: Props) {
       label: t("stats.remaining_credits"),
       value: String(remainingCredits),
       icon: BookMarked,
-      variant: remainingCredits === 0 ? ("success" as const) : ("default" as const),
+      variant:
+        remainingCredits === 0 ? ("success" as const) : ("default" as const),
     },
     {
       label: t("stats.presidents_list_terms"),
       value: String(presidentsListCount),
       icon: Trophy,
-      variant: presidentsListCount > 0 ? ("gold" as const) : ("default" as const),
+      variant:
+        presidentsListCount > 0 ? ("gold" as const) : ("default" as const),
     },
   ];
 
@@ -113,16 +135,16 @@ export default function HomePage({ params }: Props) {
 
   return (
     <>
-      <div className="hidden md:flex flex-col h-full overflow-hidden px-8 py-6">
-        <div className="flex-1 flex items-center gap-8 min-h-0">
-          <div className="flex flex-col gap-3 w-72 shrink-0">
+      <div className="hidden lg:flex flex-col h-full overflow-hidden px-8 py-6">
+        <div className="flex-1 flex items-center justify-center gap-12 min-h-0 max-w-7xl mx-auto w-full">
+          <div className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
             {leftStats.map((stat, i) => (
-              <StatCard key={stat.label} {...stat} delay={i * 0.08} />
+              <StatCard key={stat.label} {...stat} delay={i * 0.08} isDesktop />
             ))}
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center gap-5 min-w-0">
-            <GpaDisplay gpa={gpa} locale={locale} />
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0">
+            <GpaDisplay gpa={gpa} locale={locale} isDesktop />
 
             {honorStatus && (
               <HonorBadge
@@ -130,27 +152,34 @@ export default function HomePage({ params }: Props) {
                 label={t(`honor.${honorStatus}`)}
                 alertText={
                   isAtRisk
-                    ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`)
+                    ? t(
+                        `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                      )
                     : undefined
                 }
               />
             )}
 
             {gpa > 0 && (
-              <div className="flex items-center gap-8 mt-1">
+              <div className="flex items-center gap-10 mt-1">
                 {thresholds.map(({ threshold, label, color }) => (
-                  <div key={label} className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1.5">
+                  <div
+                    key={label}
+                    className="flex flex-col items-center gap-1.5"
+                  >
+                    <div className="flex items-center gap-2">
                       <div
-                        className={`h-0.5 w-8 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                        className={`h-0.5 w-10 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
                       />
                       <span
-                        className={`text-sm font-medium ${gpa >= threshold ? color : "text-text-muted"}`}
+                        className={`text-base font-medium ${gpa >= threshold ? color : "text-text-muted"}`}
                       >
                         {threshold.toFixed(2)}
                       </span>
                     </div>
-                    <span className={`text-xs ${gpa >= threshold ? color : "text-text-muted"}`}>
+                    <span
+                      className={`text-sm ${gpa >= threshold ? color : "text-text-muted"}`}
+                    >
                       {label}
                     </span>
                   </div>
@@ -159,15 +188,20 @@ export default function HomePage({ params }: Props) {
             )}
           </div>
 
-          <div className="flex flex-col gap-3 w-72 shrink-0">
+          <div className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
             {rightStats.map((stat, i) => (
-              <StatCard key={stat.label} {...stat} delay={i * 0.08 + 0.04} />
+              <StatCard
+                key={stat.label}
+                {...stat}
+                delay={i * 0.08 + 0.04}
+                isDesktop
+              />
             ))}
           </div>
         </div>
       </div>
 
-      <div className="flex md:hidden flex-col h-full overflow-y-auto px-4 py-5 gap-5 pb-24">
+      <div className="flex lg:hidden flex-col h-full overflow-y-auto px-4 py-5 gap-5 pb-24">
         <div className="flex flex-col items-center gap-3">
           <GpaDisplay gpa={gpa} locale={locale} />
           {honorStatus && (
@@ -176,7 +210,9 @@ export default function HomePage({ params }: Props) {
               label={t(`honor.${honorStatus}`)}
               alertText={
                 isAtRisk
-                  ? t(`alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`)
+                  ? t(
+                      `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                    )
                   : undefined
               }
             />
@@ -197,7 +233,9 @@ export default function HomePage({ params }: Props) {
                     {threshold.toFixed(1)}
                   </span>
                 </div>
-                <span className={`text-[9px] ${gpa >= threshold ? color : "text-text-muted"}`}>
+                <span
+                  className={`text-[9px] ${gpa >= threshold ? color : "text-text-muted"}`}
+                >
                   {label}
                 </span>
               </div>

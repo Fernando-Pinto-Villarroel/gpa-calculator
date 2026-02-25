@@ -9,6 +9,7 @@ import { cn } from "@/core/lib/utils/cn";
 interface GpaDisplayProps {
   gpa: number;
   locale: string;
+  isDesktop?: boolean;
 }
 
 function getGpaColor(gpa: number): string {
@@ -31,7 +32,11 @@ function getGpaRingColor(gpa: number): string {
   return "shadow-border-base";
 }
 
-export function GpaDisplay({ gpa, locale }: GpaDisplayProps) {
+export function GpaDisplay({
+  gpa,
+  locale,
+  isDesktop = false,
+}: GpaDisplayProps) {
   const t = useTranslations("home");
   const hasGpa = gpa > 0;
 
@@ -42,10 +47,11 @@ export function GpaDisplay({ gpa, locale }: GpaDisplayProps) {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, type: "spring", damping: 20 }}
         className={cn(
-          "relative flex items-center justify-center w-56 h-56 rounded-full",
+          "relative flex items-center justify-center rounded-full",
           "border-2 border-jala-700/50 bg-bg-surface",
           "shadow-2xl",
           getGpaRingColor(gpa),
+          isDesktop ? "w-72 h-72" : "w-56 h-56",
         )}
       >
         <div
@@ -64,18 +70,29 @@ export function GpaDisplay({ gpa, locale }: GpaDisplayProps) {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                  "block text-6xl font-bold tabular-nums tracking-tight",
+                  "block font-bold tabular-nums tracking-tight",
                   getGpaColor(gpa),
+                  isDesktop ? "text-8xl" : "text-6xl",
                 )}
               >
                 {gpa.toFixed(2)}
               </motion.span>
-              <span className="block text-sm text-text-muted mt-1.5 font-medium uppercase tracking-wider">
+              <span
+                className={cn(
+                  "block text-text-muted font-medium uppercase tracking-wider",
+                  isDesktop ? "text-base mt-2" : "text-sm mt-1.5",
+                )}
+              >
                 {t("gpa_label")}
               </span>
             </>
           ) : (
-            <span className="text-base text-text-muted text-center px-4">
+            <span
+              className={cn(
+                "text-text-muted text-center px-4",
+                isDesktop ? "text-lg" : "text-base",
+              )}
+            >
               {t("no_grades")}
             </span>
           )}

@@ -44,13 +44,14 @@ export function CreditChart() {
   const grades = useGpaStore((s) => s.grades);
   const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
   const t = useTranslations("statistics");
+  const tConfig = useTranslations("config");
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
 
   const terms = getTermsByCohortId(selectedCohortId);
   const raw = getCreditsPerTerm(grades, terms);
   const data = raw.map((d) => ({
-    label: d.termLabel.split(" - ")[0],
+    label: tConfig("term_label", { ordinal: d.termOrdinal }),
     earned: d.earned,
     remaining: d.total - d.earned,
   }));

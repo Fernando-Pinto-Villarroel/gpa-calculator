@@ -43,8 +43,8 @@ export default function ConfigPage() {
           <CohortSelector />
           <TermSelector />
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-elevated/60 border border-border-base">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-elevated/60 border border-border-base w-full md:w-auto justify-center">
             {termHonor === "presidents_list" ? (
               <Trophy size={14} className="text-amber-400 shrink-0" />
             ) : termHonor === "deans_list" ? (
@@ -57,7 +57,7 @@ export default function ConfigPage() {
               {termGpa.toFixed(2)}
             </span>
           </div>
-          <ImportExport />
+          <ImportExport className="w-full md:w-auto justify-center" />
         </div>
       </div>
 

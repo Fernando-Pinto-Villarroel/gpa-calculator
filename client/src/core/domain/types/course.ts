@@ -7,16 +7,16 @@ export interface Course {
 
 export interface Term {
   id: string;
-  label: string;
+  ordinal: string;
   modules: {
-    "Module 1": Course[];
-    "Module 2": Course[];
-    "Module 3": Course[];
+    [key: string]: Course[];
   };
 }
 
 export interface Cohort {
   id: string;
-  label: string;
+  ordinal: string;
+  year: number;
+  ongoing?: boolean;
   terms: Term[];
 }

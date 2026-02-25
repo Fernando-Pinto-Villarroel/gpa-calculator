@@ -47,11 +47,15 @@ export function GpaProgressChart() {
   const grades = useGpaStore((s) => s.grades);
   const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
   const t = useTranslations("statistics");
+  const tConfig = useTranslations("config");
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
 
   const terms = getTermsByCohortId(selectedCohortId);
-  const data = getTermGpaProgression(grades, terms);
+  const data = getTermGpaProgression(grades, terms).map((item) => ({
+    ...item,
+    label: tConfig("term_label", { ordinal: item.termOrdinal }),
+  }));
 
   const axisColor = isDark ? "#64748b" : "#94a3b8";
   const gridColor = isDark ? "#1e3a6e" : "#e2e8f0";
@@ -73,7 +77,6 @@ export function GpaProgressChart() {
           tick={{ fill: axisColor, fontSize: 10 }}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(v: string) => v.split(" ")[0] + " " + v.split(" ")[1]}
         />
         <YAxis
           domain={[0, 4]}

@@ -17,7 +17,7 @@ interface ThemeStore {
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set) => ({
-      theme: "dark",
+      theme: "light",
       locale: "en",
 
       toggleTheme: () =>
@@ -41,6 +41,6 @@ export const useThemeStore = create<ThemeStore>()(
     {
       name: "jala-gpa-theme",
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

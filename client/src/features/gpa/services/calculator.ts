@@ -12,7 +12,7 @@ export interface GpaResult {
 
 export interface TermGpaResult {
   termId: string;
-  label: string;
+  termOrdinal: string;
   termGpa: number;
   cumulativeGpa: number;
   earnedCredits: number;
@@ -21,7 +21,7 @@ export interface TermGpaResult {
 
 export interface CourseWithGrade extends Course {
   grade: LetterGrade | null;
-  termLabel: string;
+  termOrdinal: string;
   termId: string;
 }
 
@@ -120,7 +120,7 @@ export function getTermGpaProgression(
     if (termCredits > 0) {
       results.push({
         termId: term.id,
-        label: term.label,
+        termOrdinal: term.ordinal,
         termGpa,
         cumulativeGpa,
         earnedCredits: termEarned,
@@ -158,7 +158,7 @@ export function getBestAndWorstCourses(
           coursesWithGrades.push({
             ...course,
             grade,
-            termLabel: term.label,
+            termOrdinal: term.ordinal,
             termId: term.id,
           });
         }
@@ -181,7 +181,7 @@ export function getBestAndWorstCourses(
 export function getCreditsPerTerm(
   grades: Record<string, LetterGrade | null>,
   terms: Term[],
-): { termLabel: string; earned: number; total: number }[] {
+): { termOrdinal: string; earned: number; total: number }[] {
   return terms.map((term) => {
     let earned = 0;
     let total = 0;
@@ -191,7 +191,7 @@ export function getCreditsPerTerm(
         if (grades[course.courseCode]) earned += course.credits;
       });
     });
-    return { termLabel: term.label, earned, total };
+    return { termOrdinal: term.ordinal, earned, total };
   });
 }
 

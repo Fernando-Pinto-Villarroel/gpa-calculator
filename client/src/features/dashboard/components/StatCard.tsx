@@ -1,7 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/core/lib/utils/cn";
 
@@ -13,6 +17,7 @@ interface StatCardProps {
   tooltip?: string;
   variant?: "default" | "success" | "warning" | "danger" | "gold";
   delay?: number;
+  isDesktop?: boolean;
 }
 
 const variantStyles = {
@@ -39,6 +44,7 @@ export function StatCard({
   tooltip,
   variant = "default",
   delay = 0,
+  isDesktop = false,
 }: StatCardProps) {
   const card = (
     <motion.div
@@ -46,19 +52,47 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
       className={cn(
-        "flex items-center gap-4 p-4 rounded-xl border bg-bg-surface",
+        "flex items-center rounded-xl border bg-bg-surface",
         "hover:border-border-strong transition-colors duration-200",
-        variantStyles[variant]
+        variantStyles[variant],
+        isDesktop ? "p-6 gap-5" : "p-4 gap-4",
       )}
     >
-      <div className={cn("flex items-center justify-center w-11 h-11 rounded-xl shrink-0", iconVariantStyles[variant])}>
-        <Icon size={20} />
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-xl shrink-0",
+          iconVariantStyles[variant],
+          isDesktop ? "w-14 h-14" : "w-11 h-11",
+        )}
+      >
+        <Icon size={isDesktop ? 24 : 20} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-text-muted truncate">{label}</p>
-        <p className="text-base font-semibold text-text-primary truncate leading-tight mt-0.5">{value}</p>
+        <p
+          className={cn(
+            "text-text-muted truncate",
+            isDesktop ? "text-sm" : "text-xs",
+          )}
+        >
+          {label}
+        </p>
+        <p
+          className={cn(
+            "font-semibold text-text-primary truncate leading-tight mt-0.5",
+            isDesktop ? "text-lg" : "text-base",
+          )}
+        >
+          {value}
+        </p>
         {subvalue && (
-          <p className="text-xs text-text-muted truncate leading-none mt-0.5">{subvalue}</p>
+          <p
+            className={cn(
+              "text-text-muted truncate leading-none mt-0.5",
+              isDesktop ? "text-sm" : "text-xs",
+            )}
+          >
+            {subvalue}
+          </p>
         )}
       </div>
     </motion.div>

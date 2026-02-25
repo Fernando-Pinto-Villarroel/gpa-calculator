@@ -14,11 +14,18 @@ interface GpaStore {
   setGrade: (courseCode: string, grade: LetterGrade | null) => void;
   setSelectedCohortId: (cohortId: string) => void;
   setSelectedTermId: (termId: string) => void;
-  importGrades: (data: Record<string, LetterGrade | null>) => void;
-  exportGrades: () => Record<string, LetterGrade | null>;
+  importGrades: (data: {
+    cohortId: string;
+    grades: Record<string, LetterGrade | null>;
+  }) => void;
+  exportGrades: () => {
+    cohortId: string;
+    grades: Record<string, LetterGrade | null>;
+  };
   resetToDefaults: () => void;
   clearAllGrades: () => void;
   resetTermData: () => void;
+  resetCohortData: () => void;
 }
 
 function defaultGradesForCohort(
@@ -68,15 +75,23 @@ export const useGpaStore = create<GpaStore>()(
       setSelectedTermId: (termId) => set({ selectedTermId: termId }),
 
       importGrades: (data) =>
-        set((state) => ({
-          grades: data,
-          gradesByCohort: {
-            ...state.gradesByCohort,
-            [state.selectedCohortId]: data,
-          },
-        })),
+        set((state) => {
+          const { cohortId, grades } = data;
+          return {
+            grades: grades,
+            selectedCohortId: cohortId,
+            selectedTermId: "term-1",
+            gradesByCohort: {
+              ...state.gradesByCohort,
+              [cohortId]: grades,
+            },
+          };
+        }),
 
-      exportGrades: () => get().grades,
+      exportGrades: () => ({
+        cohortId: get().selectedCohortId,
+        grades: get().grades,
+      }),
 
       resetToDefaults: () =>
         set((state) => {
@@ -124,6 +139,18 @@ export const useGpaStore = create<GpaStore>()(
             gradesByCohort: {
               ...state.gradesByCohort,
               [state.selectedCohortId]: updatedGrades,
+            },
+          };
+        }),
+
+      resetCohortData: () =>
+        set((state) => {
+          const defaults = defaultGradesForCohort(state.selectedCohortId);
+          return {
+            grades: defaults,
+            gradesByCohort: {
+              ...state.gradesByCohort,
+              [state.selectedCohortId]: defaults,
             },
           };
         }),
