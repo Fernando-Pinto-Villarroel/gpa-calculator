@@ -71,7 +71,7 @@
     "presidents_list_achieved": "Este semestre califica para la Lista del Presidente (GPA = 4.00)",
     "term_gpa": "GPA del Semestre",
     "cohort_label": "Cohorte {ordinal} - {year}",
-    "term_label": "Período {ordinal}"
+    "term_label": "Semestre {ordinal}"
   },
   "statistics": {
     "title": "Estadísticas Académicas",
