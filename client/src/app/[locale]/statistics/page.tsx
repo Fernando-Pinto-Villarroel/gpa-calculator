@@ -5,17 +5,33 @@ import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { StatsOverview } from "@/features/statistics/components/StatsOverview";
 
-const GpaProgressChart = dynamic(
-  () => import("@/features/statistics/components/GpaProgressChart").then((m) => m.GpaProgressChart),
-  { ssr: false }
+const CumulativeGpaProgressChart = dynamic(
+  () =>
+    import("@/features/statistics/components/CumulativeGpaProgressChart").then(
+      (m) => m.CumulativeGpaProgressChart,
+    ),
+  { ssr: false },
+);
+const TermGpaProgressChart = dynamic(
+  () =>
+    import("@/features/statistics/components/TermGpaProgressChart").then(
+      (m) => m.TermGpaProgressChart,
+    ),
+  { ssr: false },
 );
 const GradeDistributionChart = dynamic(
-  () => import("@/features/statistics/components/GradeDistributionChart").then((m) => m.GradeDistributionChart),
-  { ssr: false }
+  () =>
+    import("@/features/statistics/components/GradeDistributionChart").then(
+      (m) => m.GradeDistributionChart,
+    ),
+  { ssr: false },
 );
 const CreditChart = dynamic(
-  () => import("@/features/statistics/components/CreditChart").then((m) => m.CreditChart),
-  { ssr: false }
+  () =>
+    import("@/features/statistics/components/CreditChart").then(
+      (m) => m.CreditChart,
+    ),
+  { ssr: false },
 );
 
 function ChartCard({
@@ -55,12 +71,22 @@ export default function StatisticsPage() {
       <StatsOverview />
 
       <ChartCard
-        title={t("gpa_progression")}
-        description={t("gpa_progression_desc")}
+        title={t("cumulative_gpa_progression")}
+        description={t("cumulative_gpa_progression_desc")}
         delay={0.1}
       >
         <div className="h-56 md:h-64">
-          <GpaProgressChart />
+          <CumulativeGpaProgressChart />
+        </div>
+      </ChartCard>
+
+      <ChartCard
+        title={t("term_gpa_progression")}
+        description={t("term_gpa_progression_desc")}
+        delay={0.15}
+      >
+        <div className="h-56 md:h-64">
+          <TermGpaProgressChart />
         </div>
       </ChartCard>
 

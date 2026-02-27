@@ -76,8 +76,10 @@
   "statistics": {
     "title": "Academic Statistics",
     "subtitle": "Detailed insights into your academic performance",
-    "gpa_progression": "GPA Progression",
-    "gpa_progression_desc": "Cumulative and term GPA over time",
+    "cumulative_gpa_progression": "Cumulative GPA Progression",
+    "cumulative_gpa_progression_desc": "Cumulative GPA over time with honor thresholds",
+    "term_gpa_progression": "Terms GPA Progression",
+    "term_gpa_progression_desc": "Term GPA over time with Dean's and President's List thresholds",
     "grade_distribution": "Grade Distribution",
     "grade_distribution_desc": "Frequency of each grade across all courses",
     "credit_accumulation": "Credit Accumulation",

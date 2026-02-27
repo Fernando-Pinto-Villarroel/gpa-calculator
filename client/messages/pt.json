@@ -76,8 +76,10 @@
   "statistics": {
     "title": "Estatísticas Acadêmicas",
     "subtitle": "Análise detalhada do seu desempenho acadêmico",
-    "gpa_progression": "Progressão do GPA",
-    "gpa_progression_desc": "GPA acumulado e por semestre ao longo do tempo",
+    "cumulative_gpa_progression": "Progressão de GPA Acumulativa",
+    "cumulative_gpa_progression_desc": "GPA acumulado ao longo do tempo com limiares de honra",
+    "term_gpa_progression": "Progressão de GPA por Semestres",
+    "term_gpa_progression_desc": "GPA por semestre ao longo do tempo com limiares de Lista do Decano e Lista do Reitor",
     "grade_distribution": "Distribuição de Notas",
     "grade_distribution_desc": "Frequência de cada nota em todos os cursos",
     "credit_accumulation": "Acumulação de Créditos",
