@@ -11,20 +11,20 @@ export const cohort1_2024: Cohort = {
       moduleName: "Module 1",
       courses: [
         {
-          name: "Logic",
-          courseCode: "MATH-111",
-          type: "General Education",
-          credits: 3,
-        },
-        {
           name: "Programming 1",
-          courseCode: "CSPR-111",
+          courseCode: "APR-114",
           type: "Central Laboratory",
           credits: 2,
         },
         {
+          name: "Logic",
+          courseCode: "FMA-111",
+          type: "General Education",
+          credits: 3,
+        },
+        {
           name: "Operating Systems 1",
-          courseCode: "CSOS-112",
+          courseCode: "IRE-116",
           type: "Central Laboratory",
           credits: 2,
         },
@@ -36,13 +36,13 @@ export const cohort1_2024: Cohort = {
       courses: [
         {
           name: "Discrete Mathematics",
-          courseCode: "MATH-112",
+          courseCode: "FMA-112",
           type: "General Education",
           credits: 3,
         },
         {
           name: "Database 1",
-          courseCode: "CSDB-112",
+          courseCode: "BDA-117",
           type: "Central Laboratory",
           credits: 2,
         },
@@ -54,21 +54,45 @@ export const cohort1_2024: Cohort = {
       courses: [
         {
           name: "Software Development 1",
-          courseCode: "CSSD-113",
+          courseCode: "ISO-115",
           type: "Central Laboratory",
           credits: 3,
         },
         {
           name: "Calculus 1",
-          courseCode: "MATH-113",
+          courseCode: "FMA-113",
           type: "General Education",
           credits: 3,
         },
         {
           name: "Communication 1",
-          courseCode: "COMM-118",
+          courseCode: "COM-118",
           type: "General Education",
           credits: 3,
+        },
+      ],
+    },
+    {
+      termId: "term-2",
+      moduleName: "Module 1",
+      courses: [
+        {
+          name: "Programming 2",
+          courseCode: "APR-123",
+          type: "Central Laboratory",
+          credits: 3,
+        },
+        {
+          name: "Linear Algebra",
+          courseCode: "FMA-121",
+          type: "General Education",
+          credits: 3,
+        },
+        {
+          name: "Operating System 2",
+          courseCode: "IRE-125",
+          type: "Central Laboratory",
+          credits: 2,
         },
       ],
     },
@@ -77,16 +101,16 @@ export const cohort1_2024: Cohort = {
       moduleName: "Module 2",
       courses: [
         {
-          name: "Software Development 2",
-          courseCode: "CSSD-125",
-          type: "Central Laboratory",
-          credits: 3,
-        },
-        {
           name: "Database 2",
-          courseCode: "CSDB-125",
+          courseCode: "BDA-126",
           type: "Central Laboratory",
           credits: 2,
+        },
+        {
+          name: "Software Development 2",
+          courseCode: "ISO-124",
+          type: "Central Laboratory",
+          credits: 3,
         },
       ],
     },
@@ -96,13 +120,13 @@ export const cohort1_2024: Cohort = {
       courses: [
         {
           name: "History of Software Engineering",
-          courseCode: "HIST-111",
+          courseCode: "FHC-129",
           type: "General Education",
           credits: 1,
         },
         {
           name: "Communication 2",
-          courseCode: "COMM-127",
+          courseCode: "COM-127",
           type: "General Education",
           credits: 3,
         },
@@ -129,84 +153,6 @@ export const cohort1_2024: Cohort = {
           courseCode: "MATH-126",
           type: "General Education",
           credits: 3,
-        },
-      ],
-    },
-    {
-      termId: "term-4",
-      moduleName: "Module 1",
-      courses: [
-        {
-          name: "Programming 4",
-          courseCode: "CSPR-244",
-          type: "Central Laboratory",
-          credits: 2,
-        },
-        {
-          name: "Software Quality Engineering 3",
-          courseCode: "CSSQ-246",
-          type: "Central Laboratory",
-          credits: 2,
-        },
-        {
-          name: "Algorithmics 1",
-          courseCode: "CSAL-244",
-          type: "Central",
-          credits: 3,
-        },
-      ],
-    },
-    {
-      termId: "term-4",
-      moduleName: "Module 2",
-      courses: [
-        {
-          name: "Software Development 4",
-          courseCode: "CSSD-245",
-          type: "Central Laboratory",
-          credits: 3,
-        },
-        {
-          name: "Computer Networks 2",
-          courseCode: "CSNT-245",
-          type: "Central Laboratory",
-          credits: 2,
-        },
-      ],
-    },
-    {
-      termId: "term-4",
-      moduleName: "Module 3",
-      courses: [
-        {
-          name: "Development & Operations",
-          courseCode: "CSDV-246",
-          type: "Central Laboratory",
-          credits: 2,
-        },
-        {
-          name: "Writing & Composition 2",
-          courseCode: "WRIT-229",
-          type: "General Education",
-          credits: 3,
-        },
-      ],
-    },
-    {
-      termId: "term-5",
-      moduleName: "Module 2",
-      courses: [
-        {
-          name: "Software Development 5",
-          courseCode: "CSSD-352",
-          type: "Specialized Laboratory",
-          credits: 3,
-        },
-        {
-          name: "Introduction to Data Science and Machine Learning",
-          courseCode: "CSDS-352",
-          type: "Specialized Laboratory",
-          credits: 2,
         },
       ],
     },

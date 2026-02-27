@@ -16,7 +16,7 @@ export const courseCredits: Year = {
           courseCode: "CSPR-111",
           type: "Central Laboratory",
           credits: 2,
-          grade: "A-",
+          grade: "A",
         },
         {
           name: "History of Software Engineering",
@@ -109,7 +109,7 @@ export const courseCredits: Year = {
       "Module 3": [
         {
           name: "Communication 1",
-          courseCode: "COMM-118",
+          courseCode: "COM-118",
           type: "General Education",
           credits: 3,
           grade: "A",
@@ -136,7 +136,7 @@ export const courseCredits: Year = {
         },
         {
           name: "Communication 2",
-          courseCode: "COMM-127",
+          courseCode: "COM-127",
           type: "General Education",
           credits: 3,
           grade: "A",
@@ -262,7 +262,7 @@ export const courseCredits: Year = {
           courseCode: "CSAR-351",
           type: "Specialized Laboratory",
           credits: 2,
-          grade: "A-",
+          grade: "A",
         },
         {
           name: "Algorithmics 2",
