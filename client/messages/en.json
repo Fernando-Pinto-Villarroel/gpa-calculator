@@ -71,7 +71,11 @@
     "presidents_list_achieved": "This term qualifies for President's List (Term GPA = 4.00)",
     "term_gpa": "Term GPA",
     "cohort_label": "Cohort {ordinal} - {year}",
-    "term_label": "Term {ordinal}"
+    "term_label": "Term {ordinal}",
+    "import_error_invalid_json": "The file does not contain valid JSON.",
+    "import_error_missing_fields": "Required fields are missing. Make sure the file includes cohortId and grades.",
+    "import_error_unknown_cohort": "Cohort \"{cohortId}\" is not recognized in this application.",
+    "import_error_invalid_grades": "The file contains invalid or unrecognized grade values."
   },
   "statistics": {
     "title": "Academic Statistics",

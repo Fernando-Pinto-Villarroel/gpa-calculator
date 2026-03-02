@@ -71,7 +71,11 @@
     "presidents_list_achieved": "Este semestre califica para la Lista del Presidente (GPA = 4.00)",
     "term_gpa": "GPA del Semestre",
     "cohort_label": "Cohorte {ordinal} - {year}",
-    "term_label": "Semestre {ordinal}"
+    "term_label": "Semestre {ordinal}",
+    "import_error_invalid_json": "El archivo no contiene JSON válido.",
+    "import_error_missing_fields": "Faltan campos obligatorios. Asegúrate de que el archivo incluya cohortId y grades.",
+    "import_error_unknown_cohort": "La cohorte \"{cohortId}\" no se reconoce en esta aplicación.",
+    "import_error_invalid_grades": "El archivo contiene valores de calificación inválidos o no reconocidos."
   },
   "statistics": {
     "title": "Estadísticas Académicas",

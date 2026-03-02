@@ -3,13 +3,14 @@
 import { useRef } from "react";
 import { Upload, Download, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
-import { LetterGrade } from "@/core/domain/types/letterGrades";
 import { cn } from "@/core/lib/utils/cn";
-import Swal from "sweetalert2";
 import { getCohortById } from "@/features/gpa/data";
+import { validateImportPayload } from "@/features/config/lib/validateImportPayload";
+import Swal from "sweetalert2";
 
 export function ImportExport({ className }: { className?: string }) {
   const t = useTranslations("config");
@@ -17,6 +18,11 @@ export function ImportExport({ className }: { className?: string }) {
     useGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const swalBase = {
+    background: theme === "dark" ? "#1e293b" : "#fff",
+    color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+  };
 
   const handleResetTermData = async () => {
     const result = await Swal.fire({
@@ -28,18 +34,13 @@ export function ImportExport({ className }: { className?: string }) {
       cancelButtonColor: "#3085d6",
       confirmButtonText: t("confirm"),
       cancelButtonText: t("cancel"),
-      background: theme === "dark" ? "#1e293b" : "#fff",
-      color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      ...swalBase,
     });
 
     if (result.isConfirmed) {
       resetTermData();
-      Swal.fire({
-        title: t("reset_success_title"),
-        text: t("reset_success_text"),
-        icon: "success",
-        background: theme === "dark" ? "#1e293b" : "#fff",
-        color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      toast.success(t("reset_success_title"), {
+        description: t("reset_success_text"),
       });
     }
   };
@@ -54,18 +55,13 @@ export function ImportExport({ className }: { className?: string }) {
       cancelButtonColor: "#3085d6",
       confirmButtonText: t("confirm"),
       cancelButtonText: t("cancel"),
-      background: theme === "dark" ? "#1e293b" : "#fff",
-      color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      ...swalBase,
     });
 
     if (result.isConfirmed) {
       resetCohortData();
-      Swal.fire({
-        title: t("reset_cohort_success_title"),
-        text: t("reset_cohort_success_text"),
-        icon: "success",
-        background: theme === "dark" ? "#1e293b" : "#fff",
-        color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      toast.success(t("reset_cohort_success_title"), {
+        description: t("reset_cohort_success_text"),
       });
     }
   };
@@ -79,8 +75,7 @@ export function ImportExport({ className }: { className?: string }) {
       confirmButtonText: t("reset_term_option"),
       cancelButtonText: t("reset_cohort_option"),
       reverseButtons: true,
-      background: theme === "dark" ? "#1e293b" : "#fff",
-      color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      ...swalBase,
     });
 
     if (result.isConfirmed) {
@@ -93,8 +88,9 @@ export function ImportExport({ className }: { className?: string }) {
   const handleExport = () => {
     const data = exportGrades();
     const cohort = getCohortById(data.cohortId);
-    const sanitizedLabel =
-      cohort ? `cohort-${cohort.ordinal}-${cohort.year}`.toLowerCase() : "unknown";
+    const sanitizedLabel = cohort
+      ? `cohort-${cohort.ordinal}-${cohort.year}`.toLowerCase()
+      : "unknown";
     const fileName = `jala-gpa-grades-${sanitizedLabel}.json`;
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -111,48 +107,56 @@ export function ImportExport({ className }: { className?: string }) {
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = async (ev) => {
+      let parsed: unknown;
+
       try {
-        const data = JSON.parse(ev.target?.result as string) as {
-          cohortId: string;
-          grades: Record<string, LetterGrade | null>;
-        };
-
-        // Confirm import
-        const result = await Swal.fire({
-          title: t("import_confirm_title"),
-          text: t("import_confirm_text", { cohortId: data.cohortId }),
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: t("confirm"),
-          cancelButtonText: t("cancel"),
-          background: theme === "dark" ? "#1e293b" : "#fff",
-          color: theme === "dark" ? "#f1f5f9" : "#0f172a",
-        });
-
-        if (result.isConfirmed) {
-          importGrades(data);
-          Swal.fire({
-            title: t("import_success"),
-            text: t("import_success_text", { cohortId: data.cohortId }),
-            icon: "success",
-            background: theme === "dark" ? "#1e293b" : "#fff",
-            color: theme === "dark" ? "#f1f5f9" : "#0f172a",
-          });
-        }
+        parsed = JSON.parse(ev.target?.result as string);
       } catch {
-        Swal.fire({
-          title: t("import_error"),
-          text: t("import_error_text"),
-          icon: "error",
-          background: theme === "dark" ? "#1e293b" : "#fff",
-          color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+        toast.error(t("import_error"), {
+          description: t("import_error_invalid_json"),
+        });
+        return;
+      }
+
+      const result = validateImportPayload(parsed);
+
+      if (!result.valid) {
+        const description =
+          result.error.code === "unknown_cohort"
+            ? t("import_error_unknown_cohort", { cohortId: result.error.cohortId })
+            : result.error.code === "invalid_grades"
+              ? t("import_error_invalid_grades")
+              : t("import_error_missing_fields");
+
+        toast.error(t("import_error"), { description });
+        return;
+      }
+
+      const { data } = result;
+
+      const confirmed = await Swal.fire({
+        title: t("import_confirm_title"),
+        text: t("import_confirm_text", { cohortId: data.cohortId }),
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: t("confirm"),
+        cancelButtonText: t("cancel"),
+        ...swalBase,
+      });
+
+      if (confirmed.isConfirmed) {
+        importGrades(data);
+        toast.success(t("import_success"), {
+          description: t("import_success_text", { cohortId: data.cohortId }),
         });
       }
     };
+
     reader.readAsText(file);
     e.target.value = "";
   };

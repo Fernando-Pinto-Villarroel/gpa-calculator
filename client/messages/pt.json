@@ -71,7 +71,11 @@
     "presidents_list_achieved": "Este semestre qualifica para a Lista do Reitor (GPA = 4.00)",
     "term_gpa": "GPA do Semestre",
     "cohort_label": "Coorte {ordinal} - {year}",
-    "term_label": "Semestre {ordinal}"
+    "term_label": "Semestre {ordinal}",
+    "import_error_invalid_json": "O arquivo não contém JSON válido.",
+    "import_error_missing_fields": "Campos obrigatórios estão faltando. Certifique-se de que o arquivo inclui cohortId e grades.",
+    "import_error_unknown_cohort": "A coorte \"{cohortId}\" não é reconhecida neste aplicativo.",
+    "import_error_invalid_grades": "O arquivo contém valores de nota inválidos ou não reconhecidos."
   },
   "statistics": {
     "title": "Estatísticas Acadêmicas",
