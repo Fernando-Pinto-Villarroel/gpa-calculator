@@ -1,0 +1,14 @@
+@startuml scenario-1
+skinparam monochrome true
+skinparam shadowing false
+
+actor Student
+participant "GPA Calculator" as App
+participant "localStorage" as Store
+
+Student -> App : Opens app
+App -> Store : Load persisted grades and cohort selection
+Store --> App : Return saved state
+App -> App : calculateGpa(grades, terms)
+App --> Student : Display cumulative GPA\nand current honor status badge
+@enduml

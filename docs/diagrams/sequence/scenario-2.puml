@@ -1,0 +1,17 @@
+@startuml scenario-2
+skinparam monochrome true
+skinparam shadowing false
+
+actor Student
+participant "Grade Entry Page" as Config
+participant "GPA Store" as Store
+
+Student -> Config : Selects cohort and term
+Config -> Store : getTermsByCohortId(cohortId)
+Store --> Config : Return term course list
+Student -> Config : Sets or changes a course grade
+Config -> Store : setGrade(courseCode, grade)
+Store -> Store : Persist update to localStorage
+Config -> Config : calculateTermGpa(grades, term)
+Config --> Student : Updated term GPA\nDean's List / President's List status
+@enduml

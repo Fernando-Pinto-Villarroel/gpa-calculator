@@ -6,7 +6,7 @@
 
 # Jala University — GPA Calculator
 
-**An unofficial, browser-based GPA tracking and simulation tool built for Jala University students.**
+**A browser-based GPA tracking and simulation tool built unofficially for Jala University students.**
 
   <br>
 
@@ -62,7 +62,7 @@ Jala University is the only institution in Bolivia awarding an American-style cu
 - _What grade do I need in my next course to reach the Dean's List?_
 - _Am I on track to graduate with honors?_
 
-Existing GPA calculators require manually entering credit hours for every course — a tedious and error-prone process when a program spans 8 terms and over 160 courses. This tool eliminates that friction entirely. It also serves as an information hub for honors criteria, credit requirements, and the nuances of the GPA system at Jala University, which can be difficult to find in one place.
+Existing GPA calculators require manually entering credit hours for every course: a tedious and error-prone process when a program spans 8 terms and over 50 courses. This tool eliminates that friction entirely. It also serves as an information hub for honors criteria, credit requirements, and the nuances of the GPA system at Jala University, which can be difficult to find in one place.
 
 ---
 
@@ -128,9 +128,9 @@ Existing GPA calculators require manually entering credit hours for every course
 The home screen provides an at-a-glance view of your academic standing. Your cumulative GPA is displayed at the center, flanked by eight key statistics across two panels. A dynamic badge reflects your current honor status, and a progress bar shows how far you are from the minimum graduation threshold.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Dashboard — Cumulative GPA and statistics overview" width="900" />
+  <img src="docs/media/images/dashboard.png" alt="Dashboard — Cumulative GPA and statistics overview" width="900" />
   <br>
-  <sub>Home page — cumulative GPA with statistics panels, honor status badge, and graduation threshold indicator</sub>
+  <sub>Home page: cumulative GPA with statistics panels, honor status badge, and graduation threshold indicator</sub>
 </p>
 
 <table>
@@ -151,9 +151,9 @@ The home screen provides an at-a-glance view of your academic standing. Your cum
 Select your cohort and term, then enter grades for each course across three modules. The term GPA updates instantly and a banner indicates whether you qualify for Dean's List or President's List honors for that term. Grades can only be submitted for terms where all courses have been assigned a grade, ensuring accurate honor status evaluation.
 
 <p align="center">
-  <img src="docs/screenshots/grade-entry.png" alt="Grade Entry — Three-module course layout with term GPA" width="900" />
+  <img src="docs/media/images/grade-entry.png" alt="Grade Entry — Three-module course layout with term GPA" width="900" />
   <br>
-  <sub>Grade entry page — three-module layout with cohort/term selectors, per-term GPA, and honor status</sub>
+  <sub>Grade entry page: three-module layout with cohort/term selectors, per-term GPA, and honor status</sub>
 </p>
 
 Course catalogs are pre-loaded per cohort. No manual credit-hour entry is required. On desktop, all three modules are displayed side by side; on mobile, they are presented as tabs.
@@ -165,9 +165,10 @@ Course catalogs are pre-loaded per cohort. No manual credit-hour entry is requir
 An analytics view with interactive charts for a deeper understanding of academic performance over time.
 
 <p align="center">
-  <img src="docs/screenshots/statistics.png" alt="Statistics — GPA progression, grade distribution, and credit accumulation charts" width="900" />
+  <img src="docs/media/images/statistics-1.png" alt="Statistics — GPA progression, grade distribution, and credit accumulation charts" width="900" />
+   <img src="docs/media/images/statistics-2.png" alt="Statistics — GPA progression, grade distribution, and credit accumulation charts" width="900" />
   <br>
-  <sub>Statistics page — GPA progression by term, grade distribution, credit accumulation, and honors summary</sub>
+  <sub>Statistics page: GPA progression by term, grade distribution, credit accumulation, honors summary, and so on</sub>
 </p>
 
 - **GPA Progression** — cumulative GPA trend across all completed terms
@@ -182,9 +183,9 @@ An analytics view with interactive charts for a deeper understanding of academic
 An information hub covering the American grading system, GPA calculation methodology, academic honors criteria, cohort program differences, the ESP English program, and the app's privacy policy.
 
 <p align="center">
-  <img src="docs/screenshots/about.png" alt="About — Three-column bento layout with project information" width="900" />
+  <img src="docs/media/images/about.png" alt="About — Three-column bento layout with project information" width="900" />
   <br>
-  <sub>About page — three-column bento layout with project details, grade conversion table, and honors guide</sub>
+  <sub>About page: project details, grade conversion table, honors guide, etc.</sub>
 </p>
 
 ---
@@ -197,70 +198,19 @@ The following sequence diagrams illustrate the primary scenarios this tool was b
 
 **Scenario 1 — Check current GPA**
 
-```plantuml
-@startuml
-skinparam monochrome true
-skinparam shadowing false
-
-actor Student
-participant "GPA Calculator" as App
-participant "localStorage" as Store
-
-Student -> App : Opens app
-App -> Store : Load persisted grades and cohort selection
-Store --> App : Return saved state
-App -> App : calculateGpa(grades, terms)
-App --> Student : Display cumulative GPA\nand current honor status badge
-@enduml
-```
+![scenario-1](./docs/media/images/scenario-1.png)
 
 ---
 
 **Scenario 2 — Simulate a what-if grade change**
 
-```plantuml
-@startuml
-skinparam monochrome true
-skinparam shadowing false
-
-actor Student
-participant "Grade Entry Page" as Config
-participant "GPA Store" as Store
-
-Student -> Config : Selects cohort and term
-Config -> Store : getTermsByCohortId(cohortId)
-Store --> Config : Return term course list
-Student -> Config : Sets or changes a course grade
-Config -> Store : setGrade(courseCode, grade)
-Store -> Store : Persist update to localStorage
-Config -> Config : calculateTermGpa(grades, term)
-Config --> Student : Updated term GPA\nDean's List / President's List status
-@enduml
-```
+![scenario-2](./docs/media/images/scenario-2.png)
 
 ---
 
 **Scenario 3 — Explore honor eligibility**
 
-```plantuml
-@startuml
-skinparam monochrome true
-skinparam shadowing false
-
-actor Student
-participant "Dashboard" as Home
-participant "Statistics Page" as Stats
-
-Student -> Home : Views cumulative GPA
-Home -> Home : getHonorStatus(gpa)
-Home --> Student : Honor badge + Cum Laude threshold progress
-Student -> Stats : Navigates to Statistics
-Stats -> Stats : getTermHonorCounts(grades, terms)
-Stats --> Student : Dean's List and President's List term counts
-Student -> Stats : Reviews GPA progression chart
-Stats --> Student : Term-by-term cumulative GPA trend
-@enduml
-```
+![scenario-3](./docs/media/images/scenario-3.png)
 
 ---
 
@@ -295,8 +245,8 @@ Stats --> Student : Term-by-term cumulative GPA trend
 
 ### Prerequisites
 
-- **[Bun](https://bun.sh/)** ≥ 1.0 — required for the web app
-- **[Node.js](https://nodejs.org/)** ≥ 18 and **npm** — required for the CLI
+- **[Bun](https://bun.sh/)** ≥ 1.3 — required for the web app
+- **[Node.js](https://nodejs.org/)** ≥ 24 and **npm** — required for the CLI
 
 ---
 
@@ -365,14 +315,19 @@ npm start
 
 A sincere thank you to the students who tested the app during early development and provided the feedback that shaped it:
 
-| Name            | Cohort          |
-| --------------- | --------------- |
-| Luciana Flores  | Cohort I – 2023 |
-| Catriel Pereira | Cohort I – 2024 |
+| Name                                   | Cohort           |
+| -------------------------------------- | ---------------- |
+| Luciana Elizabeth Flores Torrico       | Cohort I – 2023  |
+| Daniel López Ayala                     | Cohort I – 2023  |
+| Irwin Luna Perez                       | Cohort I – 2023  |
+| Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
+| Hugo Fernando Monteiro da Silva Junior | Cohort II – 2023 |
+| Jhaziel Mamani Marca                   | Cohort II – 2025 |
+| Adriano Pereira da Silva               | Cohort I – 2026  |
 
-### Student Services
+### Student Services & Registrar
 
-Special recognition to the **Jala University Student Services team** for their patience in clarifying GPA calculation methodology, academic honors criteria, and program requirements. Their support was essential in validating the accuracy of this tool.
+Special recognition to the **Jala University Student Services & Registrar team** for their patience in clarifying GPA calculation methodology, academic honors criteria, and program requirements. Their support was essential in validating the accuracy of this tool.
 
 ---
 

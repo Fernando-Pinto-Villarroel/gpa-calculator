@@ -4,7 +4,7 @@ Thank you to everyone who has contributed to this project.
 
 ---
 
-## Core Developer
+## Developers
 
 | Name                      | Role                | Cohort          | Profile                                                            |
 | ------------------------- | ------------------- | --------------- | ------------------------------------------------------------------ |
@@ -22,10 +22,12 @@ Open an issue on GitHub with a clear title, a description of the problem or sugg
 
 ### Submitting a Pull Request
 
-1. Fork the repository
+1. Clone the repository to your computer
 2. Create a branch from `main` with a descriptive name (e.g., `fix/grade-rounding`, `feat/export-pdf`)
 3. Make your changes following the conventions described below
-4. Open a pull request with a clear description of what was changed and why
+4. Push your commits and branch to the repository
+5. Open a pull request with a clear description of what was changed and why
+6. Assign me (Fernando Pinto Villarroel) for review
 
 ### Code Conventions
 
@@ -52,10 +54,15 @@ See the [Getting Started](README.md#getting-started) section in the README.
 
 The following students acted as real users that validated the app during early development:
 
-| Name            | Cohort          |
-| --------------- | --------------- |
-| Luciana Flores  | Cohort I – 2023 |
-| Catriel Pereira | Cohort I – 2024 |
+| Name                                   | Cohort           |
+| -------------------------------------- | ---------------- |
+| Luciana Elizabeth Flores Torrico       | Cohort I – 2023  |
+| Daniel López Ayala                     | Cohort I – 2023  |
+| Irwin Luna Perez                       | Cohort I – 2023  |
+| Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
+| Hugo Fernando Monteiro da Silva Junior | Cohort II – 2023 |
+| Jhaziel Mamani Marca                   | Cohort II – 2025 |
+| Adriano Pereira da Silva               | Cohort I – 2026  |
 
 ---
 

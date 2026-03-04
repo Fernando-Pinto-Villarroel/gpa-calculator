@@ -174,7 +174,7 @@
     },
     "acknowledgments": {
       "title": "Acknowledgments",
-      "description": "Special thanks to Jala University's Student Services team for providing accurate information and patiently resolving questions about GPA calculation methodology at the university."
+      "description": "Special thanks to Jala University's Student Services & Registrar team for providing accurate information and patiently resolving questions about GPA calculation methodology at the university, and to the [beta testers](https://github.com/Fernando-Pinto-Villarroel/gpa-calculator/blob/main/README.md#beta-testers) for testing the app and ensuring reliability and correctness for their specific cohorts and suggesting new features and improvements."
     }
   },
   "courses": {
