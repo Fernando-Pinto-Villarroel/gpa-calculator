@@ -14,14 +14,14 @@ import { CohortSelector } from "@/features/config/components/CohortSelector";
 import { TermSelector } from "@/features/config/components/TermSelector";
 import { ImportExport } from "@/features/config/components/ImportExport";
 import { CourseCard } from "@/features/config/components/CourseCard";
-import { LetterGrade } from "@/core/domain/types/letterGrades";
+import { CourseGradeEntry } from "@/core/domain/types/grades";
 import { cn } from "@/core/lib/utils/cn";
 
 const MODULE_KEYS = ["Module 1", "Module 2", "Module 3"] as const;
 
 export default function ConfigPage() {
   const t = useTranslations("config");
-  const { grades, selectedTermId, selectedCohortId, setGrade } = useGpaStore();
+  const { grades, selectedTermId, selectedCohortId, setGradeEntry } = useGpaStore();
   const [activeModule, setActiveModule] = useState<
     "Module 1" | "Module 2" | "Module 3"
   >("Module 1");
@@ -32,13 +32,13 @@ export default function ConfigPage() {
   const termHonor = selectedTerm ? getTermHonor(grades, selectedTerm) : null;
   const termGpa = selectedTerm ? calculateTermGpa(grades, selectedTerm) : 0;
 
-  const handleGradeChange = (courseCode: string, grade: LetterGrade | null) => {
-    setGrade(courseCode, grade);
+  const handleGradeChange = (courseCode: string, entry: CourseGradeEntry) => {
+    setGradeEntry(courseCode, entry);
   };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 md:px-6 py-2.5 border-b border-border-base bg-bg-surface/60 shrink-0 gap-3">
+      <div data-tour="config-toolbar" className="flex flex-col md:flex-row items-center justify-between px-4 md:px-6 py-2.5 border-b border-border-base bg-bg-surface/60 shrink-0 gap-3">
         <div className="flex items-center gap-2">
           <CohortSelector />
           <TermSelector />
@@ -57,7 +57,9 @@ export default function ConfigPage() {
               {termGpa.toFixed(2)}
             </span>
           </div>
-          <ImportExport className="w-full md:w-auto justify-center" />
+          <div data-tour="import-export">
+            <ImportExport className="w-full md:w-auto justify-center" />
+          </div>
         </div>
       </div>
 
@@ -131,8 +133,17 @@ export default function ConfigPage() {
                     >
                       <CourseCard
                         course={course}
-                        grade={grades[course.courseCode] ?? null}
+                        entry={grades[course.courseCode] ?? null}
                         onChange={handleGradeChange}
+                        tourIds={
+                          i === 0 && moduleKey === "Module 1"
+                            ? {
+                                card: "first-course-card",
+                                credits: "first-credits-badge",
+                                retakeBtn: "first-retake-btn",
+                              }
+                            : undefined
+                        }
                       />
                     </motion.div>
                   ))}
@@ -184,8 +195,17 @@ export default function ConfigPage() {
               >
                 <CourseCard
                   course={course}
-                  grade={grades[course.courseCode] ?? null}
+                  entry={grades[course.courseCode] ?? null}
                   onChange={handleGradeChange}
+                  tourIds={
+                    i === 0 && activeModule === "Module 1"
+                      ? {
+                          card: "first-course-card-m",
+                          credits: "first-credits-badge-m",
+                          retakeBtn: "first-retake-btn-m",
+                        }
+                      : undefined
+                  }
                 />
               </motion.div>
             ))}

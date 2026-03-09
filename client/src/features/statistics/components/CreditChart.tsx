@@ -16,16 +16,30 @@ import { getTermsByCohortId } from "@/features/gpa/data/index";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 
+interface ChartDataPoint {
+  label: string;
+  earned: number;
+  remaining: number;
+  coursesCompleted: number;
+  coursesPending: number;
+  totalCourses: number;
+}
+
 function CustomTooltip({
   active,
   payload,
   label,
 }: {
   active?: boolean;
-  payload?: { name: string; value: number; fill: string }[];
+  payload?: { name: string; value: number; fill: string; payload: ChartDataPoint }[];
   label?: string;
 }) {
+  const t = useTranslations("statistics");
+
   if (!active || !payload?.length) return null;
+
+  const data = payload[0].payload;
+
   return (
     <div className="px-3 py-2.5 rounded-xl border border-border-base bg-bg-surface shadow-xl text-xs">
       <p className="font-semibold text-text-primary mb-1.5">{label}</p>
@@ -36,6 +50,20 @@ function CustomTooltip({
           <span className="font-semibold text-text-primary">{p.value} cr</span>
         </div>
       ))}
+      <div className="mt-2 pt-2 border-t border-border-base flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-text-secondary">{t("courses_completed")}:</span>
+          <span className="font-semibold text-text-primary">
+            {data.coursesCompleted} / {data.totalCourses}
+          </span>
+        </div>
+        {data.coursesPending > 0 && (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-text-secondary">{t("courses_pending")}:</span>
+            <span className="font-semibold text-warning">{data.coursesPending}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -50,10 +78,13 @@ export function CreditChart() {
 
   const terms = getTermsByCohortId(selectedCohortId);
   const raw = getCreditsPerTerm(grades, terms);
-  const data = raw.map((d) => ({
+  const data: ChartDataPoint[] = raw.map((d) => ({
     label: tConfig("term_label", { ordinal: d.termOrdinal }),
     earned: d.earned,
     remaining: d.total - d.earned,
+    coursesCompleted: d.coursesCompleted,
+    coursesPending: d.coursesPending,
+    totalCourses: d.totalCourses,
   }));
 
   const axisColor = isDark ? "#64748b" : "#94a3b8";

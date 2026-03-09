@@ -77,14 +77,14 @@ export function StatsOverview() {
 
   const {
     gpa,
-    completedCredits,
-    completedCourses,
+    approvedCredits,
+    approvedCourses,
     totalCourses,
     totalCredits,
   } = calculateGpa(grades, terms);
   const honorStatus = getHonorStatus(gpa);
   const completion =
-    totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+    totalCourses > 0 ? Math.round((approvedCourses / totalCourses) * 100) : 0;
   const { deansListCount, presidentsListCount } = getTermHonorCounts(
     grades,
     terms,
@@ -101,7 +101,7 @@ export function StatsOverview() {
     {
       icon: BookOpen,
       label: t("overview.total_credits"),
-      value: String(completedCredits),
+      value: String(approvedCredits),
       sub: `of ${totalCredits} total`,
       color: "text-success bg-success/15",
       delay: 0.06,
@@ -110,7 +110,7 @@ export function StatsOverview() {
       icon: Target,
       label: t("overview.completion"),
       value: `${completion}%`,
-      sub: `${completedCourses} of ${totalCourses} courses`,
+      sub: `${approvedCourses} of ${totalCourses} courses`,
       color: "text-warning bg-warning/15",
       delay: 0.12,
     },
@@ -138,7 +138,7 @@ export function StatsOverview() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div data-tour="stats-overview" className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {cards.map((card) => (
         <OverviewCard key={card.label} {...card} />
       ))}

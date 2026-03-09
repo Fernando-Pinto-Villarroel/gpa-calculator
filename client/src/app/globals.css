@@ -66,6 +66,11 @@
 html,
 body {
   height: 100%;
+  overflow: hidden;
+}
+
+.safe-b {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 body {
@@ -77,9 +82,25 @@ body {
     color 0.3s ease;
 }
 
+@keyframes skeleton-wave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-wave 1.4s ease infinite;
+}
+
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -93,4 +114,9 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-accent);
+}
+
+main {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }

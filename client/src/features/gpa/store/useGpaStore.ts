@@ -3,24 +3,27 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { LetterGrade } from "@/core/domain/types/letterGrades";
+import { CourseGradeEntry } from "@/core/domain/types/grades";
 import { buildDefaultGradesForTerms } from "../services/calculator";
 import { DEFAULT_COHORT_ID, getCohortById } from "../data/index";
 
 interface GpaStore {
-  gradesByCohort: Record<string, Record<string, LetterGrade | null>>;
-  grades: Record<string, LetterGrade | null>;
+  gradesByCohort: Record<string, Record<string, CourseGradeEntry>>;
+  grades: Record<string, CourseGradeEntry>;
   selectedCohortId: string;
   selectedTermId: string;
   setGrade: (courseCode: string, grade: LetterGrade | null) => void;
+  setGradeEntry: (courseCode: string, entry: CourseGradeEntry) => void;
   setSelectedCohortId: (cohortId: string) => void;
   setSelectedTermId: (termId: string) => void;
   importGrades: (data: {
     cohortId: string;
-    grades: Record<string, LetterGrade | null>;
+    grades: Record<string, CourseGradeEntry>;
   }) => void;
   exportGrades: () => {
+    version: number;
     cohortId: string;
-    grades: Record<string, LetterGrade | null>;
+    grades: Record<string, CourseGradeEntry>;
   };
   resetToDefaults: () => void;
   clearAllGrades: () => void;
@@ -30,7 +33,7 @@ interface GpaStore {
 
 function defaultGradesForCohort(
   cohortId: string,
-): Record<string, LetterGrade | null> {
+): Record<string, CourseGradeEntry> {
   const cohort = getCohortById(cohortId);
   return buildDefaultGradesForTerms(cohort?.terms ?? []);
 }
@@ -48,6 +51,18 @@ export const useGpaStore = create<GpaStore>()(
       setGrade: (courseCode, grade) =>
         set((state) => {
           const updated = { ...state.grades, [courseCode]: grade };
+          return {
+            grades: updated,
+            gradesByCohort: {
+              ...state.gradesByCohort,
+              [state.selectedCohortId]: updated,
+            },
+          };
+        }),
+
+      setGradeEntry: (courseCode, entry) =>
+        set((state) => {
+          const updated = { ...state.grades, [courseCode]: entry };
           return {
             grades: updated,
             gradesByCohort: {
@@ -78,7 +93,7 @@ export const useGpaStore = create<GpaStore>()(
         set((state) => {
           const { cohortId, grades } = data;
           return {
-            grades: grades,
+            grades,
             selectedCohortId: cohortId,
             selectedTermId: "term-1",
             gradesByCohort: {
@@ -89,6 +104,7 @@ export const useGpaStore = create<GpaStore>()(
         }),
 
       exportGrades: () => ({
+        version: 2,
         cohortId: get().selectedCohortId,
         grades: get().grades,
       }),

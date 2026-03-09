@@ -29,7 +29,7 @@ export function CohortSelector() {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="cohort-selector" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         className={cn(

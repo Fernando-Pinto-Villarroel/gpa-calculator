@@ -28,7 +28,7 @@ export function TermSelector() {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="term-selector" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         className={cn(

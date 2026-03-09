@@ -1,11 +1,22 @@
 import { Course, Term } from "@/core/domain/types/course";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
+import {
+  CourseGradeEntry,
+  isCourseAttempts,
+  isCourseApproved,
+  hasGradeData,
+  getEffectiveGrade,
+  getApprovedCredits,
+  getEffectiveCredits,
+} from "@/core/domain/types/grades";
 
 export interface GpaResult {
   gpa: number;
   completedCredits: number;
+  approvedCredits: number;
   totalCredits: number;
   completedCourses: number;
+  approvedCourses: number;
   totalCourses: number;
   remainingCredits: number;
 }
@@ -34,13 +45,40 @@ export type HonorStatus =
   | "academic_failure"
   | null;
 
+function computeQualityPointsAndCredits(entry: CourseGradeEntry, curriculumCredits: number): {
+  qualityPoints: number;
+  attemptedCredits: number;
+} {
+  if (!hasGradeData(entry)) return { qualityPoints: 0, attemptedCredits: 0 };
+
+  if (isCourseAttempts(entry)) {
+    let qp = 0;
+    let ac = 0;
+    entry.forEach((attempt) => {
+      if (attempt.grade === null) return;
+      qp += letterGradesMap[attempt.grade] * attempt.credits;
+      ac += attempt.credits;
+    });
+    return { qualityPoints: qp, attemptedCredits: ac };
+  }
+
+  const grade = entry as LetterGrade;
+  return {
+    qualityPoints: letterGradesMap[grade] * curriculumCredits,
+    attemptedCredits: curriculumCredits,
+  };
+}
+
 export function calculateGpa(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
 ): GpaResult {
   let totalQualityPoints = 0;
   let totalAttemptedCredits = 0;
   let completedCourses = 0;
+  let approvedCourses = 0;
+  let completedCredits = 0;
+  let approvedCredits = 0;
   let totalCourses = 0;
   let totalCredits = 0;
 
@@ -48,13 +86,26 @@ export function calculateGpa(
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
         totalCourses++;
-        totalCredits += course.credits;
-        const grade = grades[course.courseCode];
-        if (grade !== null && grade !== undefined) {
-          const points = letterGradesMap[grade];
-          totalQualityPoints += points * course.credits;
-          totalAttemptedCredits += course.credits;
+
+        const entry = grades[course.courseCode];
+        const effectiveCredits = getEffectiveCredits(entry, course.credits);
+
+        totalCredits += effectiveCredits;
+
+        if (hasGradeData(entry)) {
+          const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
+            entry,
+            course.credits,
+          );
+          totalQualityPoints += qualityPoints;
+          totalAttemptedCredits += attemptedCredits;
           completedCourses++;
+          completedCredits += effectiveCredits;
+        }
+
+        if (isCourseApproved(entry)) {
+          approvedCourses++;
+          approvedCredits += getApprovedCredits(entry, course.credits);
         }
       });
     });
@@ -65,11 +116,13 @@ export function calculateGpa(
 
   return {
     gpa,
-    completedCredits: totalAttemptedCredits,
+    completedCredits,
+    approvedCredits,
     totalCredits,
     completedCourses,
+    approvedCourses,
     totalCourses,
-    remainingCredits: totalCredits - totalAttemptedCredits,
+    remainingCredits: totalCredits - completedCredits,
   };
 }
 
@@ -84,7 +137,7 @@ export function getHonorStatus(gpa: number): HonorStatus {
 }
 
 export function getTermGpaProgression(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
 ): TermGpaResult[] {
   let cumulativeQualityPoints = 0;
@@ -93,31 +146,37 @@ export function getTermGpaProgression(
 
   terms.forEach((term) => {
     let termQualityPoints = 0;
-    let termCredits = 0;
+    let termAttemptedCredits = 0;
     let termEarned = 0;
     let termTotal = 0;
 
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
-        termTotal += course.credits;
-        const grade = grades[course.courseCode];
-        if (grade !== null && grade !== undefined) {
-          const points = letterGradesMap[grade];
-          termQualityPoints += points * course.credits;
-          termCredits += course.credits;
-          termEarned += course.credits;
+        const entry = grades[course.courseCode];
+        termTotal += getEffectiveCredits(entry, course.credits);
+
+        if (hasGradeData(entry)) {
+          const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
+            entry,
+            course.credits,
+          );
+          termQualityPoints += qualityPoints;
+          termAttemptedCredits += attemptedCredits;
+          termEarned += isCourseApproved(entry)
+            ? getApprovedCredits(entry, course.credits)
+            : 0;
         }
       });
     });
 
     cumulativeQualityPoints += termQualityPoints;
-    cumulativeCredits += termCredits;
+    cumulativeCredits += termAttemptedCredits;
 
-    const termGpa = termCredits > 0 ? termQualityPoints / termCredits : 0;
+    const termGpa = termAttemptedCredits > 0 ? termQualityPoints / termAttemptedCredits : 0;
     const cumulativeGpa =
       cumulativeCredits > 0 ? cumulativeQualityPoints / cumulativeCredits : 0;
 
-    if (termCredits > 0) {
+    if (termAttemptedCredits > 0) {
       results.push({
         termId: term.id,
         termOrdinal: term.ordinal,
@@ -133,19 +192,28 @@ export function getTermGpaProgression(
 }
 
 export function getGradeDistribution(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
 ): Record<LetterGrade, number> {
   const distribution: Record<string, number> = {};
-  Object.values(grades).forEach((grade) => {
-    if (grade) {
-      distribution[grade] = (distribution[grade] || 0) + 1;
+
+  Object.values(grades).forEach((entry) => {
+    if (!hasGradeData(entry)) return;
+
+    if (isCourseAttempts(entry)) {
+      entry.forEach((attempt) => {
+        if (attempt.grade === null) return;
+        distribution[attempt.grade] = (distribution[attempt.grade] || 0) + 1;
+      });
+    } else if (entry !== null) {
+      distribution[entry] = (distribution[entry] || 0) + 1;
     }
   });
+
   return distribution as Record<LetterGrade, number>;
 }
 
 export function getBestAndWorstCourses(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
 ): {
   best: CourseWithGrade | null;
@@ -158,11 +226,12 @@ export function getBestAndWorstCourses(
   terms.forEach((term) => {
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
-        const grade = grades[course.courseCode];
-        if (grade) {
+        const entry = grades[course.courseCode];
+        const effectiveGrade = getEffectiveGrade(entry);
+        if (effectiveGrade) {
           coursesWithGrades.push({
             ...course,
-            grade,
+            grade: effectiveGrade,
             termOrdinal: term.ordinal,
             termId: term.id,
           });
@@ -197,65 +266,92 @@ export function getBestAndWorstCourses(
   };
 }
 
+export interface TermCreditsData {
+  termOrdinal: string;
+  earned: number;
+  total: number;
+  coursesCompleted: number;
+  coursesPending: number;
+  totalCourses: number;
+}
+
 export function getCreditsPerTerm(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
-): { termOrdinal: string; earned: number; total: number }[] {
+): TermCreditsData[] {
   return terms.map((term) => {
     let earned = 0;
     let total = 0;
+    let coursesCompleted = 0;
+    let coursesPending = 0;
+    let totalCourses = 0;
+
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
-        total += course.credits;
-        if (grades[course.courseCode]) earned += course.credits;
+        totalCourses++;
+        const entry = grades[course.courseCode];
+        const approved = isCourseApproved(entry);
+
+        total += getEffectiveCredits(entry, course.credits);
+
+        if (approved) {
+          earned += getApprovedCredits(entry, course.credits);
+          coursesCompleted++;
+        } else {
+          coursesPending++;
+        }
       });
     });
-    return { termOrdinal: term.ordinal, earned, total };
+
+    return { termOrdinal: term.ordinal, earned, total, coursesCompleted, coursesPending, totalCourses };
   });
 }
 
 export function getCompletedTermsCount(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
 ): number {
   return terms.filter((term) => {
     const allCourses = Object.values(term.modules).flat();
-    return allCourses.every((c) => grades[c.courseCode]);
+    return allCourses.every((c) => isCourseApproved(grades[c.courseCode]));
   }).length;
 }
 
 export type TermHonor = "deans_list" | "presidents_list";
 
 export function calculateTermGpa(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   term: Term,
 ): number {
   const allCourses = Object.values(term.modules).flat();
   if (allCourses.length === 0) return 0;
 
   let totalQualityPoints = 0;
-  let totalCredits = 0;
+  let totalAttemptedCredits = 0;
+
   allCourses.forEach((course) => {
-    const grade = grades[course.courseCode];
-    if (grade) {
-      totalQualityPoints += letterGradesMap[grade] * course.credits;
-      totalCredits += course.credits;
+    const entry = grades[course.courseCode];
+    if (hasGradeData(entry)) {
+      const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
+        entry,
+        course.credits,
+      );
+      totalQualityPoints += qualityPoints;
+      totalAttemptedCredits += attemptedCredits;
     }
   });
 
-  return totalCredits > 0 ? totalQualityPoints / totalCredits : 0;
+  return totalAttemptedCredits > 0 ? totalQualityPoints / totalAttemptedCredits : 0;
 }
 
 export function getTermHonor(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   term: Term,
 ): TermHonor | null {
   const allCourses = Object.values(term.modules).flat();
   if (allCourses.length === 0) return null;
 
-  const allHaveGrades = allCourses.every(
-    (c) => grades[c.courseCode] !== null && grades[c.courseCode] !== undefined,
-  );
+  const allHaveGrades = allCourses.every((c) => hasGradeData(grades[c.courseCode]));
   if (!allHaveGrades) return null;
 
   const termGpa = calculateTermGpa(grades, term);
@@ -266,7 +362,7 @@ export function getTermHonor(
 }
 
 export function getTermHonorCounts(
-  grades: Record<string, LetterGrade | null>,
+  grades: Record<string, CourseGradeEntry>,
   terms: Term[],
 ): { deansListCount: number; presidentsListCount: number } {
   let deansListCount = 0;

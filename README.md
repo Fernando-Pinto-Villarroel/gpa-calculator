@@ -235,7 +235,7 @@ The following sequence diagrams illustrate the primary scenarios this tool was b
 | Category   | Technology                  |
 | ---------- | --------------------------- |
 | Language   | TypeScript 5.8              |
-| Runtime    | Node.js (ES modules)        |
+| Runtime    | Bun                         |
 | User input | Node.js built-in `readline` |
 | Build tool | TypeScript compiler (`tsc`) |
 
@@ -245,8 +245,7 @@ The following sequence diagrams illustrate the primary scenarios this tool was b
 
 ### Prerequisites
 
-- **[Bun](https://bun.sh/)** ≥ 1.3 — required for the web app
-- **[Node.js](https://nodejs.org/)** ≥ 24 and **npm** — required for the CLI
+- **[Bun](https://bun.sh/)** ≥ 1.3 — required for both the web app and CLI
 
 ---
 
@@ -291,20 +290,20 @@ A lightweight terminal-based GPA calculator that demonstrates the core calculati
 cd cli
 
 # 2. Install dependencies
-npm install
+bun install
 
 # 3. Build and run
-npm run dev
+bun run dev
 ```
 
 The CLI will display your current GPA summary and prompt you interactively to explore target GPA scenarios for upcoming terms.
 
 ```bash
 # Compile only (outputs to dist/)
-npm run build
+bun run build
 
 # Run the compiled output
-npm start
+bun run start
 ```
 
 ---
@@ -320,8 +319,9 @@ A sincere thank you to the students who tested the app during early development 
 | Luciana Elizabeth Flores Torrico       | Cohort I – 2023  |
 | Daniel López Ayala                     | Cohort I – 2023  |
 | Irwin Luna Perez                       | Cohort I – 2023  |
-| Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
 | Hugo Fernando Monteiro da Silva Junior | Cohort II – 2023 |
+| Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
+| Karen Ivonne Cruz Alvarez              | Cohort I – 2025  |
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |
 

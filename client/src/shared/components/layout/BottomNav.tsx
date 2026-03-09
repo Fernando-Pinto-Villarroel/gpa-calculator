@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Settings, BarChart3, Info } from "lucide-react";
+import { LayoutDashboard, Settings, BarChart3, Target, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { cn } from "@/core/lib/utils/cn";
@@ -19,11 +19,12 @@ export function BottomNav({ locale }: BottomNavProps) {
     { href: `/${locale}`, label: t("home"), icon: LayoutDashboard },
     { href: `/${locale}/config`, label: t("config"), icon: Settings },
     { href: `/${locale}/statistics`, label: t("statistics"), icon: BarChart3 },
+    { href: `/${locale}/forecast`, label: t("forecast"), icon: Target },
     { href: `/${locale}/about`, label: t("about"), icon: Info },
   ];
 
   return (
-    <nav className="md:hidden flex items-center justify-around border-t border-border-base bg-bg-surface/90 backdrop-blur-md h-16 shrink-0 safe-b z-20">
+    <nav data-tour="bottom-nav" className="md:hidden flex items-center justify-around border-t border-border-base bg-bg-surface/90 backdrop-blur-md h-16 shrink-0 safe-b z-20">
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive =
           pathname === href ||

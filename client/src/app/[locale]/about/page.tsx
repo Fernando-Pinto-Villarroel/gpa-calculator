@@ -19,6 +19,9 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/core/lib/utils/cn";
+import { FeedbackButton } from "@/features/about/components/FeedbackButton";
+
+const APP_VERSION = "1.1.0";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -284,11 +287,10 @@ export default function AboutPage({ params }: Props) {
                 let match;
 
                 while ((match = linkRegex.exec(text)) !== null) {
-                  // Add text before the link
                   if (match.index > lastIndex) {
                     parts.push(text.slice(lastIndex, match.index));
                   }
-                  // Add the link
+
                   parts.push(
                     <a
                       key={match.index}
@@ -302,7 +304,7 @@ export default function AboutPage({ params }: Props) {
                   );
                   lastIndex = match.index + match[0].length;
                 }
-                // Add remaining text after last link
+
                 if (lastIndex < text.length) {
                   parts.push(text.slice(lastIndex));
                 }
@@ -391,6 +393,19 @@ export default function AboutPage({ params }: Props) {
           </Section>
         </div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="flex items-center justify-center mt-8 py-4 border-t border-border-base"
+      >
+        <p className="text-xs text-text-muted">
+          {t("version_label")} {APP_VERSION}
+        </p>
+      </motion.div>
+
+      <FeedbackButton />
     </div>
   );
 }

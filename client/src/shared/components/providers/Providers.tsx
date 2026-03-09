@@ -4,10 +4,17 @@ import { NextIntlClientProvider } from "next-intl";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Toaster } from "sonner";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import en from "../../../../messages/en.json";
 import es from "../../../../messages/es.json";
 import pt from "../../../../messages/pt.json";
+
+const GuidedTour = dynamic(
+  () =>
+    import("@/features/tour/components/GuidedTour").then((m) => m.GuidedTour),
+  { ssr: false },
+);
 
 const messagesMap = { en, es, pt };
 
@@ -59,6 +66,7 @@ export function Providers({ children, locale }: ProvidersProps) {
       <TooltipProvider delayDuration={400}>
         <ThemeInitializer />
         <ThemedToaster />
+        <GuidedTour locale={locale} />
         {children}
       </TooltipProvider>
     </NextIntlClientProvider>

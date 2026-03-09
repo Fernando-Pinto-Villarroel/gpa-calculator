@@ -70,15 +70,17 @@ export default function StatisticsPage() {
     <div className="flex flex-col min-h-full gap-4 px-4 md:px-6 py-5 pb-24 md:pb-8">
       <StatsOverview />
 
-      <ChartCard
-        title={t("cumulative_gpa_progression")}
-        description={t("cumulative_gpa_progression_desc")}
-        delay={0.1}
-      >
-        <div className="h-56 md:h-64">
-          <CumulativeGpaProgressChart />
-        </div>
-      </ChartCard>
+      <div data-tour="stats-charts">
+        <ChartCard
+          title={t("cumulative_gpa_progression")}
+          description={t("cumulative_gpa_progression_desc")}
+          delay={0.1}
+        >
+          <div className="h-56 md:h-64">
+            <CumulativeGpaProgressChart />
+          </div>
+        </ChartCard>
+      </div>
 
       <ChartCard
         title={t("term_gpa_progression")}

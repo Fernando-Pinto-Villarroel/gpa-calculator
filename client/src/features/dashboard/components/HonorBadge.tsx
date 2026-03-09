@@ -74,7 +74,9 @@ export function HonorBadge({ status, label, alertText }: HonorBadgeProps) {
             <Icon size={18} className={config.iconClass} />
             <p className="text-base font-semibold">{label}</p>
           </div>
-          {alertText && <p className="text-sm opacity-80">{alertText}</p>}
+          {alertText && (
+            <p className="text-sm opacity-80 text-center">{alertText}</p>
+          )}
         </div>
       ) : (
         <>

@@ -43,9 +43,10 @@ export default function HomePage({ params }: Props) {
   const {
     gpa,
     completedCourses,
-    completedCredits,
-    remainingCredits,
+    approvedCourses,
+    approvedCredits,
     totalCredits,
+    totalCourses,
   } = calculateGpa(grades, terms);
   const honorStatus = getHonorStatus(gpa);
   const { best, worst, bestCourses, worstCourses } = getBestAndWorstCourses(
@@ -64,9 +65,10 @@ export default function HomePage({ params }: Props) {
   const leftStats = [
     {
       label: t("stats.completed_subjects"),
-      value: String(completedCourses),
+      value: String(approvedCourses),
+      subvalue: `/ ${totalCourses}`,
       icon: BookOpen,
-      tooltip: `${completedCourses} courses with grades entered`,
+      tooltip: `${approvedCourses} approved · ${completedCourses} graded`,
     },
     {
       label: t("stats.best_grade"),
@@ -125,17 +127,17 @@ export default function HomePage({ params }: Props) {
     },
     {
       label: t("stats.earned_credits"),
-      value: String(completedCredits),
+      value: String(approvedCredits),
       subvalue: `${tc("of")} ${totalCredits}`,
       icon: CreditCard,
       variant: "success" as const,
     },
     {
       label: t("stats.remaining_credits"),
-      value: String(remainingCredits),
+      value: String(totalCredits - approvedCredits),
       icon: BookMarked,
       variant:
-        remainingCredits === 0 ? ("success" as const) : ("default" as const),
+        approvedCredits >= totalCredits ? ("success" as const) : ("default" as const),
     },
     {
       label: t("stats.presidents_list_terms"),
@@ -156,27 +158,31 @@ export default function HomePage({ params }: Props) {
     <>
       <div className="hidden lg:flex flex-col h-full overflow-hidden px-8 py-6">
         <div className="flex-1 flex items-center justify-center gap-12 min-h-0 max-w-7xl mx-auto w-full">
-          <div className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
+          <div data-tour="stat-cards" className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
             {leftStats.map((stat, i) => (
               <StatCard key={stat.label} {...stat} delay={i * 0.08} isDesktop />
             ))}
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0">
-            <GpaDisplay gpa={gpa} locale={locale} isDesktop />
+            <div data-tour="gpa-display">
+              <GpaDisplay gpa={gpa} locale={locale} isDesktop />
+            </div>
 
             {honorStatus && (
-              <HonorBadge
-                status={honorStatus}
-                label={t(`honor.${honorStatus}`)}
-                alertText={
-                  isAtRisk
-                    ? t(
-                        `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
-                      )
-                    : undefined
-                }
-              />
+              <div data-tour="honor-badge">
+                <HonorBadge
+                  status={honorStatus}
+                  label={t(`honor.${honorStatus}`)}
+                  alertText={
+                    isAtRisk
+                      ? t(
+                          `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                        )
+                      : undefined
+                  }
+                />
+              </div>
             )}
 
             {gpa > 0 && (
@@ -227,21 +233,25 @@ export default function HomePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="flex lg:hidden flex-col h-full overflow-y-auto px-4 py-5 gap-5 pb-24">
+      <div className="flex lg:hidden flex-col px-4 py-5 gap-5 pb-24">
         <div className="flex flex-col items-center gap-3">
-          <GpaDisplay gpa={gpa} locale={locale} />
+          <div data-tour="gpa-display-m">
+            <GpaDisplay gpa={gpa} locale={locale} />
+          </div>
           {honorStatus && (
-            <HonorBadge
-              status={honorStatus}
-              label={t(`honor.${honorStatus}`)}
-              alertText={
-                isAtRisk
-                  ? t(
-                      `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
-                    )
-                  : undefined
-              }
-            />
+            <div data-tour="honor-badge-m">
+              <HonorBadge
+                status={honorStatus}
+                label={t(`honor.${honorStatus}`)}
+                alertText={
+                  isAtRisk
+                    ? t(
+                        `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                      )
+                    : undefined
+                }
+              />
+            </div>
           )}
         </div>
 
@@ -276,7 +286,7 @@ export default function HomePage({ params }: Props) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div data-tour="stat-cards-m" className="grid grid-cols-2 gap-2.5">
           {[...leftStats, ...rightStats].map((stat, i) => (
             <StatCard key={stat.label} {...stat} delay={i * 0.05} />
           ))}
