@@ -137,7 +137,9 @@ export default function HomePage({ params }: Props) {
       value: String(totalCredits - approvedCredits),
       icon: BookMarked,
       variant:
-        approvedCredits >= totalCredits ? ("success" as const) : ("default" as const),
+        approvedCredits >= totalCredits
+          ? ("success" as const)
+          : ("default" as const),
     },
     {
       label: t("stats.presidents_list_terms"),
@@ -158,7 +160,10 @@ export default function HomePage({ params }: Props) {
     <>
       <div className="hidden lg:flex flex-col h-full overflow-hidden px-8 py-6">
         <div className="flex-1 flex items-center justify-center gap-12 min-h-0 max-w-7xl mx-auto w-full">
-          <div data-tour="stat-cards" className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
+          <div
+            data-tour="stat-cards"
+            className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]"
+          >
             {leftStats.map((stat, i) => (
               <StatCard key={stat.label} {...stat} delay={i * 0.08} isDesktop />
             ))}
@@ -169,8 +174,8 @@ export default function HomePage({ params }: Props) {
               <GpaDisplay gpa={gpa} locale={locale} isDesktop />
             </div>
 
-            {honorStatus && (
-              <div data-tour="honor-badge">
+            <div data-tour="honor-badge" className="flex flex-col items-center gap-4">
+              {honorStatus && (
                 <HonorBadge
                   status={honorStatus}
                   label={t(`honor.${honorStatus}`)}
@@ -182,10 +187,8 @@ export default function HomePage({ params }: Props) {
                       : undefined
                   }
                 />
-              </div>
-            )}
+              )}
 
-            {gpa > 0 && (
               <div className="flex items-center gap-10 mt-1">
                 {thresholds.map(({ threshold, label, color }) => {
                   const isCurrentHonor =
@@ -217,7 +220,7 @@ export default function HomePage({ params }: Props) {
                   );
                 })}
               </div>
-            )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
@@ -238,8 +241,8 @@ export default function HomePage({ params }: Props) {
           <div data-tour="gpa-display-m">
             <GpaDisplay gpa={gpa} locale={locale} />
           </div>
-          {honorStatus && (
-            <div data-tour="honor-badge-m">
+          <div data-tour="honor-badge-m" className="flex flex-col items-center gap-3">
+            {honorStatus && (
               <HonorBadge
                 status={honorStatus}
                 label={t(`honor.${honorStatus}`)}
@@ -251,40 +254,38 @@ export default function HomePage({ params }: Props) {
                     : undefined
                 }
               />
-            </div>
-          )}
-        </div>
+            )}
 
-        {gpa > 0 && (
-          <div className="flex items-center justify-center gap-4">
-            {thresholds.map(({ threshold, label, color }) => {
-              const isCurrentHonor =
-                gpa >= threshold &&
-                !thresholds.some(
-                  (t) => t.threshold > threshold && gpa >= t.threshold,
-                );
-              return (
-                <div key={label} className="flex flex-col items-center gap-0.5">
-                  <div className="flex items-center gap-1">
-                    <div
-                      className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
-                    />
+            <div className="flex items-center justify-center gap-4">
+              {thresholds.map(({ threshold, label, color }) => {
+                const isCurrentHonor =
+                  gpa >= threshold &&
+                  !thresholds.some(
+                    (t) => t.threshold > threshold && gpa >= t.threshold,
+                  );
+                return (
+                  <div key={label} className="flex flex-col items-center gap-0.5">
+                    <div className="flex items-center gap-1">
+                      <div
+                        className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                      />
+                      <span
+                        className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs" : "text-[10px]"}`}
+                      >
+                        {threshold.toFixed(1)}
+                      </span>
+                    </div>
                     <span
-                      className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs" : "text-[10px]"}`}
+                      className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs font-semibold" : "text-[9px]"}`}
                     >
-                      {threshold.toFixed(1)}
+                      {label}
                     </span>
                   </div>
-                  <span
-                    className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs font-semibold" : "text-[9px]"}`}
-                  >
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        )}
+        </div>
 
         <div data-tour="stat-cards-m" className="grid grid-cols-2 gap-2.5">
           {[...leftStats, ...rightStats].map((stat, i) => (
