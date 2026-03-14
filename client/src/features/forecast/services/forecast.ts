@@ -120,7 +120,11 @@ export function computeUniformScenarios(
   const totalNewCredits = ctx.totalRemainingCredits;
   const totalAC = ctx.currentAttemptedCredits + totalNewCredits;
 
-  return grades.map((grade) => {
+  const sorted = [...grades].sort(
+    (a, b) => letterGradesMap[b] - letterGradesMap[a],
+  );
+
+  return sorted.map((grade) => {
     const additionalQP = letterGradesMap[grade] * totalNewCredits;
     const projectedGpa =
       totalAC > 0
@@ -223,16 +227,7 @@ export function findCombinations(
 
   search(0, K, []);
 
-  results.sort((a, b) => {
-    let effortA = 0;
-    let effortB = 0;
-    for (let g = 0; g < G; g++) {
-      const weight = G - g;
-      effortA += (a.distribution[grades[g]] ?? 0) * weight;
-      effortB += (b.distribution[grades[g]] ?? 0) * weight;
-    }
-    return effortB - effortA;
-  });
+  results.sort((a, b) => b.projectedGpa - a.projectedGpa);
 
   return results.slice(0, maxResults);
 }
@@ -278,23 +273,25 @@ function findCombinationsGreedy(
   for (let startIdx = 0; startIdx < Math.min(maxResults, K); startIdx++) {
     const assignment = new Array(K).fill(G - 1);
     let currentQP = baseQP;
-    let upgradeIdx = startIdx;
-
-    while (currentQP < neededQP && upgradeIdx < K + startIdx) {
-      const i = upgradeIdx % K;
+    const maxIterations = K * (G - 1);
+    let iterations = 0;
+    while (currentQP < neededQP && iterations < maxIterations) {
+      const i = (startIdx + iterations) % K;
       if (assignment[i] > 0) {
         const oldValue = gradeValues[assignment[i]];
         assignment[i]--;
         const newValue = gradeValues[assignment[i]];
         currentQP += (newValue - oldValue) * courseCredits[i];
       }
-      upgradeIdx++;
+      iterations++;
     }
 
     if (currentQP >= neededQP) {
       results.push(buildFromAssignment(assignment));
     }
   }
+
+  results.sort((a, b) => b.projectedGpa - a.projectedGpa);
 
   return results;
 }

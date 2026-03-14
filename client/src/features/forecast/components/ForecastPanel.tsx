@@ -136,7 +136,7 @@ export function ForecastPanel() {
     setTargetGpa(gpa.toFixed(1));
   };
 
-  const incrementMax = () => setMaxCombinations((v) => Math.min(v + 1, 10));
+  const incrementMax = () => setMaxCombinations((v) => Math.min(v + 1, 20));
   const decrementMax = () => setMaxCombinations((v) => Math.max(v - 1, 1));
 
   const selectedTermLabel = terms.find((t) => t.id === termId);
@@ -326,10 +326,10 @@ export function ForecastPanel() {
                     </span>
                     <button
                       onClick={incrementMax}
-                      disabled={maxCombinations >= 10}
+                      disabled={maxCombinations >= 20}
                       className={cn(
                         "flex items-center justify-center w-7 h-7 rounded-md border transition-colors",
-                        maxCombinations >= 10
+                        maxCombinations >= 20
                           ? "border-border-base text-text-muted/30 cursor-not-allowed"
                           : "border-border-base text-text-secondary hover:text-text-primary hover:border-border-strong",
                       )}
