@@ -206,6 +206,14 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/forecast",
+      target: '[data-tour="forecast-config"]',
+      placement: "bottom",
+      title: t("forecast_config_title"),
+      content: t("forecast_config_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/forecast",
       target: "body",
       placement: "center",
       title: t("done_title"),

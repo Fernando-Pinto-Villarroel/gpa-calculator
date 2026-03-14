@@ -182,7 +182,9 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
 
   useEffect(() => {
     if (isOpen) {
-      if (isCourseAttempts(entry) && entry.length > 0 && !isCreditOverrideOnly(entry)) {
+      const isSingleApproved =
+        isCourseAttempts(entry) && entry.length === 1 && entry[0].approved && entry[0].grade !== null;
+      if (isCourseAttempts(entry) && entry.length > 0 && !isCreditOverrideOnly(entry) && !isSingleApproved) {
         setView("managing");
         setAttempts([...entry] as CourseAttempt[]);
       } else {
@@ -231,8 +233,17 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
   };
 
   const handleRevert = () => {
-    const effectiveGrade = getEffectiveGrade(entry);
-    onSave(effectiveGrade);
+    const source = attempts.length > 0 ? attempts : null;
+    const grade = getEffectiveGrade(source ?? entry);
+    const effectiveAttempt = source?.find((a) => a.approved && a.grade !== null)
+      ?? source?.[source.length - 1];
+    const credits = effectiveAttempt?.credits ?? course.credits;
+
+    if (grade && credits !== course.credits) {
+      onSave([{ credits, grade, approved: true }]);
+    } else {
+      onSave(grade);
+    }
   };
 
   const handleSave = () => {

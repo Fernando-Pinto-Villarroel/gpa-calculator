@@ -29,8 +29,14 @@ export interface UniformScenario {
   meetsTarget: boolean;
 }
 
+export interface GradeAllocation {
+  grade: LetterGrade;
+  count: number;
+  creditGroups: { credits: number; count: number }[];
+}
+
 export interface GradeCombination {
-  distribution: Partial<Record<LetterGrade, number>>;
+  allocations: GradeAllocation[];
   projectedGpa: number;
 }
 
@@ -178,9 +184,21 @@ export function findCombinations(
     const qp =
       ctx.currentQualityPoints +
       courseCredits.reduce((s, cr) => s + letterGradesMap[lowestGrade] * cr, 0);
+    const creditMap: Record<number, number> = {};
+    courseCredits.forEach((cr) => {
+      creditMap[cr] = (creditMap[cr] ?? 0) + 1;
+    });
     return [
       {
-        distribution: { [lowestGrade]: K },
+        allocations: [
+          {
+            grade: lowestGrade,
+            count: K,
+            creditGroups: Object.entries(creditMap)
+              .map(([cr, cnt]) => ({ credits: Number(cr), count: cnt }))
+              .sort((a, b) => b.credits - a.credits),
+          },
+        ],
         projectedGpa: qp / totalAC,
       },
     ];
@@ -208,11 +226,28 @@ export function findCombinations(
       }
       if (qp >= neededQP) {
         const gpa = (ctx.currentQualityPoints + qp) / totalAC;
-        const distribution: Partial<Record<LetterGrade, number>> = {};
+        const allocations: GradeAllocation[] = [];
+        let ci = 0;
         for (let g = 0; g < G; g++) {
-          if (dist[g] > 0) distribution[grades[g]] = dist[g];
+          if (dist[g] > 0) {
+            const creditMap: Record<number, number> = {};
+            for (let j = 0; j < dist[g]; j++) {
+              const cr = courseCredits[ci];
+              creditMap[cr] = (creditMap[cr] ?? 0) + 1;
+              ci++;
+            }
+            allocations.push({
+              grade: grades[g],
+              count: dist[g],
+              creditGroups: Object.entries(creditMap)
+                .map(([cr, cnt]) => ({ credits: Number(cr), count: cnt }))
+                .sort((a, b) => b.credits - a.credits),
+            });
+          } else {
+            ci += dist[g];
+          }
         }
-        results.push({ distribution, projectedGpa: gpa });
+        results.push({ allocations, projectedGpa: gpa });
       }
       dist.pop();
       return;
@@ -250,14 +285,29 @@ function findCombinationsGreedy(
 
   function buildFromAssignment(assignment: number[]): GradeCombination {
     let qp = 0;
-    const distribution: Partial<Record<LetterGrade, number>> = {};
+    const gradeCreditsMap: Record<string, Record<number, number>> = {};
     for (let i = 0; i < K; i++) {
       qp += gradeValues[assignment[i]] * courseCredits[i];
       const grade = grades[assignment[i]];
-      distribution[grade] = (distribution[grade] ?? 0) + 1;
+      if (!gradeCreditsMap[grade]) gradeCreditsMap[grade] = {};
+      gradeCreditsMap[grade][courseCredits[i]] =
+        (gradeCreditsMap[grade][courseCredits[i]] ?? 0) + 1;
     }
+    const allocations: GradeAllocation[] = [];
+    for (const [grade, creditMap] of Object.entries(gradeCreditsMap)) {
+      allocations.push({
+        grade: grade as LetterGrade,
+        count: Object.values(creditMap).reduce((s, c) => s + c, 0),
+        creditGroups: Object.entries(creditMap)
+          .map(([cr, cnt]) => ({ credits: Number(cr), count: cnt }))
+          .sort((a, b) => b.credits - a.credits),
+      });
+    }
+    allocations.sort(
+      (a, b) => letterGradesMap[b.grade] - letterGradesMap[a.grade],
+    );
     return {
-      distribution,
+      allocations,
       projectedGpa: (ctx.currentQualityPoints + qp) / totalAC,
     };
   }

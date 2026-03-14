@@ -163,7 +163,11 @@
     "max_combinations": "Máx. resultados",
     "impossible_with_selection": "Objetivo não alcançável apenas com as notas selecionadas.",
     "term_gpa_label": "GPA do Semestre",
-    "cumulative_gpa_label": "GPA Acumulado"
+    "cumulative_gpa_label": "GPA Acumulado",
+    "disclaimer_title": "Como Funciona",
+    "disclaimer_algorithm": "O algoritmo atribui as notas mais altas às disciplinas com mais créditos primeiro para maximizar o impacto no seu GPA. O detalhamento de créditos mostra a quais pesos de disciplina cada nota deve ser aplicada.",
+    "disclaimer_credits": "As combinações dependem da ordem: a nota atribuída a um peso de créditos específico importa. Trocar notas entre disciplinas com créditos diferentes alterará o GPA resultante.",
+    "disclaimer_not_official": "Esta ferramenta é apenas para planejamento. Nunca se baseie exclusivamente nestas projeções para decisões acadêmicas. Sempre verifique com seus registros acadêmicos oficiais e orientadores."
   },
   "settings": {
     "theme": "Tema",
@@ -266,7 +270,7 @@
     "dashboard_gpa_title": "Seu GPA Acumulado",
     "dashboard_gpa_content": "Este é o seu GPA geral, calculado a partir de todas as notas inseridas em todos os termos.",
     "dashboard_honor_title": "Situação Acadêmica",
-    "dashboard_honor_content": "Este badge mostra seu status de honra: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Abaixo de 2.00 significa Risco Acadêmico.",
+    "dashboard_honor_content": "Este badge mostra seu status de honra: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Entre 2.00 e 2.50 significa Risco Acadêmico. Abaixo de 2.00 significa Fracasso Acadêmico.",
     "dashboard_stats_title": "Estatísticas Acadêmicas",
     "dashboard_stats_content": "Métricas principais: disciplinas concluídas, melhores e piores notas, créditos obtidos, créditos restantes, termos concluídos e contagens de Lista do Decano e do Presidente.",
     "config_toolbar_title": "Página de Notas",
@@ -296,7 +300,9 @@
     "forecast_scenarios_title": "Cenários Rápidos",
     "forecast_scenarios_content": "Veja qual seria seu GPA se todas as disciplinas restantes recebessem a mesma nota. Uma forma rápida de avaliar os melhores e piores cenários.",
     "forecast_combinations_title": "Combinações de Notas",
-    "forecast_combinations_content": "Encontra as distribuições ótimas de notas para alcançar seu GPA alvo. Configure quais notas considerar e quantos resultados exibir.",
+    "forecast_combinations_content": "Encontra as distribuições ótimas de notas para alcançar seu GPA alvo. Cada combinação mostra o detalhamento de créditos para que você saiba quais pesos de disciplina visar para cada nota.",
+    "forecast_config_title": "Configuração de Combinações",
+    "forecast_config_content": "Configure quais notas considerar e quantos resultados exibir. Ampliar ou reduzir a seleção de notas afeta diretamente quais combinações são possíveis.",
     "done_title": "Tudo Pronto!",
     "done_content": "Agora você sabe como usar a Calculadora GPA da Jala U. Comece selecionando seu coorte na página de Notas e inserindo suas notas. Boa sorte!",
     "restart_button_label": "Reiniciar Tour"

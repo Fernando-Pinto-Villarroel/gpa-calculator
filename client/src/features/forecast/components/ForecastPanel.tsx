@@ -14,6 +14,7 @@ import {
   Zap,
   Minus,
   Plus,
+  Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
@@ -90,14 +91,23 @@ export function ForecastPanel() {
   const [allowedGrades, setAllowedGrades] = useState<LetterGrade[]>(savedConfig.allowedGrades);
   const [maxCombinations, setMaxCombinations] = useState(savedConfig.maxCombinations);
   const [showConfig, setShowConfig] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const changeCounterRef = useRef(0);
+  const [displayedChange, setDisplayedChange] = useState(0);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const parsedTarget = parseFloat(targetGpa);
   const validTarget = !isNaN(parsedTarget) && parsedTarget > 0 && parsedTarget <= 4.0;
 
   const honorPresets = scope === "term" ? TERM_HONOR_PRESETS : CAREER_HONOR_PRESETS;
+
+  const inputsKey = `${scope}-${termId}-${targetGpa}-${allowedGrades.join(",")}-${maxCombinations}`;
+  const prevInputsRef = useRef(inputsKey);
+  if (prevInputsRef.current !== inputsKey) {
+    prevInputsRef.current = inputsKey;
+    changeCounterRef.current += 1;
+  }
+
+  const isRefreshing = changeCounterRef.current !== displayedChange;
 
   const result = useMemo(() => {
     if (!validTarget) return null;
@@ -110,17 +120,16 @@ export function ForecastPanel() {
       allowedGrades.length > 0 ? allowedGrades : ["A"],
       maxCombinations,
     );
-  }, [grades, terms, scope, termId, parsedTarget, validTarget, allowedGrades, maxCombinations, refreshKey]);
+  }, [grades, terms, scope, termId, parsedTarget, validTarget, allowedGrades, maxCombinations]);
 
   useEffect(() => {
-    setIsRefreshing(true);
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    refreshTimerRef.current = setTimeout(() => setIsRefreshing(false), 350);
-    setRefreshKey((k) => k + 1);
+    const target = changeCounterRef.current;
+    refreshTimerRef.current = setTimeout(() => setDisplayedChange(target), 350);
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
-  }, [scope, termId, targetGpa, allowedGrades, maxCombinations]);
+  }, [inputsKey]);
 
   useEffect(() => {
     saveForecastConfig({ scope, termId, targetGpa, allowedGrades, maxCombinations });
@@ -257,6 +266,7 @@ export function ForecastPanel() {
         </div>
 
         <button
+          data-tour="forecast-config"
           onClick={() => setShowConfig(!showConfig)}
           className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors self-start"
         >
@@ -349,7 +359,7 @@ export function ForecastPanel() {
       ) : (
         result && (
           <motion.div
-            key={`results-${refreshKey}`}
+            key={`results-${displayedChange}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -609,7 +619,7 @@ function ForecastResults({
               {t("combinations_desc")}
             </p>
           </div>
-          <div className="p-3 flex flex-col gap-2">
+          <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {result.combinations.length > 0 ? (
               result.combinations.map((combo, i) => (
                 <CombinationCard
@@ -627,6 +637,25 @@ function ForecastResults({
           </div>
         </motion.div>
       )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.24 }}
+        className="flex flex-col gap-2 rounded-xl border border-border-base bg-bg-surface/80 backdrop-blur-sm p-4"
+      >
+        <div className="flex items-center gap-2">
+          <Info size={14} className="text-text-muted shrink-0" />
+          <h3 className="text-xs font-semibold text-text-secondary">
+            {t("disclaimer_title")}
+          </h3>
+        </div>
+        <ul className="flex flex-col gap-1.5 text-[11px] text-text-muted leading-relaxed list-disc pl-5">
+          <li>{t("disclaimer_algorithm")}</li>
+          <li>{t("disclaimer_credits")}</li>
+          <li>{t("disclaimer_not_official")}</li>
+        </ul>
+      </motion.div>
     </div>
   );
 }
@@ -638,14 +667,9 @@ function CombinationCard({
   index: number;
   combination: NonNullable<ReturnType<typeof forecast>>["combinations"][number];
 }) {
-  const sortedEntries = Object.entries(combination.distribution).sort(
-    ([a], [b]) =>
-      letterGradesMap[b as LetterGrade] - letterGradesMap[a as LetterGrade],
-  );
-
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-lg border border-border-base bg-bg-elevated/50">
-      <div className="flex items-center gap-2 shrink-0">
+    <div className="flex flex-col gap-2 p-3 rounded-lg border border-border-base bg-bg-elevated/50">
+      <div className="flex items-center gap-2">
         <span className="flex items-center justify-center w-6 h-6 rounded-md bg-jala-700/10 text-[10px] font-bold text-text-accent">
           {index + 1}
         </span>
@@ -653,23 +677,32 @@ function CombinationCard({
           {combination.projectedGpa.toFixed(3)}
         </span>
       </div>
-      <div className="flex flex-wrap gap-1.5 flex-1">
-        {sortedEntries.map(([grade, count]) => (
-          <span
-            key={grade}
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
-              letterGradesMap[grade as LetterGrade] >= 3.7
-                ? "border-success/30 bg-success/8 text-success"
-                : letterGradesMap[grade as LetterGrade] >= 3.0
-                  ? "border-jala-500/30 bg-jala-700/8 text-text-accent"
-                  : letterGradesMap[grade as LetterGrade] >= 2.0
-                    ? "border-warning/30 bg-warning/8 text-warning"
-                    : "border-danger/30 bg-danger/8 text-danger",
-            )}
-          >
-            {count}&times;{grade}
-          </span>
+      <div className="flex flex-col gap-1.5">
+        {combination.allocations.map((alloc) => (
+          <div key={alloc.grade} className="flex flex-wrap items-center gap-1">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0",
+                letterGradesMap[alloc.grade] >= 3.7
+                  ? "border-success/30 bg-success/8 text-success"
+                  : letterGradesMap[alloc.grade] >= 3.0
+                    ? "border-jala-500/30 bg-jala-700/8 text-text-accent"
+                    : letterGradesMap[alloc.grade] >= 2.0
+                      ? "border-warning/30 bg-warning/8 text-warning"
+                      : "border-danger/30 bg-danger/8 text-danger",
+              )}
+            >
+              {alloc.count}&times;{alloc.grade}
+            </span>
+            {alloc.creditGroups.map((cg) => (
+              <span
+                key={cg.credits}
+                className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold tabular-nums bg-bg-elevated border border-border-base text-text-muted"
+              >
+                {cg.count}&times;{cg.credits}cr
+              </span>
+            ))}
+          </div>
         ))}
       </div>
     </div>
