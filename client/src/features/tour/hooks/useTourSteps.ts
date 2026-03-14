@@ -140,6 +140,14 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/config",
+      target: '[data-tour="pdf-upload"]',
+      placement: "auto",
+      title: t("config_pdf_upload_title"),
+      content: t("config_pdf_upload_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/config",
       target: '[data-tour="import-export"]',
       placement: "auto",
       title: t("config_import_export_title"),

@@ -33,10 +33,11 @@
 - [Why I Built This](#why-i-built-this)
 - [Features](#features)
 - [App Pages](#app-pages)
-  - [Dashboard](#-dashboard)
-  - [Grade Entry](#-grade-entry)
-  - [Statistics](#-statistics)
-  - [About](#-about)
+  - [Dashboard](#dashboard)
+  - [Grade Entry](#grade-entry)
+  - [Forecast](#forecast)
+  - [Statistics](#statistics)
+  - [About](#about)
 - [Use Cases](#use-cases)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -93,12 +94,28 @@ Existing GPA calculators require manually entering credit hours for every course
       <td>Live thresholds for Cum Laude, Magna Cum Laude, and Summa Cum Laude</td>
     </tr>
     <tr>
+      <td><strong>GPA Forecast</strong></td>
+      <td>Explore what grades you need for term or cumulative GPA targets, with quick scenarios and optimal grade combination finder</td>
+    </tr>
+    <tr>
+      <td><strong>Course retakes</strong></td>
+      <td>Register multiple attempts per course with independent credits and grades — all attempts affect GPA, only the approved one counts for completion</td>
+    </tr>
+    <tr>
       <td><strong>Statistics dashboard</strong></td>
-      <td>GPA progression chart, grade distribution, and credit accumulation analytics</td>
+      <td>GPA progression charts (cumulative and per-term), grade distribution, credit accumulation, and honors overview</td>
+    </tr>
+    <tr>
+      <td><strong>SIS PDF Import</strong></td>
+      <td>Upload your Report Card PDF from the official SIS and have courses and grades imported automatically — with automatic course code mapping and credit adjustment across cohorts</td>
     </tr>
     <tr>
       <td><strong>Import / Export</strong></td>
       <td>Back up and restore your full grade history as a JSON file</td>
+    </tr>
+    <tr>
+      <td><strong>Guided Tour</strong></td>
+      <td>Interactive step-by-step walkthrough for new users covering all pages and features</td>
     </tr>
     <tr>
       <td><strong>Internationalization</strong></td>
@@ -148,7 +165,7 @@ The home screen provides an at-a-glance view of your academic standing. Your cum
 
 ### Grade Entry
 
-Select your cohort and term, then enter grades for each course across three modules. The term GPA updates instantly and a banner indicates whether you qualify for Dean's List or President's List honors for that term. Grades can only be submitted for terms where all courses have been assigned a grade, ensuring accurate honor status evaluation.
+Select your cohort and term, then enter grades for each course across three modules. The term GPA updates instantly and a banner indicates whether you qualify for Dean's List or President's List honors for that term.
 
 <p align="center">
   <img src="docs/media/images/grade-entry.png" alt="Grade Entry — Three-module course layout with term GPA" width="900" />
@@ -157,6 +174,33 @@ Select your cohort and term, then enter grades for each course across three modu
 </p>
 
 Course catalogs are pre-loaded per cohort. No manual credit-hour entry is required. On desktop, all three modules are displayed side by side; on mobile, they are presented as tabs.
+
+**SIS PDF Import** — Instead of entering grades manually, you can upload your Report Card PDF directly from Jala University's official SIS (Consolidated > Report Cards, saved with Ctrl+Shift+P). The parser automatically:
+
+- Extracts all courses with their grades, credits, and course codes
+- Filters out ESP/English program courses (which have a separate GPA)
+- Detects retaken courses and creates multi-attempt entries
+- Maps course codes that changed between curriculum revisions (e.g., `FMA-111` to `MATH-111`)
+- Adjusts credits when they differ from the cohort defaults (e.g., a course that was 2cr in your cohort but 3cr when you actually took it)
+
+**Course retakes** — If you failed and retook a course, click the warning icon on any course card to register each attempt separately with its own grade and credits. All attempts contribute to the GPA calculation, but only the approved attempt counts toward completion statistics.
+
+---
+
+### Forecast
+
+A planning tool to explore what grades you need to reach specific GPA targets. Choose between term scope (single term) or cumulative scope (overall GPA).
+
+<p align="center">
+  <img src="docs/media/images/forecast.png" alt="Forecast page: GPA target planning with quick scenarios and grade combinations" width="900" />
+  <br>
+  <sub>Forecast page: target GPA input with honor presets, quick scenarios, and optimal grade combination finder</sub>
+</p>
+
+- **Target GPA** — Enter a custom target or use honor preset buttons (Cum Laude 3.20, Magna 3.50, Summa 3.80 for cumulative; Dean's List 3.50, President's List 4.00 for term)
+- **Quick Scenarios** — Instantly see what your GPA would be if all remaining courses received the same grade
+- **Combination Finder** — Finds optimal grade distributions to reach your target, with configurable allowed grades and max results
+- **Feasibility indicator** — Shows whether a target is already achieved, achievable, or mathematically impossible
 
 ---
 
@@ -187,6 +231,12 @@ An information hub covering the American grading system, GPA calculation methodo
   <br>
   <sub>About page: project details, grade conversion table, honors guide, etc.</sub>
 </p>
+
+---
+
+### Guided Tour
+
+First-time users are greeted with an interactive step-by-step tour that walks through every page and feature — from the dashboard and grade entry to statistics, forecast, and import/export. The tour adapts to screen size (desktop vs. mobile targets) and can be restarted at any time from the About page.
 
 ---
 
@@ -227,6 +277,8 @@ The following sequence diagrams illustrate the primary scenarios this tool was b
 | Internationalization | next-intl 4                                 |
 | Charts               | Recharts 3                                  |
 | Animations           | Framer Motion 12                            |
+| PDF parsing          | pdfjs-dist (client-side text extraction)    |
+| Guided tour          | react-joyride                               |
 | Icons                | Lucide React                                |
 | Runtime              | Bun                                         |
 
@@ -321,6 +373,7 @@ A sincere thank you to the students who tested the app during early development 
 | Irwin Luna Perez                       | Cohort I – 2023  |
 | Hugo Fernando Monteiro da Silva Junior | Cohort II – 2023 |
 | Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
+| Victor Angel Pinto Mora                | Cohort I – 2024  |
 | Karen Ivonne Cruz Alvarez              | Cohort I – 2025  |
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { Upload, Download, RotateCcw } from "lucide-react";
+import { useRef, useState } from "react";
+import { Upload, Download, RotateCcw, FileText, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -10,14 +10,17 @@ import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { cn } from "@/core/lib/utils/cn";
 import { getCohortById } from "@/features/gpa/data";
 import { validateImportPayload } from "@/features/config/lib/validateImportPayload";
+import { parsePdfFile } from "@/features/config/services/pdfParser";
 import Swal from "sweetalert2";
 
 export function ImportExport({ className }: { className?: string }) {
   const t = useTranslations("config");
-  const { importGrades, exportGrades, resetTermData, resetCohortData } =
+  const { importGrades, exportGrades, resetTermData, resetCohortData, selectedCohortId } =
     useGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const swalBase = {
     background: theme === "dark" ? "#1e293b" : "#fff",
@@ -161,11 +164,103 @@ export function ImportExport({ className }: { className?: string }) {
     e.target.value = "";
   };
 
+  const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
+      return;
+    }
+
+    setPdfLoading(true);
+
+    try {
+      const result = await parsePdfFile(file, selectedCohortId);
+
+      if (!result.success) {
+        const description =
+          result.error === "no_courses_found"
+            ? t("pdf_error_no_courses")
+            : t("pdf_error_parse");
+        toast.error(t("pdf_error"), { description });
+        return;
+      }
+
+      const { grades, matched, unrecognized, remapped, creditOverrides } = result;
+
+      let warningText = "";
+      if (unrecognized.length > 0) {
+        warningText = t("pdf_unrecognized_codes", {
+          codes: unrecognized.join(", "),
+        });
+      }
+
+      let remapText = "";
+      if (remapped.length > 0) {
+        const items = remapped
+          .map((r) => `${r.from} → ${r.to}`)
+          .join(", ");
+        remapText = t("pdf_remapped_codes", { codes: items });
+      }
+
+      let creditText = "";
+      if (creditOverrides.length > 0) {
+        const items = creditOverrides
+          .map((c) => `${c.courseCode}: ${c.expected} → ${c.actual}`)
+          .join(", ");
+        creditText = t("pdf_credit_overrides", { codes: items });
+      }
+
+      const cohort = getCohortById(selectedCohortId);
+      const cohortLabel = cohort
+        ? `${cohort.ordinal} - ${cohort.year}`
+        : selectedCohortId;
+
+      const confirmed = await Swal.fire({
+        title: t("pdf_confirm_title"),
+        html: `
+          <p style="margin-bottom: 8px">${t("pdf_confirm_text", { matched: String(matched), cohort: cohortLabel })}</p>
+          ${remapText ? `<p style="font-size: 0.85em; color: #3b82f6; margin-top: 8px">${remapText}</p>` : ""}
+          ${creditText ? `<p style="font-size: 0.85em; color: #8b5cf6; margin-top: 8px">${creditText}</p>` : ""}
+          ${warningText ? `<p style="font-size: 0.85em; color: #f59e0b; margin-top: 8px">${warningText}</p>` : ""}
+        `,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: t("pdf_confirm_button"),
+        cancelButtonText: t("cancel"),
+        ...swalBase,
+      });
+
+      if (confirmed.isConfirmed) {
+        importGrades({ cohortId: selectedCohortId, grades });
+        toast.success(t("pdf_success"), {
+          description: t("pdf_success_text", { matched: String(matched) }),
+        });
+      }
+    } catch {
+      toast.error(t("pdf_error"), { description: t("pdf_error_parse") });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   const btnClass = cn(
     "flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-medium",
     "border border-border-base bg-bg-surface text-text-secondary",
     "hover:text-text-primary hover:border-border-accent transition-colors duration-200",
     "sm:px-2.5",
+  );
+
+  const pdfBtnClass = cn(
+    "flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-medium",
+    "border border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+    "hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-500 transition-colors duration-200",
+    "sm:px-2.5",
+    "disabled:opacity-50 disabled:cursor-not-allowed",
   );
 
   const resetBtnClass = cn(
@@ -176,7 +271,28 @@ export function ImportExport({ className }: { className?: string }) {
   );
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-2 flex-wrap", className)}>
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={handlePdfImport}
+      />
+      <motion.button
+        data-tour="pdf-upload"
+        whileTap={{ scale: 0.95 }}
+        onClick={() => pdfInputRef.current?.click()}
+        disabled={pdfLoading}
+        className={pdfBtnClass}
+      >
+        {pdfLoading ? (
+          <Loader2 size={13} className="animate-spin" />
+        ) : (
+          <FileText size={13} />
+        )}
+        {t("pdf_import")}
+      </motion.button>
       <input
         ref={inputRef}
         type="file"
