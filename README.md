@@ -35,9 +35,10 @@
 - [App Pages](#app-pages)
   - [Dashboard](#dashboard)
   - [Grade Entry](#grade-entry)
-  - [Forecast](#forecast)
   - [Statistics](#statistics)
+  - [Forecast](#forecast)
   - [About](#about)
+- [Guided Tour](#guided-tour)
 - [Use Cases](#use-cases)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -187,23 +188,6 @@ Course catalogs are pre-loaded per cohort. No manual credit-hour entry is requir
 
 ---
 
-### Forecast
-
-A planning tool to explore what grades you need to reach specific GPA targets. Choose between term scope (single term) or cumulative scope (overall GPA).
-
-<p align="center">
-  <img src="docs/media/images/forecast.png" alt="Forecast page: GPA target planning with quick scenarios and grade combinations" width="900" />
-  <br>
-  <sub>Forecast page: target GPA input with honor presets, quick scenarios, and optimal grade combination finder</sub>
-</p>
-
-- **Target GPA** — Enter a custom target or use honor preset buttons (Cum Laude 3.20, Magna 3.50, Summa 3.80 for cumulative; Dean's List 3.50, President's List 4.00 for term)
-- **Quick Scenarios** — Instantly see what your GPA would be if all remaining courses received the same grade
-- **Combination Finder** — Finds optimal grade distributions to reach your target, with configurable allowed grades and max results
-- **Feasibility indicator** — Shows whether a target is already achieved, achievable, or mathematically impossible
-
----
-
 ### Statistics
 
 An analytics view with interactive charts for a deeper understanding of academic performance over time.
@@ -222,6 +206,24 @@ An analytics view with interactive charts for a deeper understanding of academic
 
 ---
 
+### Forecast
+
+A planning tool to explore what grades you need to reach specific GPA targets. Choose between term scope (single term) or cumulative scope (overall GPA).
+
+<p align="center">
+  <img src="docs/media/images/forecast-1.png" alt="Forecast page: GPA target planning with quick scenarios and grade combinations" width="900" />
+  <img src="docs/media/images/forecast-2.png" alt="Forecast page: GPA target planning with quick scenarios and grade combinations" width="900" />
+  <br>
+  <sub>Forecast page: target GPA input with honor presets, quick scenarios, and optimal grade combination finder</sub>
+</p>
+
+- **Target GPA** — Enter a custom target or use honor preset buttons (Cum Laude 3.20, Magna 3.50, Summa 3.80 for cumulative; Dean's List 3.50, President's List 4.00 for term)
+- **Quick Scenarios** — Instantly see what your GPA would be if all remaining courses received the same grade
+- **Combination Finder** — Finds optimal grade distributions to reach your target, with configurable allowed grades and max results
+- **Feasibility indicator** — Shows whether a target is already achieved, achievable, or mathematically impossible
+
+---
+
 ### About
 
 An information hub covering the American grading system, GPA calculation methodology, academic honors criteria, cohort program differences, the ESP English program, and the app's privacy policy.
@@ -234,7 +236,7 @@ An information hub covering the American grading system, GPA calculation methodo
 
 ---
 
-### Guided Tour
+## Guided Tour
 
 First-time users are greeted with an interactive step-by-step tour that walks through every page and feature — from the dashboard and grade entry to statistics, forecast, and import/export. The tour adapts to screen size (desktop vs. mobile targets) and can be restarted at any time from the About page.
 
