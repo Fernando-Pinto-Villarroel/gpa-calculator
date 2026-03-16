@@ -120,3 +120,19 @@ main {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
+
+html.swal2-height-auto,
+body.swal2-height-auto {
+  height: 100% !important;
+}
+
+body.swal2-shown:not(.swal2-no-backdrop) {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  padding-right: 0 !important;
+}
+
+body.swal2-shown .swal2-container {
+  position: fixed !important;
+  inset: 0;
+}

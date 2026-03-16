@@ -3,6 +3,17 @@ import type { CourseGradeEntry, CourseAttempt } from "@/core/domain/types/grades
 import { ALL_GRADES } from "@/core/domain/types/letterGrades";
 import { cohorts, getCohortById } from "@/features/gpa/data";
 
+const U8Proto = Uint8Array.prototype as unknown as Record<string, unknown>;
+if (typeof U8Proto.toHex !== "function") {
+  U8Proto.toHex = function (this: Uint8Array) {
+    let hex = "";
+    for (let i = 0; i < this.length; i++) {
+      hex += this[i].toString(16).padStart(2, "0");
+    }
+    return hex;
+  };
+}
+
 export type PdfCourseEntry = {
   courseCode: string;
   credits: number;
@@ -115,12 +126,48 @@ function buildCohortCreditsMap(cohortId: string): Map<string, number> {
   return creditsMap;
 }
 
-export async function extractTextFromPdf(file: File): Promise<string> {
-  const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+  if (typeof file.arrayBuffer === "function") {
+    return file.arrayBuffer();
+  }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
 
-  const arrayBuffer = await file.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+const TOHEX_POLYFILL = `
+if (typeof Uint8Array.prototype.toHex !== "function") {
+  Uint8Array.prototype.toHex = function () {
+    var h = "";
+    for (var i = 0; i < this.length; i++) {
+      h += this[i].toString(16).padStart(2, "0");
+    }
+    return h;
+  };
+}
+`;
+
+async function getPolyfillWorkerSrc(): Promise<string> {
+  const res = await fetch("/pdf.worker.min.mjs");
+  const workerCode = await res.text();
+  const blob = new Blob(
+    [TOHEX_POLYFILL, workerCode],
+    { type: "application/javascript" },
+  );
+  return URL.createObjectURL(blob);
+}
+
+async function extractPagesFromData(
+  pdfjsLib: typeof import("pdfjs-dist"),
+  data: ArrayBuffer,
+): Promise<string> {
+  const doc = await pdfjsLib.getDocument({
+    data,
+    isEvalSupported: false,
+  }).promise;
 
   const textParts: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -132,7 +179,29 @@ export async function extractTextFromPdf(file: File): Promise<string> {
     textParts.push(pageText);
   }
 
+  await doc.destroy();
   return textParts.join("\n");
+}
+
+export async function extractTextFromPdf(file: File): Promise<string> {
+  const pdfjsLib = await import("pdfjs-dist");
+  const buffer = await readFileAsArrayBuffer(file);
+  const fallbackCopy = buffer.slice(0);
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  try {
+    return await extractPagesFromData(pdfjsLib, buffer);
+  } catch {
+    // .mjs worker or toHex failed — retry with polyfilled worker blob
+  }
+
+  const blobSrc = await getPolyfillWorkerSrc();
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = blobSrc;
+    return await extractPagesFromData(pdfjsLib, fallbackCopy);
+  } finally {
+    URL.revokeObjectURL(blobSrc);
+  }
 }
 
 export function parsePdfText(rawText: string): PdfCourseEntry[] {

@@ -25,6 +25,8 @@ export function ImportExport({ className }: { className?: string }) {
   const swalBase = {
     background: theme === "dark" ? "#1e293b" : "#fff",
     color: theme === "dark" ? "#f1f5f9" : "#0f172a",
+    scrollbarPadding: false,
+    heightAuto: false,
   };
 
   const handleResetTermData = async () => {
@@ -169,7 +171,9 @@ export function ImportExport({ className }: { className?: string }) {
     if (!file) return;
     e.target.value = "";
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
+    const isPdf =
+      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+    if (!isPdf) {
       toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
       return;
     }
@@ -241,8 +245,11 @@ export function ImportExport({ className }: { className?: string }) {
           description: t("pdf_success_text", { matched: String(matched) }),
         });
       }
-    } catch {
-      toast.error(t("pdf_error"), { description: t("pdf_error_parse") });
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      toast.error(t("pdf_error"), {
+        description: `${t("pdf_error_parse")} [${detail}]`,
+      });
     } finally {
       setPdfLoading(false);
     }
@@ -275,7 +282,7 @@ export function ImportExport({ className }: { className?: string }) {
       <input
         ref={pdfInputRef}
         type="file"
-        accept=".pdf"
+        accept=".pdf,application/pdf"
         className="hidden"
         onChange={handlePdfImport}
       />
