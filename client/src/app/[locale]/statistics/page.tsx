@@ -76,7 +76,7 @@ export default function StatisticsPage() {
           description={t("cumulative_gpa_progression_desc")}
           delay={0.1}
         >
-          <div className="h-56 md:h-64">
+          <div className="h-72 md:h-80">
             <CumulativeGpaProgressChart />
           </div>
         </ChartCard>
@@ -87,7 +87,7 @@ export default function StatisticsPage() {
         description={t("term_gpa_progression_desc")}
         delay={0.15}
       >
-        <div className="h-56 md:h-64">
+        <div className="h-72 md:h-80">
           <TermGpaProgressChart />
         </div>
       </ChartCard>

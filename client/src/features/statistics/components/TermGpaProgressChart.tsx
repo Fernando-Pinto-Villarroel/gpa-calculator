@@ -17,6 +17,10 @@ import { getTermsByCohortId } from "@/features/gpa/data/index";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 
+const SCALE_EXP = 1.3;
+const gpaToScale = (v: number) => Math.pow(v, SCALE_EXP);
+const scaleToGpa = (v: number) => Math.pow(v, 1 / SCALE_EXP);
+
 function CustomTooltip({
   active,
   payload,
@@ -38,7 +42,7 @@ function CustomTooltip({
           />
           <span className="text-text-secondary">{p.name}:</span>
           <span className="font-semibold" style={{ color: p.color }}>
-            {p.value.toFixed(2)}
+            {scaleToGpa(p.value).toFixed(2)}
           </span>
         </div>
       ))}
@@ -58,6 +62,7 @@ export function TermGpaProgressChart() {
   const data = getTermGpaProgression(grades, terms).map((item) => ({
     ...item,
     label: tConfig("term_label", { ordinal: item.termOrdinal }),
+    termGpa: gpaToScale(item.termGpa),
   }));
 
   const axisColor = isDark ? "#64748b" : "#94a3b8";
@@ -85,17 +90,19 @@ export function TermGpaProgressChart() {
           axisLine={false}
         />
         <YAxis
-          domain={[0, 4]}
+          domain={[0, gpaToScale(4)]}
           tick={{ fill: axisColor, fontSize: 10 }}
           tickLine={false}
           axisLine={false}
-          ticks={[0, 1, 2, 3, 3.5, 4]}
-          tickFormatter={(v: number) => v.toFixed(1)}
+          ticks={[0, 1, 2, 3, 3.5, 4].map(gpaToScale)}
+          tickFormatter={(v: number) => scaleToGpa(v).toFixed(1)}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+        <Legend
+          wrapperStyle={{ fontSize: 11, paddingTop: 8, paddingLeft: 65 }}
+        />
         <ReferenceLine
-          y={4.0}
+          y={gpaToScale(4.0)}
           stroke="#10b981"
           strokeDasharray="4 3"
           label={{
@@ -106,7 +113,7 @@ export function TermGpaProgressChart() {
           }}
         />
         <ReferenceLine
-          y={3.5}
+          y={gpaToScale(3.5)}
           stroke="#3b82f6"
           strokeDasharray="4 3"
           label={{

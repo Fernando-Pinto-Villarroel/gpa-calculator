@@ -17,6 +17,10 @@ import { getTermsByCohortId } from "@/features/gpa/data/index";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 
+const SCALE_EXP = 1.3;
+const gpaToScale = (v: number) => Math.pow(v, SCALE_EXP);
+const scaleToGpa = (v: number) => Math.pow(v, 1 / SCALE_EXP);
+
 function CustomTooltip({
   active,
   payload,
@@ -38,7 +42,7 @@ function CustomTooltip({
           />
           <span className="text-text-secondary">{p.name}:</span>
           <span className="font-semibold" style={{ color: p.color }}>
-            {p.value.toFixed(2)}
+            {scaleToGpa(p.value).toFixed(2)}
           </span>
         </div>
       ))}
@@ -58,6 +62,7 @@ export function CumulativeGpaProgressChart() {
   const data = getTermGpaProgression(grades, terms).map((item) => ({
     ...item,
     label: tConfig("term_label", { ordinal: item.termOrdinal }),
+    cumulativeGpa: gpaToScale(item.cumulativeGpa),
   }));
 
   const axisColor = isDark ? "#64748b" : "#94a3b8";
@@ -85,17 +90,20 @@ export function CumulativeGpaProgressChart() {
           axisLine={false}
         />
         <YAxis
-          domain={[0, 4]}
+          domain={[0, gpaToScale(4)]}
           tick={{ fill: axisColor, fontSize: 10 }}
           tickLine={false}
           axisLine={false}
-          ticks={[0, 1, 2, 3, 3.2, 3.5, 3.8, 4]}
-          tickFormatter={(v: number) => v.toFixed(1)}
+          ticks={[0, 1, 2, 3, 3.2, 3.5, 3.8, 4].map(gpaToScale)}
+          interval={0}
+          tickFormatter={(v: number) => scaleToGpa(v).toFixed(1)}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+        <Legend
+          wrapperStyle={{ fontSize: 11, paddingTop: 8, paddingLeft: 65 }}
+        />
         <ReferenceLine
-          y={3.8}
+          y={gpaToScale(3.8)}
           stroke="#f59e0b"
           strokeDasharray="4 3"
           label={{
@@ -106,7 +114,7 @@ export function CumulativeGpaProgressChart() {
           }}
         />
         <ReferenceLine
-          y={3.5}
+          y={gpaToScale(3.5)}
           stroke="#94a3b8"
           strokeDasharray="4 3"
           label={{
@@ -117,7 +125,7 @@ export function CumulativeGpaProgressChart() {
           }}
         />
         <ReferenceLine
-          y={3.2}
+          y={gpaToScale(3.2)}
           stroke="#b45309"
           strokeDasharray="4 3"
           label={{
@@ -128,7 +136,7 @@ export function CumulativeGpaProgressChart() {
           }}
         />
         <ReferenceLine
-          y={2.0}
+          y={gpaToScale(2.0)}
           stroke="#ef4444"
           strokeDasharray="4 3"
           label={{
