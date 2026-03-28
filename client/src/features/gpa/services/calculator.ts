@@ -42,7 +42,7 @@ export type HonorStatus =
   | "cum_laude"
   | "good_standing"
   | "at_risk"
-  | "academic_failure"
+  | "sap_risk"
   | null;
 
 function computeQualityPointsAndCredits(entry: CourseGradeEntry, curriculumCredits: number): {
@@ -133,7 +133,7 @@ export function getHonorStatus(gpa: number): HonorStatus {
   if (gpa >= 3.2) return "cum_laude";
   if (gpa > 2.5) return "good_standing";
   if (gpa >= 2.0) return "at_risk";
-  return "academic_failure";
+  return "sap_risk";
 }
 
 export function getTermGpaProgression(

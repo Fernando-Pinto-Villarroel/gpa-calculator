@@ -66,7 +66,7 @@ const HONOR_LABELS: Record<string, string> = {
   cum_laude: "Cum Laude",
   good_standing: "Good Standing",
   at_risk: "At Risk",
-  academic_failure: "Academic Failure",
+  sap_risk: "SAP Risk",
 };
 
 export function StatsOverview() {

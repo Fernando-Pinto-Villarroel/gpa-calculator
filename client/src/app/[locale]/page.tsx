@@ -60,7 +60,7 @@ export default function HomePage({ params }: Props) {
   );
 
   const isAtRisk =
-    honorStatus === "at_risk" || honorStatus === "academic_failure";
+    honorStatus === "at_risk" || honorStatus === "sap_risk";
 
   const leftStats = [
     {
@@ -182,7 +182,7 @@ export default function HomePage({ params }: Props) {
                   alertText={
                     isAtRisk
                       ? t(
-                          `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                          `alert.${honorStatus === "at_risk" ? "at_risk" : "sap_risk"}`,
                         )
                       : undefined
                   }
@@ -249,7 +249,7 @@ export default function HomePage({ params }: Props) {
                 alertText={
                   isAtRisk
                     ? t(
-                        `alert.${honorStatus === "at_risk" ? "at_risk" : "academic_failure"}`,
+                        `alert.${honorStatus === "at_risk" ? "at_risk" : "sap_risk"}`,
                       )
                     : undefined
                 }

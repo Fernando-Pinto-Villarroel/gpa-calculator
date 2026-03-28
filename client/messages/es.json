@@ -18,11 +18,11 @@
       "cum_laude": "Cum Laude",
       "good_standing": "Buen Rendimiento",
       "at_risk": "Riesgo Académico",
-      "academic_failure": "Fracaso Académico"
+      "sap_risk": "Riesgo SAP"
     },
     "alert": {
-      "at_risk": "Tu GPA se está acercando al límite de fracaso académico (2.00).",
-      "academic_failure": "Tu GPA está por debajo del mínimo requerido (2.00). Se necesita acción inmediata."
+      "at_risk": "Tu GPA se está acercando al umbral de riesgo SAP (Progreso Académico Satisfactorio) (2.00).",
+      "sap_risk": "Tu GPA está por debajo de 2.00. Estás en riesgo SAP (Progreso Académico Satisfactorio) y recibirás un seguimiento académico más cercano por parte de la institución."
     },
     "stats": {
       "completed_subjects": "Materias Completadas",
@@ -270,7 +270,7 @@
     "dashboard_gpa_title": "Tu GPA Acumulado",
     "dashboard_gpa_content": "Este es tu GPA general, calculado a partir de todas las calificaciones ingresadas en todos los términos.",
     "dashboard_honor_title": "Situación Académica",
-    "dashboard_honor_content": "Esta insignia muestra tu estado de honor: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Entre 2.00 y 2.50 significa Riesgo Académico. Por debajo de 2.00 significa Fracaso Académico.",
+    "dashboard_honor_content": "Esta insignia muestra tu estado de honor: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Entre 2.00 y 2.50 significa Riesgo Académico. Por debajo de 2.00 significa Riesgo SAP — riesgo de Progreso Académico Satisfactorio, lo que activa un seguimiento más cercano por parte de la institución.",
     "dashboard_stats_title": "Estadísticas Académicas",
     "dashboard_stats_content": "Métricas clave: materias completadas, mejores y peores calificaciones, créditos obtenidos, créditos restantes, términos completados y recuentos de Lista del Decano y del Presidente.",
     "config_toolbar_title": "Página de Calificaciones",

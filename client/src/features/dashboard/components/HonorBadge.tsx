@@ -44,7 +44,7 @@ const statusConfig: Record<
     className: "border-warning/40 bg-warning/10 text-warning",
     iconClass: "text-warning",
   },
-  academic_failure: {
+  sap_risk: {
     icon: XCircle,
     className: "border-danger/40 bg-danger/10 text-danger",
     iconClass: "text-danger",
@@ -56,7 +56,7 @@ export function HonorBadge({ status, label, alertText }: HonorBadgeProps) {
 
   const config = statusConfig[status];
   const Icon = config.icon;
-  const isAlertStatus = status === "at_risk" || status === "academic_failure";
+  const isAlertStatus = status === "at_risk" || status === "sap_risk";
 
   return (
     <motion.div

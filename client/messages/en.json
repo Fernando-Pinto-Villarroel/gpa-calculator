@@ -18,11 +18,11 @@
       "cum_laude": "Cum Laude",
       "good_standing": "Good Standing",
       "at_risk": "Academic Risk",
-      "academic_failure": "Academic Failure"
+      "sap_risk": "SAP Risk"
     },
     "alert": {
-      "at_risk": "Your GPA is approaching the academic failure threshold (2.00).",
-      "academic_failure": "Your GPA is below the minimum required (2.00). Immediate action needed."
+      "at_risk": "Your GPA is approaching the SAP (Satisfactory Academic Progress) risk threshold (2.00).",
+      "sap_risk": "Your GPA is below 2.00. You are under SAP (Satisfactory Academic Progress) risk and will receive closer academic follow-up from the institution."
     },
     "stats": {
       "completed_subjects": "Completed Subjects",
@@ -270,7 +270,7 @@
     "dashboard_gpa_title": "Your Cumulative GPA",
     "dashboard_gpa_content": "This is your overall GPA, calculated from all the grades you have entered across all terms.",
     "dashboard_honor_title": "Academic Standing",
-    "dashboard_honor_content": "This badge shows your current honor status: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Between 2.00 and 2.50 means Academic Risk. Below 2.00 means Academic Failure.",
+    "dashboard_honor_content": "This badge shows your current honor status: Cum Laude (≥3.20), Magna (≥3.50), Summa (≥3.80). Between 2.00 and 2.50 means Academic Risk. Below 2.00 means SAP Risk — Satisfactory Academic Progress risk, which triggers closer follow-up from the institution.",
     "dashboard_stats_title": "Academic Statistics",
     "dashboard_stats_content": "Key metrics at a glance: subjects completed, best and lowest grades, earned credits, remaining credits, terms completed, and Dean's and President's List term counts.",
     "config_toolbar_title": "Grades Page",
