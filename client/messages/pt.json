@@ -181,7 +181,7 @@
   },
   "about": {
     "title": "Sobre Esta Ferramenta",
-    "subtitle": "Tudo o que você precisa saber sobre a Calculadora de GPA da Jala U",
+    "subtitle": "Tudo o que você precisa saber sobre a Calculadora de GPA da Jala University",
     "unofficial_badge": "Projeto Desenvolvido por Estudante",
     "project": {
       "title": "Sobre o Projeto",
@@ -257,7 +257,7 @@
     "close": "Fechar",
     "finish": "Finalizar",
     "open": "Abrir",
-    "welcome_title": "Bem-vindo à Calculadora GPA da Jala U",
+    "welcome_title": "Bem-vindo à Calculadora GPA da Jala\u00A0University",
     "welcome_content": "Este tour rápido irá guiá-lo por todas as funcionalidades. Você pode pular a qualquer momento.",
     "navbar_brand_title": "Cabeçalho do App",
     "navbar_brand_content": "Clique no logo para retornar ao Painel a qualquer momento.",
@@ -304,7 +304,7 @@
     "forecast_config_title": "Configuração de Combinações",
     "forecast_config_content": "Configure quais notas considerar e quantos resultados exibir. Ampliar ou reduzir a seleção de notas afeta diretamente quais combinações são possíveis.",
     "done_title": "Tudo Pronto!",
-    "done_content": "Agora você sabe como usar a Calculadora GPA da Jala U. Comece selecionando seu coorte na página de Notas e inserindo suas notas. Boa sorte!",
+    "done_content": "Agora você sabe como usar a Calculadora GPA da Jala University. Comece selecionando seu coorte na página de Notas e inserindo suas notas. Boa sorte!",
     "restart_button_label": "Reiniciar Tour"
   },
   "courses": {

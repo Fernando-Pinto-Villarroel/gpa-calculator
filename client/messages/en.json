@@ -181,7 +181,7 @@
   },
   "about": {
     "title": "About This Tool",
-    "subtitle": "Everything you need to know about the Jala U GPA Calculator",
+    "subtitle": "Everything you need to know about the GPA Calculator for Jala University",
     "unofficial_badge": "Student-Developed Project",
     "project": {
       "title": "About the Project",
@@ -257,7 +257,7 @@
     "close": "Close",
     "finish": "Finish",
     "open": "Open",
-    "welcome_title": "Welcome to Jala U GPA Calculator",
+    "welcome_title": "Welcome to the GPA Calculator for Jala\u00A0University",
     "welcome_content": "This quick tour will guide you through all the features. You can skip at any time.",
     "navbar_brand_title": "App Header",
     "navbar_brand_content": "Click the logo to return to the Dashboard at any time.",
@@ -304,7 +304,7 @@
     "forecast_config_title": "Combination Settings",
     "forecast_config_content": "Configure which grades to consider and how many result combinations to show. Expanding or narrowing the grade selection directly affects which combinations are possible.",
     "done_title": "You Are All Set!",
-    "done_content": "You now know how to use the Jala U GPA Calculator. Start by selecting your cohort in the Grades page and entering your grades. Good luck!",
+    "done_content": "You now know how to use the GPA Calculator for Jala University. Start by selecting your cohort in the Grades page and entering your grades. Good luck!",
     "restart_button_label": "Restart Tour"
   },
   "courses": {
