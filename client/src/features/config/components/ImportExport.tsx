@@ -15,8 +15,13 @@ import Swal from "sweetalert2";
 
 export function ImportExport({ className }: { className?: string }) {
   const t = useTranslations("config");
-  const { importGrades, exportGrades, resetTermData, resetCohortData, selectedCohortId } =
-    useGpaStore();
+  const {
+    importGrades,
+    exportGrades,
+    resetTermData,
+    resetCohortData,
+    selectedCohortId,
+  } = useGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -131,7 +136,9 @@ export function ImportExport({ className }: { className?: string }) {
       if (!result.valid) {
         const description =
           result.error.code === "unknown_cohort"
-            ? t("import_error_unknown_cohort", { cohortId: result.error.cohortId })
+            ? t("import_error_unknown_cohort", {
+                cohortId: result.error.cohortId,
+              })
             : result.error.code === "invalid_grades"
               ? t("import_error_invalid_grades")
               : t("import_error_missing_fields");
@@ -172,7 +179,8 @@ export function ImportExport({ className }: { className?: string }) {
     e.target.value = "";
 
     const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+      file.name.toLowerCase().endsWith(".pdf") ||
+      file.type === "application/pdf";
     if (!isPdf) {
       toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
       return;
@@ -192,7 +200,8 @@ export function ImportExport({ className }: { className?: string }) {
         return;
       }
 
-      const { grades, matched, unrecognized, remapped, creditOverrides } = result;
+      const { grades, matched, unrecognized, remapped, creditOverrides } =
+        result;
 
       let warningText = "";
       if (unrecognized.length > 0) {
@@ -203,9 +212,7 @@ export function ImportExport({ className }: { className?: string }) {
 
       let remapText = "";
       if (remapped.length > 0) {
-        const items = remapped
-          .map((r) => `${r.from} → ${r.to}`)
-          .join(", ");
+        const items = remapped.map((r) => `${r.from} → ${r.to}`).join(", ");
         remapText = t("pdf_remapped_codes", { codes: items });
       }
 
@@ -312,7 +319,7 @@ export function ImportExport({ className }: { className?: string }) {
         onClick={() => inputRef.current?.click()}
         className={btnClass}
       >
-        <Upload size={13} />
+        <Download size={13} />
         {t("import")}
       </motion.button>
       <motion.button
@@ -320,7 +327,7 @@ export function ImportExport({ className }: { className?: string }) {
         onClick={handleExport}
         className={btnClass}
       >
-        <Download size={13} />
+        <Upload size={13} />
         {t("export")}
       </motion.button>
       <motion.button
