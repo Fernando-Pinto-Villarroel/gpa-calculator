@@ -108,7 +108,6 @@ export default function AboutPage({ params }: Props) {
 
   return (
     <div className="px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-8 max-w-screen-2xl mx-auto w-full">
-      {/* ── Hero header ────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -125,14 +124,7 @@ export default function AboutPage({ params }: Props) {
         <p className="text-sm text-text-secondary max-w-2xl">{t("subtitle")}</p>
       </motion.div>
 
-      {/* ── Three-column bento grid ──────────────────────
-          Each column is an independent flex-col stack.
-          Cards keep their natural height — no stretching, no gaps.
-          Mobile: single column stack (columns collapse in order)
-          md+: three side-by-side columns
-      ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* ── Column 1: About the project ─────────────── */}
         <div className="flex flex-col gap-4">
           <Section icon={User} title={t("project.title")} delay={0.06}>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -202,7 +194,6 @@ export default function AboutPage({ params }: Props) {
           </Section>
         </div>
 
-        {/* ── Column 2: The academic system ───────────── */}
         <div className="flex flex-col gap-4">
           <Section icon={BookOpen} title={t("grading.title")} delay={0.18}>
             <div className="flex flex-col gap-4">
@@ -314,7 +305,6 @@ export default function AboutPage({ params }: Props) {
           </Section>
         </div>
 
-        {/* ── Column 3: Honors + additional info ──────── */}
         <div className="flex flex-col gap-4">
           <Section icon={Award} title={t("honors.title")} delay={0.26}>
             <div className="flex flex-col gap-4">

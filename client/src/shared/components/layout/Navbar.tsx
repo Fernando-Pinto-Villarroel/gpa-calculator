@@ -3,7 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Settings, BarChart3, Target, Info } from "lucide-react";
+import {
+  LayoutDashboard,
+  Settings,
+  BarChart3,
+  Target,
+  Info,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "../ui/ThemeToggle";
@@ -37,7 +43,11 @@ export function Navbar({ locale }: NavbarProps) {
 
   return (
     <header className="relative flex items-center justify-between px-4 md:px-6 h-14 border-b border-jala-600/40 bg-jala-700 shrink-0 z-20">
-      <Link href={`/${locale}`} data-tour="navbar-brand" className="flex items-center gap-2 min-w-0">
+      <Link
+        href={`/${locale}`}
+        data-tour="navbar-brand"
+        className="flex items-center gap-2 min-w-0"
+      >
         <Image
           src="/logo.png"
           alt="Jala U - GPA"
@@ -56,8 +66,10 @@ export function Navbar({ locale }: NavbarProps) {
         </div>
       </Link>
 
-      {/* Desktop nav links — absolutely centered, hidden on mobile (BottomNav handles mobile nav) */}
-      <nav data-tour="navbar-links" className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
+      <nav
+        data-tour="navbar-links"
+        className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1"
+      >
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href ||

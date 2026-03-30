@@ -196,10 +196,10 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/forecast",
-      target: isMobileDashboard
-        ? "body"
-        : '[data-tour="forecast-combinations"]',
-      placement: isMobileDashboard ? "center" : "top",
+      target: isMobileDashboard ? "body" : "body",
+      // : '[data-tour="forecast-combinations"]',
+      placement: isMobileDashboard ? "center" : "center",
+      // : "top",
       title: t("forecast_combinations_title"),
       content: t("forecast_combinations_content"),
       disableBeacon: true,
