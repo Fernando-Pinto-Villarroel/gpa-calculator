@@ -73,6 +73,24 @@ export const cohort2_2024: Cohort = {
       ],
     },
     {
+      termId: "term-2",
+      moduleName: "Module 3",
+      courses: [
+        {
+          name: "Communication 1",
+          courseCode: "COM-118",
+          type: "General Education",
+          credits: 3,
+        },
+        {
+          name: "Calculus 2",
+          courseCode: "MATH-126",
+          type: "General Education",
+          credits: 3,
+        },
+      ],
+    },
+    {
       termId: "term-3",
       moduleName: "Module 1",
       courses: [

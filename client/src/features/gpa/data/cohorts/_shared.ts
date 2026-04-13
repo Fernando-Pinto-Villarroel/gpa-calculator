@@ -120,7 +120,7 @@ export function baseTerms(): Term[] {
         "Module 3": [
           {
             name: "Communication 1",
-            courseCode: "COM-118",
+            courseCode: "COMM-118",
             type: "General Education",
             credits: 3,
           },
@@ -146,7 +146,7 @@ export function baseTerms(): Term[] {
           },
           {
             name: "Communication 2",
-            courseCode: "COM-127",
+            courseCode: "COMM-127",
             type: "General Education",
             credits: 3,
           },
