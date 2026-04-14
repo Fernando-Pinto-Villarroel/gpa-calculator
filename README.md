@@ -376,6 +376,7 @@ A sincere thank you to the students who tested the app during early development 
 | Hugo Fernando Monteiro da Silva Junior | Cohort II – 2023 |
 | Pedro Catriel Pereira Torrez           | Cohort I – 2024  |
 | Victor Angel Pinto Mora                | Cohort I – 2024  |
+| Renzo Efrain Abalos Ruiz               | Cohort II – 2024 |
 | Karen Ivonne Cruz Alvarez              | Cohort I – 2025  |
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |
