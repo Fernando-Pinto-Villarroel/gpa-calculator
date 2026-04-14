@@ -128,7 +128,7 @@
     "remaining_credits": "Créditos Restantes",
     "no_data": "Aún no hay notas ingresadas. Ve a 'Notas' para agregar tus calificaciones.",
     "overview": {
-      "current_gpa": "GPA Actual",
+      "current_gpa": "GPA Acumulado Actual",
       "total_credits": "Total de Créditos Obtenidos",
       "completion": "Completado",
       "projected_honor": "Honor Proyectado",

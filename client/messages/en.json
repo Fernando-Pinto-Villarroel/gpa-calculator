@@ -128,7 +128,7 @@
     "remaining_credits": "Remaining Credits",
     "no_data": "No grades entered yet. Go to 'Grades' to add your grades.",
     "overview": {
-      "current_gpa": "Current GPA",
+      "current_gpa": "Current Cumulative GPA",
       "total_credits": "Total Credits Earned",
       "completion": "Completion",
       "projected_honor": "Projected Honor",
