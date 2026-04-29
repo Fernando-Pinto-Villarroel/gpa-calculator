@@ -282,5 +282,47 @@ export const cohort1_2023: Cohort = {
         },
       ],
     },
+    {
+      termId: "term-5",
+      moduleName: "Module 3",
+      courses: [
+        {
+          name: "Deep Learning / Generative AI",
+          courseCode: "CSAI-353",
+          type: "Specialized Laboratory",
+          credits: 2,
+        },
+        {
+          name: "Internet of Things",
+          courseCode: "CSIO-353",
+          type: "Specialized Laboratory",
+          credits: 2,
+        },
+      ],
+    },
+    {
+      termId: "term-6",
+      moduleName: "Module 1",
+      courses: [
+        {
+          name: "Programming 6",
+          courseCode: "CSPR-364",
+          type: "Specialized Laboratory",
+          credits: 3,
+        },
+        {
+          name: "Software Architecture 2",
+          courseCode: "CSAR-364",
+          type: "Specialized Laboratory",
+          credits: 2,
+        },
+        {
+          name: "User Interface & User Experience Design",
+          courseCode: "CSUX-364",
+          type: "Specialized Laboratory",
+          credits: 2,
+        },
+      ],
+    },
   ]),
 };

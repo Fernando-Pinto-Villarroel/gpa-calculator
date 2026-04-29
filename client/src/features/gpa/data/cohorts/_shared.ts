@@ -287,14 +287,14 @@ export function baseTerms(): Term[] {
         ],
         "Module 3": [
           {
-            name: "Internet of Things",
-            courseCode: "CSIO-353",
+            name: "Deep Learning / Generative AI",
+            courseCode: "CSAI-353",
             type: "Specialized Laboratory",
             credits: 2,
           },
           {
-            name: "Deep Learning / Generative AI",
-            courseCode: "CSAI-353",
+            name: "User Interface & User Experience Design",
+            courseCode: "CSUX-364",
             type: "Specialized Laboratory",
             credits: 2,
           },
@@ -319,8 +319,8 @@ export function baseTerms(): Term[] {
             credits: 2,
           },
           {
-            name: "User Interface & User Experience Design",
-            courseCode: "CSUX-364",
+            name: "Internet of Things",
+            courseCode: "CSIO-353",
             type: "Specialized Laboratory",
             credits: 2,
           },
