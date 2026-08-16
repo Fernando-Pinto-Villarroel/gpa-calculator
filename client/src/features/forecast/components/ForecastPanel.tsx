@@ -18,7 +18,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 import { ALL_GRADES, LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import { forecast, ForecastScope } from "../services/forecast";
 import { cn } from "@/core/lib/utils/cn";
@@ -78,10 +81,21 @@ function saveForecastConfig(config: ForecastConfig) {
 export function ForecastPanel() {
   const t = useTranslations("forecast");
   const tConfig = useTranslations("config");
-  const grades = useGpaStore((s) => s.grades);
-  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
-  const selectedTermId = useGpaStore((s) => s.selectedTermId);
-  const terms = getTermsByCohortId(selectedCohortId);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
+  const commercialSelectedTermId = useGpaStore((s) => s.selectedTermId);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+
+  const grades = isEsp ? espGrades : commercialGrades;
+  const terms = isEsp
+    ? getEspTermsByCohortId(espCohortId)
+    : getTermsByCohortId(commercialCohortId);
+  const selectedTermId = isEsp
+    ? (terms[0]?.id ?? "level-1")
+    : commercialSelectedTermId;
 
   const savedConfig = useMemo(() => loadForecastConfig(selectedTermId), []);
 
@@ -222,7 +236,9 @@ export function ForecastPanel() {
                     >
                       {terms.map((term) => (
                         <option key={term.id} value={term.id}>
-                          {tConfig("term_label", { ordinal: term.ordinal })}
+                          {tConfig(isEsp ? "level_label" : "term_label", {
+                            ordinal: term.ordinal,
+                          })}
                         </option>
                       ))}
                     </select>
@@ -364,7 +380,7 @@ export function ForecastPanel() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            <ForecastResults result={result} t={t} scope={scope} />
+            <ForecastResults result={result} t={t} scope={scope} isEsp={isEsp} />
           </motion.div>
         )
       )}
@@ -430,10 +446,12 @@ function ForecastResults({
   result,
   t,
   scope,
+  isEsp,
 }: {
   result: NonNullable<ReturnType<typeof forecast>>;
   t: ReturnType<typeof useTranslations>;
   scope: ForecastScope;
+  isEsp: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -465,9 +483,11 @@ function ForecastResults({
             <p className="text-xs text-text-muted">{t("remaining_courses")}</p>
             <p className="text-xl font-bold text-text-primary">
               {result.remainingCourseCount}
-              <span className="text-sm font-normal text-text-muted ml-1.5">
-                ({result.remainingCredits} cr)
-              </span>
+              {!isEsp && (
+                <span className="text-sm font-normal text-text-muted ml-1.5">
+                  ({result.remainingCredits} cr)
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -626,6 +646,7 @@ function ForecastResults({
                   key={i}
                   index={i}
                   combination={combo}
+                  isEsp={isEsp}
                 />
               ))
             ) : (
@@ -663,9 +684,11 @@ function ForecastResults({
 function CombinationCard({
   index,
   combination,
+  isEsp,
 }: {
   index: number;
   combination: NonNullable<ReturnType<typeof forecast>>["combinations"][number];
+  isEsp: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2 p-3 rounded-lg border border-border-base bg-bg-elevated/50">
@@ -694,14 +717,15 @@ function CombinationCard({
             >
               {alloc.count}&times;{alloc.grade}
             </span>
-            {alloc.creditGroups.map((cg) => (
-              <span
-                key={cg.credits}
-                className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold tabular-nums bg-bg-elevated border border-border-base text-text-muted"
-              >
-                {cg.count}&times;{cg.credits}cr
-              </span>
-            ))}
+            {!isEsp &&
+              alloc.creditGroups.map((cg) => (
+                <span
+                  key={cg.credits}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold tabular-nums bg-bg-elevated border border-border-base text-text-muted"
+                >
+                  {cg.count}&times;{cg.credits}cr
+                </span>
+              ))}
           </div>
         ))}
       </div>

@@ -11,12 +11,15 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import {
   calculateGpa,
   getHonorStatus,
   getTermHonorCounts,
 } from "@/features/gpa/services/calculator";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 import { cn } from "@/core/lib/utils/cn";
 
 function OverviewCard({
@@ -71,18 +74,27 @@ const HONOR_LABELS: Record<string, string> = {
 
 export function StatsOverview() {
   const t = useTranslations("statistics");
-  const grades = useGpaStore((s) => s.grades);
-  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
-  const terms = getTermsByCohortId(selectedCohortId);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const grades = isEsp ? espGrades : commercialGrades;
+  const terms = isEsp
+    ? getEspTermsByCohortId(espCohortId)
+    : getTermsByCohortId(commercialCohortId);
 
   const {
     gpa,
+    completedCourses,
     approvedCredits,
     approvedCourses,
     totalCourses,
     totalCredits,
   } = calculateGpa(grades, terms);
-  const honorStatus = getHonorStatus(gpa);
+  const hasGrades = completedCourses > 0;
+  const honorStatus = hasGrades ? getHonorStatus(gpa) : null;
   const completion =
     totalCourses > 0 ? Math.round((approvedCourses / totalCourses) * 100) : 0;
   const { deansListCount, presidentsListCount } = getTermHonorCounts(
@@ -94,18 +106,27 @@ export function StatsOverview() {
     {
       icon: TrendingUp,
       label: t("overview.current_gpa"),
-      value: gpa > 0 ? gpa.toFixed(3) : "—",
+      value: hasGrades ? gpa.toFixed(3) : "—",
       color: "text-jala-400 bg-jala-700/15",
       delay: 0,
     },
-    {
-      icon: BookOpen,
-      label: t("overview.total_credits"),
-      value: String(approvedCredits),
-      sub: `of ${totalCredits} total`,
-      color: "text-success bg-success/15",
-      delay: 0.06,
-    },
+    isEsp
+      ? {
+          icon: BookOpen,
+          label: t("overview.total_courses_completed"),
+          value: String(approvedCourses),
+          sub: `of ${totalCourses} total`,
+          color: "text-success bg-success/15",
+          delay: 0.06,
+        }
+      : {
+          icon: BookOpen,
+          label: t("overview.total_credits"),
+          value: String(approvedCredits),
+          sub: `of ${totalCredits} total`,
+          color: "text-success bg-success/15",
+          delay: 0.06,
+        },
     {
       icon: Target,
       label: t("overview.completion"),
@@ -123,14 +144,16 @@ export function StatsOverview() {
     },
     {
       icon: Medal,
-      label: t("overview.deans_list_terms"),
+      label: t(isEsp ? "overview.deans_list_levels" : "overview.deans_list_terms"),
       value: String(deansListCount),
       color: "text-text-accent bg-jala-700/15",
       delay: 0.24,
     },
     {
       icon: Trophy,
-      label: t("overview.presidents_list_terms"),
+      label: t(
+        isEsp ? "overview.presidents_list_levels" : "overview.presidents_list_terms",
+      ),
       value: String(presidentsListCount),
       color: "text-amber-400 bg-amber-400/15",
       delay: 0.3,

@@ -11,8 +11,11 @@ import Joyride, {
 import { useRouter, usePathname } from "next/navigation";
 import { useTourStore } from "../store/useTourStore";
 import { useTourSteps } from "../hooks/useTourSteps";
+import { TourTooltip } from "./TourTooltip";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
+import { getCareerPalette } from "@/features/career/theme";
 
 interface GuidedTourProps {
   locale: string;
@@ -28,6 +31,7 @@ const IDLE_STEP: Step = {
 export function GuidedTour({ locale }: GuidedTourProps) {
   const t = useTranslations("tour");
   const { theme } = useThemeStore();
+  const { accent700 } = getCareerPalette(useCareerStore((s) => s.selectedCareerId));
   const {
     guidedTourCompleted,
     globalStepIndex,
@@ -56,6 +60,34 @@ export function GuidedTour({ locale }: GuidedTourProps) {
 
   const getFirstIndexOnPage = (routeSuffix: string): number =>
     allSteps.findIndex((s) => s.route === routeSuffix);
+
+  const getRouteOrder = (): string[] => {
+    const seen = new Set<string>();
+    const order: string[] = [];
+    allSteps.forEach((s) => {
+      if (!seen.has(s.route)) {
+        seen.add(s.route);
+        order.push(s.route);
+      }
+    });
+    return order;
+  };
+
+  const routeOrder = getRouteOrder();
+  const currentRouteIdx = routeOrder.indexOf(getRouteSuffix());
+  const nextRoute =
+    currentRouteIdx !== -1 ? routeOrder[currentRouteIdx + 1] : undefined;
+
+  const handleSkipPage = () => {
+    setJoyrideRun(false);
+    if (nextRoute === undefined) {
+      completeTour();
+      return;
+    }
+    const nextGlobalIndex = getFirstIndexOnPage(nextRoute);
+    setGlobalStepIndex(nextGlobalIndex);
+    router.push(`/${locale}${nextRoute}`);
+  };
 
   useEffect(() => {
     if (!guidedTourCompleted && !isActive) {
@@ -107,8 +139,12 @@ export function GuidedTour({ locale }: GuidedTourProps) {
       const newGlobalIndex = globalStepIndex + 1;
       if (newGlobalIndex >= allSteps.length) {
         completeTour();
-      } else {
-        setGlobalStepIndex(newGlobalIndex);
+        return;
+      }
+      setGlobalStepIndex(newGlobalIndex);
+      const nextStep = allSteps[newGlobalIndex];
+      if (nextStep && nextStep.route !== routeSuffix) {
+        router.push(`/${locale}${nextStep.route}`);
       }
     };
 
@@ -211,7 +247,7 @@ export function GuidedTour({ locale }: GuidedTourProps) {
     typeof window !== "undefined" ? Math.min(360, window.innerWidth - 32) : 360;
 
   const isDark = theme === "dark";
-  const primaryColor = "#0d49a9";
+  const primaryColor = accent700;
   const bgColor = isDark ? "#0b1530" : "#f6f8fb";
   const textColor = isDark ? "#e2e8f0" : "#0f172a";
   const textSecondary = isDark ? "#94a3b8" : "#475569";
@@ -230,14 +266,31 @@ export function GuidedTour({ locale }: GuidedTourProps) {
       disableScrollParentFix
       scrollOffset={100}
       callback={handleCallback}
+      tooltipComponent={(props) => (
+        <TourTooltip
+          {...props}
+          onSkipPage={handleSkipPage}
+          hasNextPage={nextRoute !== undefined}
+          labels={{
+            back: t("back"),
+            next: t("next"),
+            nextPage: t("next_page"),
+            finish: t("finish"),
+            skipPage: t("skip_page"),
+            skipTour: t("skip"),
+          }}
+          colors={{
+            primary: primaryColor,
+            bg: bgColor,
+            text: textColor,
+            textSecondary,
+            border: borderColor,
+          }}
+          maxWidth={tooltipMaxWidth}
+        />
+      )}
       locale={{
-        skip: t("skip"),
-        next: t("next"),
-        back: t("back"),
-        close: t("close"),
-        last: t("finish"),
         open: t("open"),
-        nextLabelWithProgress: `${t("next")} ({step} / {steps})`,
       }}
       styles={{
         options: {
@@ -247,48 +300,6 @@ export function GuidedTour({ locale }: GuidedTourProps) {
           arrowColor: bgColor,
           zIndex: 10000,
           overlayColor: "rgba(0, 0, 0, 0.5)",
-        },
-        tooltip: {
-          borderRadius: "12px",
-          border: `1px solid ${borderColor}`,
-          boxShadow: isDark
-            ? "0 20px 40px rgba(0,0,0,0.5)"
-            : "0 20px 40px rgba(0,0,0,0.15)",
-          padding: "20px",
-          maxWidth: `${tooltipMaxWidth}px`,
-        },
-        tooltipTitle: {
-          fontSize: "14px",
-          fontWeight: "600",
-          color: textColor,
-          marginBottom: "8px",
-        },
-        tooltipContent: {
-          fontSize: "13px",
-          color: textSecondary,
-          lineHeight: "1.6",
-          padding: 0,
-        },
-        tooltipFooter: {
-          marginTop: "16px",
-          gap: "8px",
-        },
-        buttonNext: {
-          backgroundColor: primaryColor,
-          borderRadius: "8px",
-          fontSize: "12px",
-          fontWeight: "600",
-          padding: "8px 14px",
-        },
-        buttonBack: {
-          color: textSecondary,
-          fontSize: "12px",
-          fontWeight: "500",
-          marginRight: "4px",
-        },
-        buttonSkip: {
-          color: textSecondary,
-          fontSize: "11px",
         },
         spotlight: {
           borderRadius: "8px",

@@ -12,10 +12,14 @@ import {
   Legend,
 } from "recharts";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getTermGpaProgression } from "@/features/gpa/services/calculator";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
+import { getCareerPalette } from "@/features/career/theme";
 
 const SCALE_EXP = 1.3;
 const gpaToScale = (v: number) => Math.pow(v, SCALE_EXP);
@@ -51,17 +55,27 @@ function CustomTooltip({
 }
 
 export function CumulativeGpaProgressChart() {
-  const grades = useGpaStore((s) => s.grades);
-  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const grades = isEsp ? espGrades : commercialGrades;
   const t = useTranslations("statistics");
   const tConfig = useTranslations("config");
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
+  const { accent500 } = getCareerPalette(selectedCareerId);
 
-  const terms = getTermsByCohortId(selectedCohortId);
+  const terms = isEsp
+    ? getEspTermsByCohortId(espCohortId)
+    : getTermsByCohortId(commercialCohortId);
   const data = getTermGpaProgression(grades, terms).map((item) => ({
     ...item,
-    label: tConfig("term_label", { ordinal: item.termOrdinal }),
+    label: tConfig(isEsp ? "level_label" : "term_label", {
+      ordinal: item.termOrdinal,
+    }),
     cumulativeGpa: gpaToScale(item.cumulativeGpa),
   }));
 
@@ -150,9 +164,9 @@ export function CumulativeGpaProgressChart() {
           type="monotone"
           dataKey="cumulativeGpa"
           name={t("cumulative_gpa")}
-          stroke="#2a4ff5"
+          stroke={accent500}
           strokeWidth={2.5}
-          dot={{ fill: "#2a4ff5", r: 4 }}
+          dot={{ fill: accent500, r: 4 }}
           activeDot={{ r: 6 }}
         />
       </LineChart>

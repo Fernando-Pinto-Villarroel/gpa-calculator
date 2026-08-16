@@ -13,6 +13,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import {
   calculateGpa,
   getHonorStatus,
@@ -20,11 +21,13 @@ import {
   getCompletedTermsCount,
   getTermHonorCounts,
 } from "@/features/gpa/services/calculator";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
 import { letterGradesMap } from "@/core/domain/types/letterGrades";
 import { GpaDisplay } from "@/features/dashboard/components/GpaDisplay";
 import { HonorBadge } from "@/features/dashboard/components/HonorBadge";
 import { StatCard } from "@/features/dashboard/components/StatCard";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -36,9 +39,18 @@ export default function HomePage({ params }: Props) {
   const tc = useTranslations("common");
   const tCourses = useTranslations("courses");
   const tConfig = useTranslations("config");
-  const grades = useGpaStore((s) => s.grades);
-  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
-  const terms = getTermsByCohortId(selectedCohortId);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+
+  const grades = isEsp ? espGrades : commercialGrades;
+  const terms = isEsp
+    ? getEspTermsByCohortId(espCohortId)
+    : getTermsByCohortId(commercialCohortId);
 
   const {
     gpa,
@@ -48,7 +60,8 @@ export default function HomePage({ params }: Props) {
     totalCredits,
     totalCourses,
   } = calculateGpa(grades, terms);
-  const honorStatus = getHonorStatus(gpa);
+  const hasGrades = completedCourses > 0;
+  const honorStatus = hasGrades ? getHonorStatus(gpa) : null;
   const { best, worst, bestCourses, worstCourses } = getBestAndWorstCourses(
     grades,
     terms,
@@ -90,13 +103,13 @@ export default function HomePage({ params }: Props) {
         : undefined,
     },
     {
-      label: t("stats.terms_completed"),
+      label: t(isEsp ? "stats.levels_completed" : "stats.terms_completed"),
       value: String(termsCompleted),
       subvalue: `${tc("of")} ${terms.length}`,
       icon: Timer,
     },
     {
-      label: t("stats.deans_list_terms"),
+      label: t(isEsp ? "stats.deans_list_levels" : "stats.deans_list_terms"),
       value: String(deansListCount),
       icon: Medal,
       variant: deansListCount > 0 ? ("default" as const) : ("default" as const),
@@ -125,24 +138,42 @@ export default function HomePage({ params }: Props) {
           : `${tCourses(worst.courseCode)} — ${tConfig("term_label", { ordinal: worst.termOrdinal })}`
         : undefined,
     },
+    isEsp
+      ? {
+          label: t("stats.courses_passed"),
+          value: String(approvedCourses),
+          subvalue: `${tc("of")} ${totalCourses}`,
+          icon: CreditCard,
+          variant: "success" as const,
+        }
+      : {
+          label: t("stats.earned_credits"),
+          value: String(approvedCredits),
+          subvalue: `${tc("of")} ${totalCredits}`,
+          icon: CreditCard,
+          variant: "success" as const,
+        },
+    isEsp
+      ? {
+          label: t("stats.courses_remaining"),
+          value: String(totalCourses - approvedCourses),
+          icon: BookMarked,
+          variant:
+            approvedCourses >= totalCourses
+              ? ("success" as const)
+              : ("default" as const),
+        }
+      : {
+          label: t("stats.remaining_credits"),
+          value: String(totalCredits - approvedCredits),
+          icon: BookMarked,
+          variant:
+            approvedCredits >= totalCredits
+              ? ("success" as const)
+              : ("default" as const),
+        },
     {
-      label: t("stats.earned_credits"),
-      value: String(approvedCredits),
-      subvalue: `${tc("of")} ${totalCredits}`,
-      icon: CreditCard,
-      variant: "success" as const,
-    },
-    {
-      label: t("stats.remaining_credits"),
-      value: String(totalCredits - approvedCredits),
-      icon: BookMarked,
-      variant:
-        approvedCredits >= totalCredits
-          ? ("success" as const)
-          : ("default" as const),
-    },
-    {
-      label: t("stats.presidents_list_terms"),
+      label: t(isEsp ? "stats.presidents_list_levels" : "stats.presidents_list_terms"),
       value: String(presidentsListCount),
       icon: Trophy,
       variant:
@@ -171,7 +202,7 @@ export default function HomePage({ params }: Props) {
 
           <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0">
             <div data-tour="gpa-display">
-              <GpaDisplay gpa={gpa} locale={locale} isDesktop />
+              <GpaDisplay gpa={gpa} locale={locale} hasGrades={hasGrades} isDesktop />
             </div>
 
             <div data-tour="honor-badge" className="flex flex-col items-center gap-4">
@@ -239,7 +270,7 @@ export default function HomePage({ params }: Props) {
       <div className="flex lg:hidden flex-col px-4 py-5 gap-5 pb-24">
         <div className="flex flex-col items-center gap-3">
           <div data-tour="gpa-display-m">
-            <GpaDisplay gpa={gpa} locale={locale} />
+            <GpaDisplay gpa={gpa} locale={locale} hasGrades={hasGrades} />
           </div>
           <div data-tour="honor-badge-m" className="flex flex-col items-center gap-3">
             {honorStatus && (

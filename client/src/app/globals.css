@@ -2,11 +2,26 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Custom breakpoint for the header's nav-links-vs-hamburger switch. The
+   nav links are centered absolutely and don't reflow with their siblings,
+   so the default lg (1024px) breakpoint isn't enough room once the career
+   selector is showing a long label — this leaves comfortable margin,
+   including for users zoomed in past 100%. */
+@theme {
+  --breakpoint-nav: 72rem;
+}
+
 :root {
   --jala-blue-400: #60a5fa;
   --jala-blue-500: #3b82f6;
   --jala-blue-600: #2563eb;
   --jala-blue-700: #0d49a9;
+
+  /* The header mirrors the brand accent, so it re-themes automatically
+     along with everything else per career (see the [data-career] block
+     below). */
+  --header-bg: var(--jala-blue-700);
+  --header-border: var(--jala-blue-600);
 
   --bg-base: #eff3f8;
   --bg-surface: #f6f8fb;
@@ -41,6 +56,43 @@
   --border-accent: #3b82f6;
 }
 
+/*
+ * Career color themes.
+ *
+ * The whole app's brand accent — buttons, badges, links, borders, the
+ * header, chart lines — is driven by --jala-blue-400/500/600/700 and
+ * --text-accent / --border-accent above. To give a new career its own
+ * palette:
+ *
+ *   1. Add a [data-career="<careerId>"] block below overriding
+ *      --jala-blue-400/500/600/700 and --text-accent / --border-accent
+ *      (the light-mode values).
+ *   2. Add a matching .dark[data-career="<careerId>"] block overriding
+ *      --text-accent / --border-accent with dark-mode-appropriate shades
+ *      (--jala-blue-* doesn't need a separate dark variant — it's already
+ *      theme-agnostic by design, same as the base palette above).
+ *   3. Mirror the same hex values in CAREER_PALETTES in
+ *      src/features/career/theme.ts, used by the handful of places that
+ *      need a raw color value in JS instead of a CSS class (charts, the
+ *      guided tour).
+ *
+ * Software Engineering has no override block below — it IS the base
+ * palette defined in :root and .dark above.
+ */
+[data-career="esp"] {
+  --jala-blue-400: #fb923c;
+  --jala-blue-500: #f97316;
+  --jala-blue-600: #ea580c;
+  --jala-blue-700: #c2410c;
+  --text-accent: #ea580c;
+  --border-accent: #ea580c;
+}
+
+.dark[data-career="esp"] {
+  --text-accent: #fb923c;
+  --border-accent: #f97316;
+}
+
 @theme inline {
   --color-bg-base: var(--bg-base);
   --color-bg-surface: var(--bg-surface);
@@ -56,6 +108,8 @@
   --color-jala-500: var(--jala-blue-500);
   --color-jala-600: var(--jala-blue-600);
   --color-jala-700: var(--jala-blue-700);
+  --color-header-bg: var(--header-bg);
+  --color-header-border: var(--header-border);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);

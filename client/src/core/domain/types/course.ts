@@ -3,6 +3,8 @@ export interface Course {
   courseCode: string;
   type: string;
   credits: number;
+  gpaWeight?: number;
+  optional?: boolean;
 }
 
 export interface Term {

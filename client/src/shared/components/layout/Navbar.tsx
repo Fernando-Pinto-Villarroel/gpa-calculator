@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Settings,
@@ -12,9 +12,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ThemeToggle } from "../ui/ThemeToggle";
-import { LocaleSwitcher } from "../ui/LocaleSwitcher";
-import { useTourStore } from "@/features/tour/store/useTourStore";
+import { CareerSelector } from "./CareerSelector";
+import { HeaderActionsMenu } from "./HeaderActionsMenu";
 import { cn } from "@/core/lib/utils/cn";
 
 interface NavbarProps {
@@ -23,26 +22,18 @@ interface NavbarProps {
 
 export function Navbar({ locale }: NavbarProps) {
   const t = useTranslations("nav");
-  const tTour = useTranslations("tour");
   const pathname = usePathname();
-  const router = useRouter();
-  const { startTour } = useTourStore();
-
-  const handleRestartTour = () => {
-    startTour();
-    router.push(`/${locale}`);
-  };
 
   const navItems = [
     { href: `/${locale}`, label: t("home"), icon: LayoutDashboard },
-    { href: `/${locale}/config`, label: t("config"), icon: Settings },
+    { href: `/${locale}/grades`, label: t("config"), icon: Settings },
     { href: `/${locale}/statistics`, label: t("statistics"), icon: BarChart3 },
     { href: `/${locale}/forecast`, label: t("forecast"), icon: Target },
     { href: `/${locale}/about`, label: t("about"), icon: Info },
   ];
 
   return (
-    <header className="relative flex items-center justify-between px-4 md:px-6 h-14 border-b border-jala-600/40 bg-jala-700 shrink-0 z-20">
+    <header className="relative flex items-center justify-between px-4 md:px-6 h-14 border-b border-header-border/40 bg-header-bg shrink-0 z-20 transition-colors duration-300">
       <Link
         href={`/${locale}`}
         data-tour="navbar-brand"
@@ -68,7 +59,7 @@ export function Navbar({ locale }: NavbarProps) {
 
       <nav
         data-tour="navbar-links"
-        className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1"
+        className="hidden nav:flex absolute left-1/2 -translate-x-1/2 items-center gap-1"
       >
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
@@ -93,22 +84,9 @@ export function Navbar({ locale }: NavbarProps) {
         })}
       </nav>
 
-      <div className="flex items-center gap-2">
-        <div data-tour="navbar-language">
-          <LocaleSwitcher currentLocale={locale} onColor />
-        </div>
-        <div data-tour="navbar-theme">
-          <ThemeToggle onColor />
-        </div>
-        <motion.button
-          onClick={handleRestartTour}
-          whileTap={{ scale: 0.92 }}
-          aria-label={tTour("restart_button_label")}
-          title={tTour("restart_button_label")}
-          className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-white/30 bg-white/15 text-white hover:bg-white/25 hover:border-white/50 transition-colors duration-200"
-        >
-          <Info size={16} />
-        </motion.button>
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <CareerSelector />
+        <HeaderActionsMenu />
       </div>
     </header>
   );

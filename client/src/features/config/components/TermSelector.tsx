@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { cn } from "@/core/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";

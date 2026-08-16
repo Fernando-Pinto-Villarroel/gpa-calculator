@@ -21,7 +21,7 @@ import {
 import { cn } from "@/core/lib/utils/cn";
 import { FeedbackButton } from "@/features/about/components/FeedbackButton";
 
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "2.0.0";
 
 type Props = {
   params: Promise<{ locale: string }>;

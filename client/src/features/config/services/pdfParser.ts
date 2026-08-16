@@ -1,18 +1,11 @@
 import type { LetterGrade } from "@/core/domain/types/letterGrades";
 import type { CourseGradeEntry, CourseAttempt } from "@/core/domain/types/grades";
 import { ALL_GRADES } from "@/core/domain/types/letterGrades";
-import { cohorts, getCohortById } from "@/features/gpa/data";
+import { cohorts, getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
+import { getEspCohortById } from "@/features/gpa/data/esp";
+import { extractTextFromPdf } from "@/core/lib/pdf/extractTextFromPdf";
 
-const U8Proto = Uint8Array.prototype as unknown as Record<string, unknown>;
-if (typeof U8Proto.toHex !== "function") {
-  U8Proto.toHex = function (this: Uint8Array) {
-    let hex = "";
-    for (let i = 0; i < this.length; i++) {
-      hex += this[i].toString(16).padStart(2, "0");
-    }
-    return hex;
-  };
-}
+export { extractTextFromPdf };
 
 export type PdfCourseEntry = {
   courseCode: string;
@@ -44,6 +37,11 @@ const FAILING_GRADES = new Set<string>(["F", "D-"]);
 
 function isPassingGrade(grade: LetterGrade): boolean {
   return !FAILING_GRADES.has(grade);
+}
+
+function sliceToConsolidated(rawText: string): string {
+  const consolidatedIdx = rawText.indexOf("Consolidated");
+  return consolidatedIdx !== -1 ? rawText.slice(consolidatedIdx) : rawText;
 }
 
 function normalizeText(text: string): string {
@@ -124,84 +122,6 @@ function buildCohortCreditsMap(cohortId: string): Map<string, number> {
     }
   }
   return creditsMap;
-}
-
-function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-  if (typeof file.arrayBuffer === "function") {
-    return file.arrayBuffer();
-  }
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as ArrayBuffer);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-const TOHEX_POLYFILL = `
-if (typeof Uint8Array.prototype.toHex !== "function") {
-  Uint8Array.prototype.toHex = function () {
-    var h = "";
-    for (var i = 0; i < this.length; i++) {
-      h += this[i].toString(16).padStart(2, "0");
-    }
-    return h;
-  };
-}
-`;
-
-async function getPolyfillWorkerSrc(): Promise<string> {
-  const res = await fetch("/pdf.worker.min.mjs");
-  const workerCode = await res.text();
-  const blob = new Blob(
-    [TOHEX_POLYFILL, workerCode],
-    { type: "application/javascript" },
-  );
-  return URL.createObjectURL(blob);
-}
-
-async function extractPagesFromData(
-  pdfjsLib: typeof import("pdfjs-dist"),
-  data: ArrayBuffer,
-): Promise<string> {
-  const doc = await pdfjsLib.getDocument({
-    data,
-    isEvalSupported: false,
-  }).promise;
-
-  const textParts: string[] = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map((item) => ("str" in item ? item.str : ""))
-      .join(" ");
-    textParts.push(pageText);
-  }
-
-  await doc.destroy();
-  return textParts.join("\n");
-}
-
-export async function extractTextFromPdf(file: File): Promise<string> {
-  const pdfjsLib = await import("pdfjs-dist");
-  const buffer = await readFileAsArrayBuffer(file);
-  const fallbackCopy = buffer.slice(0);
-
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-  try {
-    return await extractPagesFromData(pdfjsLib, buffer);
-  } catch {
-    // .mjs worker or toHex failed — retry with polyfilled worker blob
-  }
-
-  const blobSrc = await getPolyfillWorkerSrc();
-  try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = blobSrc;
-    return await extractPagesFromData(pdfjsLib, fallbackCopy);
-  } finally {
-    URL.revokeObjectURL(blobSrc);
-  }
 }
 
 export function parsePdfText(rawText: string): PdfCourseEntry[] {
@@ -376,6 +296,89 @@ export function buildGradesFromPdfEntries(
   };
 }
 
+export function parseEspPdfText(rawText: string): PdfCourseEntry[] {
+  const text = sliceToConsolidated(rawText);
+
+  const entries: PdfCourseEntry[] = [];
+
+  const gradeAlt = [
+    "A\\s?-", "B\\s?\\+", "B\\s?-", "C\\s?\\+", "C\\s?-", "D\\s?\\+", "D\\s?-",
+    "A", "B", "C", "D", "F",
+  ].join("|");
+
+  const pattern = new RegExp(
+    `ESP([\\sA-Z0-9-]{0,30}?)` + `\\s+` + `(${gradeAlt})` + `\\s+` + `-`,
+    "g",
+  );
+
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    const courseCode = "ESP" + match[1].replace(/\s+/g, "");
+    const grade = match[2].replace(/\s+/g, "");
+
+    if (!VALID_GRADES.has(grade)) continue;
+
+    entries.push({ courseCode, credits: 0, grade: grade as LetterGrade });
+  }
+
+  return entries;
+}
+
+export function buildEspGradesFromPdfEntries(
+  entries: PdfCourseEntry[],
+  espCohortId: string,
+): PdfParseResult {
+  if (entries.length === 0) {
+    return { success: false, error: "no_courses_found" };
+  }
+
+  const cohort = getEspCohortById(espCohortId);
+  if (!cohort) {
+    return { success: false, error: "unknown_cohort" };
+  }
+
+  const cohortCodes = new Set<string>();
+  for (const term of cohort.terms) {
+    for (const courses of Object.values(term.modules)) {
+      for (const course of courses) {
+        cohortCodes.add(course.courseCode);
+      }
+    }
+  }
+
+  const grouped = new Map<string, PdfCourseEntry[]>();
+  const unrecognizedSet = new Set<string>();
+
+  for (const entry of entries) {
+    if (!cohortCodes.has(entry.courseCode)) {
+      unrecognizedSet.add(entry.courseCode);
+      continue;
+    }
+    const list = grouped.get(entry.courseCode) ?? [];
+    list.push(entry);
+    grouped.set(entry.courseCode, list);
+  }
+
+  const grades: Record<string, CourseGradeEntry> = {};
+  let matched = 0;
+
+  for (const [courseCode, courseEntries] of grouped) {
+    const last = courseEntries[courseEntries.length - 1];
+    grades[courseCode] = last.grade;
+    matched++;
+  }
+
+  return {
+    success: true,
+    grades,
+    matched,
+    skipped: entries.length - matched - unrecognizedSet.size,
+    unrecognized: [...unrecognizedSet],
+    remapped: [],
+    creditOverrides: [],
+  };
+}
+
 export async function parsePdfFile(
   file: File,
   cohortId: string,
@@ -383,4 +386,13 @@ export async function parsePdfFile(
   const text = await extractTextFromPdf(file);
   const entries = parsePdfText(text);
   return buildGradesFromPdfEntries(entries, cohortId);
+}
+
+export async function parseEspPdfFile(
+  file: File,
+  espCohortId: string,
+): Promise<PdfParseResult> {
+  const text = await extractTextFromPdf(file);
+  const entries = parseEspPdfText(text);
+  return buildEspGradesFromPdfEntries(entries, espCohortId);
 }

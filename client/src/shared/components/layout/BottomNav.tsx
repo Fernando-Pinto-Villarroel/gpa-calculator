@@ -17,14 +17,14 @@ export function BottomNav({ locale }: BottomNavProps) {
 
   const navItems = [
     { href: `/${locale}`, label: t("home"), icon: LayoutDashboard },
-    { href: `/${locale}/config`, label: t("config"), icon: Settings },
+    { href: `/${locale}/grades`, label: t("config"), icon: Settings },
     { href: `/${locale}/statistics`, label: t("statistics"), icon: BarChart3 },
     { href: `/${locale}/forecast`, label: t("forecast"), icon: Target },
     { href: `/${locale}/about`, label: t("about"), icon: Info },
   ];
 
   return (
-    <nav data-tour="bottom-nav" className="md:hidden flex items-center justify-around border-t border-border-base bg-bg-surface/90 backdrop-blur-md h-16 shrink-0 safe-b z-20">
+    <nav data-tour="bottom-nav" className="nav:hidden flex items-center justify-around border-t border-border-base bg-bg-surface/90 backdrop-blur-md h-16 shrink-0 safe-b z-20">
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive =
           pathname === href ||

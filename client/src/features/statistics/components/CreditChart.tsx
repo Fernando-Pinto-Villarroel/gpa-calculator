@@ -11,10 +11,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getCreditsPerTerm } from "@/features/gpa/services/calculator";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
+import { getCareerPalette, withAlpha } from "@/features/career/theme";
 
 interface ChartDataPoint {
   label: string;
@@ -29,10 +33,12 @@ function CustomTooltip({
   active,
   payload,
   label,
+  isEsp,
 }: {
   active?: boolean;
   payload?: { name: string; value: number; fill: string; payload: ChartDataPoint }[];
   label?: string;
+  isEsp?: boolean;
 }) {
   const t = useTranslations("statistics");
 
@@ -47,7 +53,10 @@ function CustomTooltip({
         <div key={p.name} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-sm" style={{ background: p.fill }} />
           <span className="text-text-secondary">{p.name}:</span>
-          <span className="font-semibold text-text-primary">{p.value} cr</span>
+          <span className="font-semibold text-text-primary">
+            {p.value}
+            {isEsp ? "" : " cr"}
+          </span>
         </div>
       ))}
       <div className="mt-2 pt-2 border-t border-border-base flex flex-col gap-1">
@@ -69,19 +78,29 @@ function CustomTooltip({
 }
 
 export function CreditChart() {
-  const grades = useGpaStore((s) => s.grades);
-  const selectedCohortId = useGpaStore((s) => s.selectedCohortId);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const grades = isEsp ? espGrades : commercialGrades;
   const t = useTranslations("statistics");
   const tConfig = useTranslations("config");
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
+  const { accent500 } = getCareerPalette(selectedCareerId);
 
-  const terms = getTermsByCohortId(selectedCohortId);
+  const terms = isEsp
+    ? getEspTermsByCohortId(espCohortId)
+    : getTermsByCohortId(commercialCohortId);
   const raw = getCreditsPerTerm(grades, terms);
   const data: ChartDataPoint[] = raw.map((d) => ({
-    label: tConfig("term_label", { ordinal: d.termOrdinal }),
-    earned: d.earned,
-    remaining: d.total - d.earned,
+    label: tConfig(isEsp ? "level_label" : "term_label", {
+      ordinal: d.termOrdinal,
+    }),
+    earned: isEsp ? d.coursesCompleted : d.earned,
+    remaining: isEsp ? d.coursesPending : d.total - d.earned,
     coursesCompleted: d.coursesCompleted,
     coursesPending: d.coursesPending,
     totalCourses: d.totalCourses,
@@ -111,20 +130,20 @@ export function CreditChart() {
           allowDecimals={false}
         />
         <Tooltip
-          content={<CustomTooltip />}
-          cursor={{ fill: "rgba(42,79,245,0.08)" }}
+          content={<CustomTooltip isEsp={isEsp} />}
+          cursor={{ fill: withAlpha(accent500, 0.08) }}
         />
         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
         <Bar
           dataKey="earned"
-          name={t("credits_earned")}
-          fill="#2a4ff5"
+          name={isEsp ? t("courses_completed") : t("credits_earned")}
+          fill={accent500}
           radius={[3, 3, 0, 0]}
           stackId="a"
         />
         <Bar
           dataKey="remaining"
-          name={t("remaining_credits")}
+          name={isEsp ? t("courses_pending") : t("remaining_credits")}
           fill={isDark ? "#475569" : "#94a3b8"}
           radius={[3, 3, 0, 0]}
           stackId="a"

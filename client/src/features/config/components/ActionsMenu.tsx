@@ -1,31 +1,84 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Upload, Download, RotateCcw, FileText, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import {
+  Menu,
+  Download,
+  Upload,
+  FileText,
+  FlaskConical,
+  RotateCcw,
+  Loader2,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/core/lib/i18n/navigation";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { useTourStore } from "@/features/tour/store/useTourStore";
+import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
-import { getCohortById } from "@/features/gpa/data";
+import { getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
 import { validateImportPayload } from "@/features/config/lib/validateImportPayload";
-import { parsePdfFile } from "@/features/config/services/pdfParser";
+import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
 import Swal from "sweetalert2";
 
-export function ImportExport({ className }: { className?: string }) {
+const TOUR_TARGETED_ITEMS = [
+  '[data-tour="action-import"]',
+  '[data-tour="action-export"]',
+  '[data-tour="action-pdf"]',
+  '[data-tour="action-reset"]',
+];
+
+export function ActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
+  const router = useRouter();
   const {
+    grades,
     importGrades,
     exportGrades,
     resetTermData,
     resetCohortData,
     selectedCohortId,
   } = useGpaStore();
+  const {
+    grades: espGrades,
+    importGrades: importEspGrades,
+    selectedCohortId: espSelectedCohortId,
+  } = useEspGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const { isActive: tourActive, globalStepIndex } = useTourStore();
+  const tourSteps = useTourSteps();
+  const currentTourTarget = tourActive
+    ? tourSteps[globalStepIndex]?.target
+    : undefined;
+  const tourWantsMenuOpen =
+    typeof currentTourTarget === "string" &&
+    TOUR_TARGETED_ITEMS.includes(currentTourTarget);
+
+  useEffect(() => {
+    if (!tourActive) return;
+    setOpen(tourWantsMenuOpen);
+  }, [tourActive, tourWantsMenuOpen]);
+
+  useEffect(() => {
+    if (tourActive) return;
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [tourActive]);
 
   const swalBase = {
     background: theme === "dark" ? "#1e293b" : "#fff",
@@ -189,9 +242,12 @@ export function ImportExport({ className }: { className?: string }) {
     setPdfLoading(true);
 
     try {
-      const result = await parsePdfFile(file, selectedCohortId);
+      const [result, espResult] = await Promise.all([
+        parsePdfFile(file, selectedCohortId),
+        parseEspPdfFile(file, espSelectedCohortId),
+      ]);
 
-      if (!result.success) {
+      if (!result.success && !espResult.success) {
         const description =
           result.error === "no_courses_found"
             ? t("pdf_error_no_courses")
@@ -200,25 +256,27 @@ export function ImportExport({ className }: { className?: string }) {
         return;
       }
 
-      const { grades, matched, unrecognized, remapped, creditOverrides } =
-        result;
+      const matched = result.success ? result.matched : 0;
+      const espMatched = espResult.success ? espResult.matched : 0;
 
       let warningText = "";
-      if (unrecognized.length > 0) {
+      if (result.success && result.unrecognized.length > 0) {
         warningText = t("pdf_unrecognized_codes", {
-          codes: unrecognized.join(", "),
+          codes: result.unrecognized.join(", "),
         });
       }
 
       let remapText = "";
-      if (remapped.length > 0) {
-        const items = remapped.map((r) => `${r.from} → ${r.to}`).join(", ");
+      if (result.success && result.remapped.length > 0) {
+        const items = result.remapped
+          .map((r) => `${r.from} → ${r.to}`)
+          .join(", ");
         remapText = t("pdf_remapped_codes", { codes: items });
       }
 
       let creditText = "";
-      if (creditOverrides.length > 0) {
-        const items = creditOverrides
+      if (result.success && result.creditOverrides.length > 0) {
+        const items = result.creditOverrides
           .map((c) => `${c.courseCode}: ${c.expected} → ${c.actual}`)
           .join(", ");
         creditText = t("pdf_credit_overrides", { codes: items });
@@ -229,10 +287,16 @@ export function ImportExport({ className }: { className?: string }) {
         ? `${cohort.ordinal} - ${cohort.year}`
         : selectedCohortId;
 
+      const espText =
+        espMatched > 0
+          ? `<p style="font-size: 0.85em; color: #10b981; margin-top: 8px">${t("pdf_esp_matched", { matched: String(espMatched) })}</p>`
+          : "";
+
       const confirmed = await Swal.fire({
         title: t("pdf_confirm_title"),
         html: `
           <p style="margin-bottom: 8px">${t("pdf_confirm_text", { matched: String(matched), cohort: cohortLabel })}</p>
+          ${espText}
           ${remapText ? `<p style="font-size: 0.85em; color: #3b82f6; margin-top: 8px">${remapText}</p>` : ""}
           ${creditText ? `<p style="font-size: 0.85em; color: #8b5cf6; margin-top: 8px">${creditText}</p>` : ""}
           ${warningText ? `<p style="font-size: 0.85em; color: #f59e0b; margin-top: 8px">${warningText}</p>` : ""}
@@ -247,9 +311,22 @@ export function ImportExport({ className }: { className?: string }) {
       });
 
       if (confirmed.isConfirmed) {
-        importGrades({ cohortId: selectedCohortId, grades });
+        if (result.success && matched > 0) {
+          importGrades({
+            cohortId: selectedCohortId,
+            grades: { ...grades, ...result.grades },
+          });
+        }
+        if (espResult.success && espMatched > 0) {
+          importEspGrades({
+            cohortId: espSelectedCohortId,
+            grades: { ...espGrades, ...espResult.grades },
+          });
+        }
         toast.success(t("pdf_success"), {
-          description: t("pdf_success_text", { matched: String(matched) }),
+          description: t("pdf_success_text", {
+            matched: String(matched + espMatched),
+          }),
         });
       }
     } catch (err) {
@@ -262,51 +339,16 @@ export function ImportExport({ className }: { className?: string }) {
     }
   };
 
-  const btnClass = cn(
-    "flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-medium",
-    "border border-border-base bg-bg-surface text-text-secondary",
-    "hover:text-text-primary hover:border-border-accent transition-colors duration-200",
-    "sm:px-2.5",
-  );
+  const handleCanvasPlayground = () => {
+    setOpen(false);
+    router.push("/grades/playground");
+  };
 
-  const pdfBtnClass = cn(
-    "flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-medium",
-    "border border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
-    "hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-500 transition-colors duration-200",
-    "sm:px-2.5",
-    "disabled:opacity-50 disabled:cursor-not-allowed",
-  );
-
-  const resetBtnClass = cn(
-    "flex items-center gap-1.5 px-2 h-8 rounded-lg text-xs font-medium",
-    "border border-red-400 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400",
-    "hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-500 transition-colors duration-200",
-    "sm:px-2.5",
-  );
+  const menuItemClass =
+    "flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
-    <div className={cn("flex items-center gap-2 flex-wrap", className)}>
-      <input
-        ref={pdfInputRef}
-        type="file"
-        accept=".pdf,application/pdf"
-        className="hidden"
-        onChange={handlePdfImport}
-      />
-      <motion.button
-        data-tour="pdf-upload"
-        whileTap={{ scale: 0.95 }}
-        onClick={() => pdfInputRef.current?.click()}
-        disabled={pdfLoading}
-        className={pdfBtnClass}
-      >
-        {pdfLoading ? (
-          <Loader2 size={13} className="animate-spin" />
-        ) : (
-          <FileText size={13} />
-        )}
-        {t("pdf_import")}
-      </motion.button>
+    <div ref={menuRef} className={cn("relative", className)}>
       <input
         ref={inputRef}
         type="file"
@@ -314,30 +356,119 @@ export function ImportExport({ className }: { className?: string }) {
         className="hidden"
         onChange={handleImport}
       />
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        className="hidden"
+        onChange={handlePdfImport}
+      />
+
       <motion.button
         whileTap={{ scale: 0.95 }}
-        onClick={() => inputRef.current?.click()}
-        className={btnClass}
+        onClick={() => setOpen((v) => !v)}
+        aria-label={t("actions_menu")}
+        className={cn(
+          "flex items-center justify-center w-9 h-9 rounded-lg shrink-0",
+          "border border-border-base bg-bg-surface text-text-secondary",
+          "hover:text-text-primary hover:border-border-accent transition-colors duration-200",
+        )}
       >
-        <Download size={13} />
-        {t("import")}
+        <Menu size={16} />
       </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={handleExport}
-        className={btnClass}
-      >
-        <Upload size={13} />
-        {t("export")}
-      </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={handleReset}
-        className={resetBtnClass}
-      >
-        <RotateCcw size={13} />
-        {t("reset")}
-      </motion.button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.14 }}
+            className={cn(
+              "absolute right-0 top-11 rounded-xl border border-border-base bg-bg-surface shadow-xl z-30",
+              "overflow-hidden min-w-64",
+            )}
+          >
+            <button
+              data-tour="action-import"
+              onClick={() => {
+                setOpen(false);
+                inputRef.current?.click();
+              }}
+              className={cn(
+                menuItemClass,
+                "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
+              )}
+            >
+              <Download size={15} className="shrink-0" />
+              {t("import")}
+            </button>
+
+            <button
+              data-tour="action-export"
+              onClick={() => {
+                setOpen(false);
+                handleExport();
+              }}
+              className={cn(
+                menuItemClass,
+                "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
+              )}
+            >
+              <Upload size={15} className="shrink-0" />
+              {t("export")}
+            </button>
+
+            <button
+              data-tour="action-pdf"
+              onClick={() => {
+                setOpen(false);
+                pdfInputRef.current?.click();
+              }}
+              disabled={pdfLoading}
+              className={cn(
+                menuItemClass,
+                "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+              )}
+            >
+              {pdfLoading ? (
+                <Loader2 size={15} className="animate-spin shrink-0" />
+              ) : (
+                <FileText size={15} className="shrink-0" />
+              )}
+              {t("pdf_import")}
+            </button>
+
+            <button
+              onClick={handleCanvasPlayground}
+              className={cn(
+                menuItemClass,
+                "text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20",
+              )}
+            >
+              <FlaskConical size={15} className="shrink-0" />
+              {t("canvas_playground")}
+            </button>
+
+            <div className="h-px bg-border-base my-1" />
+
+            <button
+              data-tour="action-reset"
+              onClick={() => {
+                setOpen(false);
+                handleReset();
+              }}
+              className={cn(
+                menuItemClass,
+                "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
+              )}
+            >
+              <RotateCcw size={15} className="shrink-0" />
+              {t("reset")}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

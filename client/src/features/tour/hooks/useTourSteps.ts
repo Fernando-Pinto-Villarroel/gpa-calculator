@@ -1,5 +1,6 @@
 import { Step } from "react-joyride";
 import { useTranslations } from "next-intl";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 
 export interface TourStep extends Step {
   route: string;
@@ -7,9 +8,178 @@ export interface TourStep extends Step {
 
 export function useTourSteps(): TourStep[] {
   const t = useTranslations("tour");
+  const { selectedCareerId } = useCareerStore();
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const isMobileDashboard =
     typeof window !== "undefined" && window.innerWidth < 1024;
+  // Matches the custom `nav:` breakpoint (72rem / 1152px) in globals.css
+  // that the header uses to switch between nav links and the hamburger menu.
+  const isMobileNav = typeof window !== "undefined" && window.innerWidth < 1152;
+
+  const commercialGradesSteps: TourStep[] = [
+    {
+      route: "/grades",
+      target: '[data-tour="config-toolbar"]',
+      placement: "bottom",
+      title: t("config_toolbar_title"),
+      content: t("config_toolbar_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="cohort-selector"]',
+      placement: "bottom",
+      title: t("config_cohort_title"),
+      content: t("config_cohort_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="term-selector"]',
+      placement: "bottom",
+      title: t("config_term_title"),
+      content: t("config_term_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-course-card-m"]'
+        : '[data-tour="first-course-card"]',
+      placement: "auto",
+      title: t("config_course_card_title"),
+      content: t("config_course_card_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-credits-badge-m"]'
+        : '[data-tour="first-credits-badge"]',
+      placement: "auto",
+      title: t("config_credits_title"),
+      content: t("config_credits_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-retake-btn-m"]'
+        : '[data-tour="first-retake-btn"]',
+      placement: "auto",
+      title: t("config_retake_title"),
+      content: t("config_retake_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-import"]',
+      placement: "auto",
+      title: t("config_action_import_title"),
+      content: t("config_action_import_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-export"]',
+      placement: "auto",
+      title: t("config_action_export_title"),
+      content: t("config_action_export_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-pdf"]',
+      placement: "auto",
+      title: t("config_pdf_upload_title"),
+      content: t("config_pdf_upload_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-reset"]',
+      placement: "auto",
+      title: t("config_action_reset_title"),
+      content: t("config_action_reset_content"),
+      disableBeacon: true,
+    },
+  ];
+
+  const espGradesSteps: TourStep[] = [
+    {
+      route: "/grades",
+      target: '[data-tour="config-toolbar"]',
+      placement: "bottom",
+      title: t("esp_config_toolbar_title"),
+      content: t("esp_config_toolbar_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="esp-cohort-selector"]',
+      placement: "bottom",
+      title: t("esp_config_cohort_title"),
+      content: t("esp_config_cohort_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-course-card-m"]'
+        : '[data-tour="first-course-card"]',
+      placement: "auto",
+      title: t("esp_config_course_card_title"),
+      content: t("esp_config_course_card_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-credits-badge-m"]'
+        : '[data-tour="first-credits-badge"]',
+      placement: "auto",
+      title: t("config_credits_title"),
+      content: t("config_credits_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: isMobile
+        ? '[data-tour="first-retake-btn-m"]'
+        : '[data-tour="first-retake-btn"]',
+      placement: "auto",
+      title: t("config_retake_title"),
+      content: t("config_retake_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-import"]',
+      placement: "auto",
+      title: t("config_action_import_title"),
+      content: t("config_action_import_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-export"]',
+      placement: "auto",
+      title: t("config_action_export_title"),
+      content: t("config_action_export_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
+      target: '[data-tour="action-reset"]',
+      placement: "auto",
+      title: t("config_action_reset_title"),
+      content: t("config_action_reset_content"),
+      disableBeacon: true,
+    },
+  ];
+
+  const gradesSteps =
+    selectedCareerId === "esp" ? espGradesSteps : commercialGradesSteps;
 
   return [
     {
@@ -30,17 +200,25 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "",
-      target: isMobile
+      target: isMobileNav
         ? '[data-tour="bottom-nav"]'
         : '[data-tour="navbar-links"]',
-      placement: isMobile ? "top" : "bottom",
+      placement: isMobileNav ? "top" : "bottom",
       title: t("navbar_links_title"),
       content: t("navbar_links_content"),
       disableBeacon: true,
     },
     {
       route: "",
-      target: '[data-tour="navbar-language"]',
+      target: '[data-tour="navbar-career"]',
+      placement: "bottom",
+      title: t("navbar_career_title"),
+      content: t("navbar_career_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "",
+      target: '[data-tour="header-language"]',
       placement: "bottom",
       title: t("navbar_language_title"),
       content: t("navbar_language_content"),
@@ -48,7 +226,7 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "",
-      target: '[data-tour="navbar-theme"]',
+      target: '[data-tour="header-theme"]',
       placement: "bottom",
       title: t("navbar_theme_title"),
       content: t("navbar_theme_content"),
@@ -84,74 +262,141 @@ export function useTourSteps(): TourStep[] {
       content: t("dashboard_stats_content"),
       disableBeacon: true,
     },
+    ...gradesSteps,
     {
-      route: "/config",
-      target: '[data-tour="config-toolbar"]',
+      route: "/grades/playground",
+      target: "body",
+      placement: "center",
+      title: t("playground_welcome_title"),
+      content: t("playground_welcome_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-back"]',
       placement: "bottom",
-      title: t("config_toolbar_title"),
-      content: t("config_toolbar_content"),
+      title: t("playground_back_title"),
+      content: t("playground_back_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: '[data-tour="cohort-selector"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-title"]',
       placement: "bottom",
-      title: t("config_cohort_title"),
-      content: t("config_cohort_content"),
+      title: t("playground_title_title"),
+      content: t("playground_title_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: '[data-tour="term-selector"]',
-      placement: "bottom",
-      title: t("config_term_title"),
-      content: t("config_term_content"),
-      disableBeacon: true,
-    },
-    {
-      route: "/config",
-      target: isMobile
-        ? '[data-tour="first-course-card-m"]'
-        : '[data-tour="first-course-card"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-add-assignment"]',
       placement: "auto",
-      title: t("config_course_card_title"),
-      content: t("config_course_card_content"),
+      title: t("playground_add_assignment_title"),
+      content: t("playground_add_assignment_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: isMobile
-        ? '[data-tour="first-credits-badge-m"]'
-        : '[data-tour="first-credits-badge"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-first-assignment"]',
       placement: "auto",
-      title: t("config_credits_title"),
-      content: t("config_credits_content"),
+      title: t("playground_assignment_title"),
+      content: t("playground_assignment_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: isMobile
-        ? '[data-tour="first-retake-btn-m"]'
-        : '[data-tour="first-retake-btn"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-drag-handle"]',
       placement: "auto",
-      title: t("config_retake_title"),
-      content: t("config_retake_content"),
+      title: t("playground_drag_title"),
+      content: t("playground_drag_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: '[data-tour="pdf-upload"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-group-select"]',
       placement: "auto",
-      title: t("config_pdf_upload_title"),
-      content: t("config_pdf_upload_content"),
+      title: t("playground_group_select_title"),
+      content: t("playground_group_select_content"),
       disableBeacon: true,
     },
     {
-      route: "/config",
-      target: '[data-tour="import-export"]',
+      route: "/grades/playground",
+      target: '[data-tour="playground-score-btn"]',
       placement: "auto",
-      title: t("config_import_export_title"),
-      content: t("config_import_export_content"),
+      title: t("playground_score_title"),
+      content: t("playground_score_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-delete-assignment"]',
+      placement: "auto",
+      title: t("playground_delete_assignment_title"),
+      content: t("playground_delete_assignment_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-total"]',
+      placement: "auto",
+      title: t("playground_total_title"),
+      content: t("playground_total_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-groups-table"]',
+      placement: "auto",
+      title: t("playground_groups_table_title"),
+      content: t("playground_groups_table_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-groups-actions"]',
+      placement: "auto",
+      title: t("playground_groups_actions_title"),
+      content: t("playground_groups_actions_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-actions-menu"]',
+      placement: "auto",
+      title: t("playground_actions_menu_title"),
+      content: t("playground_actions_menu_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-action-import-backup"]',
+      placement: "auto",
+      title: t("playground_action_import_backup_title"),
+      content: t("playground_action_import_backup_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-action-export-backup"]',
+      placement: "auto",
+      title: t("playground_action_export_backup_title"),
+      content: t("playground_action_export_backup_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-action-import-canvas"]',
+      placement: "auto",
+      title: t("playground_action_import_canvas_title"),
+      content: t("playground_action_import_canvas_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades/playground",
+      target: '[data-tour="playground-action-reset"]',
+      placement: "auto",
+      title: t("playground_action_reset_title"),
+      content: t("playground_action_reset_content"),
       disableBeacon: true,
     },
     {

@@ -403,7 +403,7 @@ export function baseTerms(): Term[] {
       modules: {
         "Module 1": [
           {
-            name: "Research Project on Software Development 1",
+            name: "Software Engineering Practicum 1",
             courseCode: "CSRP-471",
             type: "Internship",
             credits: 4,
@@ -411,7 +411,7 @@ export function baseTerms(): Term[] {
         ],
         "Module 2": [
           {
-            name: "Research Project on Software Development 2",
+            name: "Software Engineering Practicum 2",
             courseCode: "CSRP-472",
             type: "Internship",
             credits: 4,
@@ -419,7 +419,7 @@ export function baseTerms(): Term[] {
         ],
         "Module 3": [
           {
-            name: "Research Project on Software Development 3",
+            name: "Software Engineering Practicum 3",
             courseCode: "CSRP-484",
             type: "Internship",
             credits: 4,

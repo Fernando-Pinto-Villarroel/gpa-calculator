@@ -5,6 +5,5 @@ export const cohort1_2026: Cohort = {
   id: "cohort-1-2026",
   ordinal: "I",
   year: 2026,
-  ongoing: true,
   terms: baseTerms(),
 };

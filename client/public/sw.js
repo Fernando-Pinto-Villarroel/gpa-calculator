@@ -1,4 +1,4 @@
-const CACHE_NAME = "jala-gpa-v2";
+const CACHE_NAME = "jala-gpa-v3";
 const STATIC_ASSETS = ["/logo192.png", "/logo512.png", "logo.png"];
 
 self.addEventListener("install", (event) => {

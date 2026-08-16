@@ -46,12 +46,20 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
+            // Keep this hex table in sync with CAREER_PALETTES in
+            // src/features/career/theme.ts (accent700 per career).
+            __html: `(function(){try{var colors={esp:'#c2410c'};var c=localStorage.getItem('jala-career-store');var d=c?JSON.parse(c):null;var id=d&&d.state&&d.state.selectedCareerId?d.state.selectedCareerId:'software_engineering_design_architecture';document.documentElement.setAttribute('data-career',id);var meta=document.querySelector('meta[name="theme-color"]');if(meta&&colors[id]){meta.setAttribute('content',colors[id]);}}catch(e){}})();`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
             __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}`,
           }}
         />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        suppressHydrationWarning
       >
         {children}
       </body>

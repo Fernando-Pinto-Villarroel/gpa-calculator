@@ -3,7 +3,7 @@ import {
   CourseGradeEntry,
   CourseAttempt,
 } from "@/core/domain/types/grades";
-import { getCohortById } from "@/features/gpa/data";
+import { getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
 
 export type ImportPayload = {
   cohortId: string;

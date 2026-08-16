@@ -11,9 +11,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
+import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getGradeDistribution } from "@/features/gpa/services/calculator";
 import { ALL_GRADES, letterGradesMap } from "@/core/domain/types/letterGrades";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
+import { getCareerPalette, withAlpha } from "@/features/career/theme";
 
 function gradeBarColor(grade: string): string {
   const pts = letterGradesMap[grade as keyof typeof letterGradesMap] ?? 0;
@@ -35,9 +38,14 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { valu
 }
 
 export function GradeDistributionChart() {
-  const grades = useGpaStore((s) => s.grades);
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
+  const commercialGrades = useGpaStore((s) => s.grades);
+  const espGrades = useEspGpaStore((s) => s.grades);
+  const grades = isEsp ? espGrades : commercialGrades;
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
+  const { accent500 } = getCareerPalette(selectedCareerId);
 
   const distribution = getGradeDistribution(grades);
   const data = ALL_GRADES.map((g) => ({
@@ -72,7 +80,7 @@ export function GradeDistributionChart() {
           axisLine={false}
           allowDecimals={false}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(42,79,245,0.08)" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: withAlpha(accent500, 0.08) }} />
         <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={40}>
           {data.map((d) => (
             <Cell key={d.grade} fill={gradeBarColor(d.grade)} />

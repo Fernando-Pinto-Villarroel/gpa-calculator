@@ -45,28 +45,35 @@ export type HonorStatus =
   | "sap_risk"
   | null;
 
-function computeQualityPointsAndCredits(entry: CourseGradeEntry, curriculumCredits: number): {
+function computeQualityPointsAndCredits(entry: CourseGradeEntry, course: Course): {
   qualityPoints: number;
   attemptedCredits: number;
 } {
   if (!hasGradeData(entry)) return { qualityPoints: 0, attemptedCredits: 0 };
+
+  const gpaWeight = course.gpaWeight ?? course.credits;
 
   if (isCourseAttempts(entry)) {
     let qp = 0;
     let ac = 0;
     entry.forEach((attempt) => {
       if (attempt.grade === null) return;
-      qp += letterGradesMap[attempt.grade] * attempt.credits;
-      ac += attempt.credits;
+      const weight = course.gpaWeight ?? attempt.credits;
+      qp += letterGradesMap[attempt.grade] * weight;
+      ac += weight;
     });
     return { qualityPoints: qp, attemptedCredits: ac };
   }
 
   const grade = entry as LetterGrade;
   return {
-    qualityPoints: letterGradesMap[grade] * curriculumCredits,
-    attemptedCredits: curriculumCredits,
+    qualityPoints: letterGradesMap[grade] * gpaWeight,
+    attemptedCredits: gpaWeight,
   };
+}
+
+function isPendingOptionalCourse(course: Course, entry: CourseGradeEntry): boolean {
+  return Boolean(course.optional) && !hasGradeData(entry);
 }
 
 export function calculateGpa(
@@ -85,9 +92,11 @@ export function calculateGpa(
   terms.forEach((term) => {
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
+        const entry = grades[course.courseCode];
+        if (isPendingOptionalCourse(course, entry)) return;
+
         totalCourses++;
 
-        const entry = grades[course.courseCode];
         const effectiveCredits = getEffectiveCredits(entry, course.credits);
 
         totalCredits += effectiveCredits;
@@ -95,7 +104,7 @@ export function calculateGpa(
         if (hasGradeData(entry)) {
           const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
             entry,
-            course.credits,
+            course,
           );
           totalQualityPoints += qualityPoints;
           totalAttemptedCredits += attemptedCredits;
@@ -127,7 +136,6 @@ export function calculateGpa(
 }
 
 export function getHonorStatus(gpa: number): HonorStatus {
-  if (gpa === 0) return null;
   if (gpa >= 3.8) return "summa_cum_laude";
   if (gpa >= 3.5) return "magna_cum_laude";
   if (gpa >= 3.2) return "cum_laude";
@@ -153,12 +161,14 @@ export function getTermGpaProgression(
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
         const entry = grades[course.courseCode];
+        if (isPendingOptionalCourse(course, entry)) return;
+
         termTotal += getEffectiveCredits(entry, course.credits);
 
         if (hasGradeData(entry)) {
           const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
             entry,
-            course.credits,
+            course,
           );
           termQualityPoints += qualityPoints;
           termAttemptedCredits += attemptedCredits;
@@ -288,8 +298,10 @@ export function getCreditsPerTerm(
 
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
-        totalCourses++;
         const entry = grades[course.courseCode];
+        if (isPendingOptionalCourse(course, entry)) return;
+
+        totalCourses++;
         const approved = isCourseApproved(entry);
 
         total += getEffectiveCredits(entry, course.credits);
@@ -313,7 +325,9 @@ export function getCompletedTermsCount(
 ): number {
   return terms.filter((term) => {
     const allCourses = Object.values(term.modules).flat();
-    return allCourses.every((c) => isCourseApproved(grades[c.courseCode]));
+    return allCourses
+      .filter((c) => !isPendingOptionalCourse(c, grades[c.courseCode]))
+      .every((c) => isCourseApproved(grades[c.courseCode]));
   }).length;
 }
 
@@ -334,7 +348,7 @@ export function calculateTermGpa(
     if (hasGradeData(entry)) {
       const { qualityPoints, attemptedCredits } = computeQualityPointsAndCredits(
         entry,
-        course.credits,
+        course,
       );
       totalQualityPoints += qualityPoints;
       totalAttemptedCredits += attemptedCredits;
@@ -351,7 +365,9 @@ export function getTermHonor(
   const allCourses = Object.values(term.modules).flat();
   if (allCourses.length === 0) return null;
 
-  const allHaveGrades = allCourses.every((c) => hasGradeData(grades[c.courseCode]));
+  const allHaveGrades = allCourses
+    .filter((c) => !isPendingOptionalCourse(c, grades[c.courseCode]))
+    .every((c) => hasGradeData(grades[c.courseCode]));
   if (!allHaveGrades) return null;
 
   const termGpa = calculateTermGpa(grades, term);

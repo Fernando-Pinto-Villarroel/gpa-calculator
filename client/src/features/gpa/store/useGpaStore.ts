@@ -5,7 +5,10 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { LetterGrade } from "@/core/domain/types/letterGrades";
 import { CourseGradeEntry } from "@/core/domain/types/grades";
 import { buildDefaultGradesForTerms } from "../services/calculator";
-import { DEFAULT_COHORT_ID, getCohortById } from "../data/index";
+import {
+  DEFAULT_COHORT_ID,
+  getCohortById,
+} from "../data/software-engineering-design-architecture/index";
 
 interface GpaStore {
   gradesByCohort: Record<string, Record<string, CourseGradeEntry>>;

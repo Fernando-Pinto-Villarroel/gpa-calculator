@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { getTermGpaProgression } from "@/features/gpa/services/calculator";
-import { getTermsByCohortId } from "@/features/gpa/data/index";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 

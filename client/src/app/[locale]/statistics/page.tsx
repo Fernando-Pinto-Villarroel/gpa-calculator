@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { StatsOverview } from "@/features/statistics/components/StatsOverview";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 
 const CumulativeGpaProgressChart = dynamic(
   () =>
@@ -65,6 +66,8 @@ function ChartCard({
 
 export default function StatisticsPage() {
   const t = useTranslations("statistics");
+  const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
 
   return (
     <div className="flex flex-col min-h-full gap-4 px-4 md:px-6 py-5 pb-24 md:pb-8">
@@ -83,8 +86,10 @@ export default function StatisticsPage() {
       </div>
 
       <ChartCard
-        title={t("term_gpa_progression")}
-        description={t("term_gpa_progression_desc")}
+        title={t(isEsp ? "level_gpa_progression" : "term_gpa_progression")}
+        description={t(
+          isEsp ? "level_gpa_progression_desc" : "term_gpa_progression_desc",
+        )}
         delay={0.15}
       >
         <div className="h-72 md:h-80">
@@ -103,8 +108,10 @@ export default function StatisticsPage() {
       </ChartCard>
 
       <ChartCard
-        title={t("credit_accumulation")}
-        description={t("credit_accumulation_desc")}
+        title={t(isEsp ? "course_accumulation" : "credit_accumulation")}
+        description={t(
+          isEsp ? "course_accumulation_desc" : "credit_accumulation_desc",
+        )}
         delay={0.24}
       >
         <div className="h-44 md:h-48">

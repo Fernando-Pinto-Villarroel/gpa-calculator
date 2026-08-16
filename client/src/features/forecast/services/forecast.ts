@@ -1,4 +1,4 @@
-import { Term } from "@/core/domain/types/course";
+import { Course, Term } from "@/core/domain/types/course";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
@@ -53,26 +53,33 @@ export interface ForecastResult {
 
 function computeEntryQPAndCredits(
   entry: CourseGradeEntry,
-  curriculumCredits: number,
+  course: Course,
 ): { qp: number; ac: number } {
   if (!hasGradeData(entry)) return { qp: 0, ac: 0 };
+
+  const gpaWeight = course.gpaWeight ?? course.credits;
 
   if (isCourseAttempts(entry)) {
     let qp = 0;
     let ac = 0;
     entry.forEach((a) => {
       if (a.grade === null) return;
-      qp += letterGradesMap[a.grade] * a.credits;
-      ac += a.credits;
+      const weight = course.gpaWeight ?? a.credits;
+      qp += letterGradesMap[a.grade] * weight;
+      ac += weight;
     });
     return { qp, ac };
   }
 
   const grade = entry as LetterGrade;
   return {
-    qp: letterGradesMap[grade] * curriculumCredits,
-    ac: curriculumCredits,
+    qp: letterGradesMap[grade] * gpaWeight,
+    ac: gpaWeight,
   };
+}
+
+function isPendingOptionalCourse(course: Course, entry: CourseGradeEntry): boolean {
+  return Boolean(course.optional) && !hasGradeData(entry);
 }
 
 export function buildForecastContext(
@@ -94,15 +101,18 @@ export function buildForecastContext(
     Object.values(term.modules).forEach((courses) => {
       courses.forEach((course) => {
         const entry = grades[course.courseCode];
+        if (isPendingOptionalCourse(course, entry)) return;
+
         if (hasGradeData(entry)) {
-          const { qp, ac } = computeEntryQPAndCredits(entry, course.credits);
+          const { qp, ac } = computeEntryQPAndCredits(entry, course);
           currentQP += qp;
           currentAC += ac;
         }
         if (!isCourseApproved(entry)) {
+          const gpaWeight = course.gpaWeight ?? course.credits;
           remaining.push({
             courseCode: course.courseCode,
-            credits: getEffectiveCredits(entry, course.credits),
+            credits: getEffectiveCredits(entry, gpaWeight),
             termOrdinal: term.ordinal,
           });
         }
@@ -253,7 +263,12 @@ export function findCombinations(
       return;
     }
 
-    for (let count = 0; count <= remaining; count++) {
+    // Try higher counts of this grade first (grades are sorted best-to-worst,
+    // so this explores the highest-GPA combinations first). Since the search
+    // below is capped at maxResults * 20 results for performance, exploring
+    // low-to-high here would fill that cap with worst-first combinations,
+    // potentially never reaching any that use the best allowed grade at all.
+    for (let count = remaining; count >= 0; count--) {
       dist.push(count);
       search(gradeIdx + 1, remaining - count, dist);
       dist.pop();

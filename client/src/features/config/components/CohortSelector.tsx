@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cohorts } from "@/features/gpa/data/index";
+import { cohorts } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { cn } from "@/core/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
@@ -17,6 +17,8 @@ export function CohortSelector() {
   const selectedCohort =
     cohorts.find((c) => c.id === selectedCohortId) ??
     cohorts[cohorts.length - 1];
+  const selectedCohortNumber =
+    cohorts.findIndex((c) => c.id === selectedCohort.id) + 1;
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -41,7 +43,11 @@ export function CohortSelector() {
       >
         <GraduationCap size={14} className="text-text-accent shrink-0" />
         <span className="flex-1 text-left truncate">
-          {t("cohort_label", { ordinal: selectedCohort.ordinal, year: selectedCohort.year })}
+          {t("cohort_label_numbered", {
+            number: selectedCohortNumber,
+            ordinal: selectedCohort.ordinal,
+            year: selectedCohort.year,
+          })}
           {selectedCohort.ongoing ? " +" : ""}
         </span>
         <ChevronDown
@@ -65,7 +71,7 @@ export function CohortSelector() {
               "overflow-hidden min-w-52",
             )}
           >
-            {cohorts.map((cohort) => (
+            {cohorts.map((cohort, index) => (
               <button
                 key={cohort.id}
                 onClick={() => {
@@ -79,7 +85,11 @@ export function CohortSelector() {
                     : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
                 )}
               >
-                {t("cohort_label", { ordinal: cohort.ordinal, year: cohort.year })}
+                {t("cohort_label_numbered", {
+                  number: index + 1,
+                  ordinal: cohort.ordinal,
+                  year: cohort.year,
+                })}
                 {cohort.ongoing ? " +" : ""}
               </button>
             ))}
