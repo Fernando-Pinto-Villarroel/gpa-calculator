@@ -9,6 +9,10 @@ import Joyride, {
   Step,
 } from "react-joyride";
 import { useRouter, usePathname } from "next/navigation";
+import {
+  useRouter as useIntlRouter,
+  usePathname as useIntlPathname,
+} from "@/core/lib/i18n/navigation";
 import { useTourStore } from "../store/useTourStore";
 import { useTourSteps } from "../hooks/useTourSteps";
 import { TourTooltip } from "./TourTooltip";
@@ -16,6 +20,7 @@ import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
 import { getCareerPalette } from "@/features/career/theme";
+import { LOCALE_LABELS } from "@/core/lib/i18n/routing";
 
 interface GuidedTourProps {
   locale: string;
@@ -45,9 +50,15 @@ export function GuidedTour({ locale }: GuidedTourProps) {
   const allSteps = useTourSteps();
   const router = useRouter();
   const pathname = usePathname();
+  const intlRouter = useIntlRouter();
+  const intlPathname = useIntlPathname();
 
   const [joyrideRun, setJoyrideRun] = useState(false);
   const [joyrideStepIndex, setJoyrideStepIndex] = useState(0);
+
+  const handleLocaleChange = (code: string) => {
+    intlRouter.replace(intlPathname, { locale: code });
+  };
 
   const getRouteSuffix = () => {
     const base = `/${locale}`;
@@ -287,6 +298,9 @@ export function GuidedTour({ locale }: GuidedTourProps) {
             border: borderColor,
           }}
           maxWidth={tooltipMaxWidth}
+          locales={LOCALE_LABELS}
+          currentLocale={locale}
+          onLocaleChange={handleLocaleChange}
         />
       )}
       locale={{

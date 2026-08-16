@@ -5,16 +5,13 @@ import { Info, Menu, Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/core/lib/i18n/navigation";
+import { LOCALE_LABELS } from "@/core/lib/i18n/routing";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useTourStore } from "@/features/tour/store/useTourStore";
 import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
 
-const LOCALES = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "pt", label: "Português" },
-];
+const LOCALES = LOCALE_LABELS;
 
 const TOUR_TARGETED_ITEMS = [
   '[data-tour="header-language"]',
