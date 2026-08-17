@@ -337,24 +337,30 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/grades/playground",
-      target: '[data-tour="playground-total"]',
-      placement: "auto",
+      // AssignmentGroupsPanel stacks below AssignmentsTable on mobile
+      // (flex-col below the `lg:` breakpoint in playground/page.tsx), so
+      // with several assignments it can land off-screen. Joyride's tour
+      // never auto-scrolls (disableScrolling), so fall back to a centered,
+      // targetless step there instead of spotlighting something the user
+      // can't see — same pattern used for the /statistics charts step.
+      target: isMobileDashboard ? "body" : '[data-tour="playground-total"]',
+      placement: isMobileDashboard ? "center" : "auto",
       title: t("playground_total_title"),
       content: t("playground_total_content"),
       disableBeacon: true,
     },
     {
       route: "/grades/playground",
-      target: '[data-tour="playground-groups-table"]',
-      placement: "auto",
+      target: isMobileDashboard ? "body" : '[data-tour="playground-groups-table"]',
+      placement: isMobileDashboard ? "center" : "auto",
       title: t("playground_groups_table_title"),
       content: t("playground_groups_table_content"),
       disableBeacon: true,
     },
     {
       route: "/grades/playground",
-      target: '[data-tour="playground-groups-actions"]',
-      placement: "auto",
+      target: isMobileDashboard ? "body" : '[data-tour="playground-groups-actions"]',
+      placement: isMobileDashboard ? "center" : "auto",
       title: t("playground_groups_actions_title"),
       content: t("playground_groups_actions_content"),
       disableBeacon: true,
