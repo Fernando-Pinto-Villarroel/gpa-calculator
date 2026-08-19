@@ -130,6 +130,117 @@ test.describe("Grades backup import - edge cases", () => {
   });
 });
 
+// Commercial SE and ESP cohort ids overlap (both use ids like "cohort-2-2026"
+// for the same enrollment year), so a cohortId match alone can't tell which
+// program a backup belongs to. These verify imports are routed by which
+// program's course codes the backup's grades actually match, instead of
+// blindly overwriting whichever dialog you happened to use.
+test.describe("Grades backup import - cross-program routing", () => {
+  test("an ESP-only backup imported via the Commercial SE dialog routes to ESP only, leaving Commercial untouched", async ({
+    page,
+  }) => {
+    await seedProfile(page, { career: "software_engineering_design_architecture" });
+    await gotoGrades(page);
+    await page.getByRole("button", { name: "—" }).first().click();
+    await page.getByRole("button", { name: "B", exact: true }).click();
+
+    const espOnlyPayload = JSON.stringify({
+      version: 2,
+      cohortId: "cohort-2-2026",
+      grades: { "ESP-501": "A", "ESP-401": "A" },
+    });
+    await importGradesJson(page, espOnlyPayload);
+
+    await expect(page.getByText(/ESP grades for cohort/)).toBeVisible();
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+    await expect(page.getByText(/Successfully imported ESP grades/)).toBeVisible();
+
+    const firstCard = page.locator('[data-tour="first-course-card"]');
+    await expect(firstCard.getByRole("button", { name: "B", exact: true })).toBeVisible();
+
+    const espStore = await readLocalStorageJson<{
+      state: { gradesByCohort: Record<string, Record<string, unknown>> };
+    }>(page, "jala-esp-gpa-store");
+    expect(espStore!.state.gradesByCohort["cohort-2-2026"]["ESP-501"]).toBe("A");
+  });
+
+  test("a Commercial-only backup imported via the ESP dialog routes to Commercial only, leaving ESP untouched", async ({
+    page,
+  }) => {
+    await seedProfile(page, { career: "esp" });
+    await gotoGrades(page);
+    await page.getByRole("button", { name: "—" }).first().click();
+    await page.getByRole("button", { name: "A", exact: true }).click();
+
+    const commercialOnlyPayload = JSON.stringify({
+      version: 2,
+      cohortId: "cohort-2-2026",
+      grades: { "CSPR-111": "B+", "MATH-111": "A-" },
+    });
+    await importGradesJson(page, commercialOnlyPayload);
+
+    await expect(page.getByText(/Software Engineering grades for cohort/)).toBeVisible();
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+    await expect(page.getByText(/Successfully imported Software Engineering grades/)).toBeVisible();
+
+    // The ESP grade entered before the import must survive.
+    await expect(page.getByText("4.00")).toBeVisible();
+
+    const commercialStore = await readLocalStorageJson<{
+      state: { gradesByCohort: Record<string, Record<string, unknown>> };
+    }>(page, "jala-gpa-store");
+    expect(commercialStore!.state.gradesByCohort["cohort-2-2026"]["CSPR-111"]).toBe("B+");
+  });
+
+  test("a backup containing both Commercial and ESP course codes imports into both cohorts", async ({
+    page,
+  }) => {
+    await seedProfile(page, { career: "software_engineering_design_architecture" });
+    await gotoGrades(page);
+
+    const bothPayload = JSON.stringify({
+      version: 2,
+      cohortId: "cohort-2-2026",
+      grades: { "CSPR-111": "A", "ESP-501": "A" },
+    });
+    await importGradesJson(page, bothPayload);
+
+    await expect(
+      page.getByText(/Software Engineering and ESP data for this cohort/),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+    await expect(
+      page.getByText(/Successfully imported Software Engineering and ESP grades/),
+    ).toBeVisible();
+
+    const firstCard = page.locator('[data-tour="first-course-card"]');
+    await expect(firstCard.getByRole("button", { name: "A", exact: true })).toBeVisible();
+
+    const espStore = await readLocalStorageJson<{
+      state: { gradesByCohort: Record<string, Record<string, unknown>> };
+    }>(page, "jala-esp-gpa-store");
+    expect(espStore!.state.gradesByCohort["cohort-2-2026"]["ESP-501"]).toBe("A");
+  });
+
+  test("a backup whose course codes match neither program shows a no-matching-courses error", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const junkPayload = JSON.stringify({
+      version: 2,
+      cohortId: "cohort-2-2026",
+      grades: { "NOT-A-REAL-COURSE": "A" },
+    });
+    await importGradesJson(page, junkPayload);
+
+    await expect(
+      page.getByText("No courses in this file matched a known course in either program."),
+    ).toBeVisible();
+  });
+});
+
 test.describe("Playground backup import - edge cases", () => {
   test.beforeEach(async ({ page }) => {
     await seedProfile(page);

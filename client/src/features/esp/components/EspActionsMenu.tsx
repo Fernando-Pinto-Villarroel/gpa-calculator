@@ -13,7 +13,7 @@ import { useTourStore } from "@/features/tour/store/useTourStore";
 import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
 import { getEspCohortById } from "@/features/gpa/data/esp";
-import { validateEspImportPayload } from "@/features/esp/lib/validateEspImportPayload";
+import { splitImportPayload } from "@/features/config/lib/splitImportPayload";
 import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
 import Swal from "sweetalert2";
 
@@ -131,7 +131,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
         return;
       }
 
-      const result = validateEspImportPayload(parsed);
+      const result = splitImportPayload(parsed);
 
       if (!result.valid) {
         const description =
@@ -141,17 +141,25 @@ export function EspActionsMenu({ className }: { className?: string }) {
               })
             : result.error.code === "invalid_grades"
               ? t("import_error_invalid_grades")
-              : t("import_error_missing_fields");
+              : result.error.code === "no_matching_courses"
+                ? t("import_error_no_matching_courses")
+                : t("import_error_missing_fields");
 
         toast.error(t("import_error"), { description });
         return;
       }
 
       const { data } = result;
+      const scope =
+        data.commercialGrades && data.espGrades
+          ? "both"
+          : data.espGrades
+            ? "esp"
+            : "commercial";
 
       const confirmed = await Swal.fire({
         title: t("import_confirm_title"),
-        text: t("import_confirm_text", { cohortId: data.cohortId }),
+        text: t(`import_confirm_text_${scope}`, { cohortId: data.cohortId }),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -162,9 +170,14 @@ export function EspActionsMenu({ className }: { className?: string }) {
       });
 
       if (confirmed.isConfirmed) {
-        importGrades(data);
+        if (data.espGrades) {
+          importGrades({ cohortId: data.cohortId, grades: data.espGrades });
+        }
+        if (data.commercialGrades) {
+          importCommercialGrades({ cohortId: data.cohortId, grades: data.commercialGrades });
+        }
         toast.success(t("import_success"), {
-          description: t("import_success_text", { cohortId: data.cohortId }),
+          description: t(`import_success_text_${scope}`, { cohortId: data.cohortId }),
         });
       }
     };
