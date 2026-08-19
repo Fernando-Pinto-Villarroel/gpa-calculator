@@ -1,4 +1,5 @@
 import { Course, Term } from "@/core/domain/types/course";
+import { isAtLeast } from "@/core/lib/utils/numeric";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
@@ -136,11 +137,11 @@ export function calculateGpa(
 }
 
 export function getHonorStatus(gpa: number): HonorStatus {
-  if (gpa >= 3.8) return "summa_cum_laude";
-  if (gpa >= 3.5) return "magna_cum_laude";
-  if (gpa >= 3.2) return "cum_laude";
+  if (isAtLeast(gpa, 3.8)) return "summa_cum_laude";
+  if (isAtLeast(gpa, 3.5)) return "magna_cum_laude";
+  if (isAtLeast(gpa, 3.2)) return "cum_laude";
   if (gpa > 2.5) return "good_standing";
-  if (gpa >= 2.0) return "at_risk";
+  if (isAtLeast(gpa, 2.0)) return "at_risk";
   return "sap_risk";
 }
 
@@ -372,8 +373,8 @@ export function getTermHonor(
 
   const termGpa = calculateTermGpa(grades, term);
 
-  if (termGpa >= 4.0) return "presidents_list";
-  if (termGpa >= 3.5) return "deans_list";
+  if (isAtLeast(termGpa, 4.0)) return "presidents_list";
+  if (isAtLeast(termGpa, 3.5)) return "deans_list";
   return null;
 }
 

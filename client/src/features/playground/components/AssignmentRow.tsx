@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, GripVertical, Trash2 } from "lucide-react";
-import { Reorder, useDragControls } from "framer-motion";
+import { Reorder, useDragControls, motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { usePlaygroundStore } from "../store/usePlaygroundStore";
 import { PlaygroundAssignment, PlaygroundAssignmentGroup } from "../types";
@@ -33,9 +33,22 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
   const [editingScore, setEditingScore] = useState(false);
   const [scoreInput, setScoreInput] = useState("");
   const [maxInput, setMaxInput] = useState("");
+  const [groupMenuOpen, setGroupMenuOpen] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
   const scoreInputRef = useRef<HTMLInputElement>(null);
+  const groupMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!groupMenuOpen) return;
+    function handler(e: MouseEvent) {
+      if (groupMenuRef.current && !groupMenuRef.current.contains(e.target as Node)) {
+        setGroupMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [groupMenuOpen]);
 
   useEffect(() => {
     if (editingName) {
@@ -87,6 +100,8 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
 
   const isGraded = assignment.score !== null && assignment.maxPoints !== null;
   const groupExists = groups.some((g) => g.id === assignment.groupId);
+  const selectedGroup = groups.find((g) => g.id === assignment.groupId);
+  const groupLabel = groupExists ? selectedGroup?.name : t("no_group");
   const tooltipText =
     assignment.tooltipKey === "professionalism" ? t("professionalism_tooltip") : undefined;
 
@@ -139,34 +154,57 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
         )}
 
         <div
+          ref={groupMenuRef}
           data-tour={tourIds?.groupSelect}
           className="relative mt-1 -ml-0.5 inline-flex max-w-full items-center"
         >
-          <select
-            value={assignment.groupId}
-            onChange={(e) => updateAssignment(assignment.id, { groupId: e.target.value })}
-            className={cn(
-              "appearance-none max-w-full truncate pl-4 py-0.5 text-[11px] font-medium cursor-pointer",
-              "bg-transparent text-text-secondary border-none",
-              "focus:outline-none",
-              "[color-scheme:light] dark:[color-scheme:dark]",
-            )}
+          <button
+            type="button"
+            data-testid="playground-group-trigger"
+            onClick={() => setGroupMenuOpen((v) => !v)}
+            className="max-w-full truncate pl-4 py-0.5 text-[11px] font-medium text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
           >
-            {!groupExists && (
-              <option value={assignment.groupId} disabled>
-                {t("no_group")}
-              </option>
-            )}
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+            {groupLabel}
+          </button>
           <ChevronDown
             size={11}
             className="absolute left-0 pointer-events-none text-text-muted"
           />
+
+          <AnimatePresence>
+            {groupMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                transition={{ duration: 0.12 }}
+                data-testid="playground-group-menu"
+                className="absolute left-0 top-full mt-1 z-20 min-w-40 max-w-56 rounded-lg border border-border-base bg-bg-surface shadow-xl overflow-hidden"
+              >
+                {groups.map((group) => {
+                  const active = group.id === assignment.groupId;
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => {
+                        updateAssignment(assignment.id, { groupId: group.id });
+                        setGroupMenuOpen(false);
+                      }}
+                      className={cn(
+                        "block w-full text-left px-3 py-2 text-xs transition-colors truncate",
+                        active
+                          ? "bg-jala-700/15 text-text-accent font-medium"
+                          : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary",
+                      )}
+                    >
+                      {group.name}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

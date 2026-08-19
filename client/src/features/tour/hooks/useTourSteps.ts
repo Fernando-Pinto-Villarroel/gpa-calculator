@@ -170,6 +170,14 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/grades",
+      target: '[data-tour="action-pdf"]',
+      placement: "auto",
+      title: t("config_pdf_upload_title"),
+      content: t("config_pdf_upload_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
       target: '[data-tour="action-reset"]',
       placement: "auto",
       title: t("config_action_reset_title"),

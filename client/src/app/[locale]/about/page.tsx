@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/core/lib/utils/cn";
 import { FeedbackButton } from "@/features/about/components/FeedbackButton";
+import { useCareerStore } from "@/features/career/store/useCareerStore";
 
 const APP_VERSION = "2.0.0";
 
@@ -105,6 +106,7 @@ function HonorRow({
 export default function AboutPage({ params }: Props) {
   use(params);
   const t = useTranslations("about");
+  const isEsp = useCareerStore((s) => s.selectedCareerId) === "esp";
 
   return (
     <div className="px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-8 max-w-screen-2xl mx-auto w-full">
@@ -168,21 +170,20 @@ export default function AboutPage({ params }: Props) {
 
           <Section
             icon={Calculator}
-            title={t("gpa_calc.title")}
+            title={isEsp ? t("gpa_calc.title_esp") : t("gpa_calc.title")}
             delay={0.14}
             className="flex-1"
           >
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-jala-700/8 border border-jala-700/20">
                 <span className="text-sm font-semibold text-text-accent font-mono leading-snug">
-                  {t("gpa_calc.formula")}
+                  {isEsp ? t("gpa_calc.formula_esp") : t("gpa_calc.formula")}
                 </span>
               </div>
-              {[
-                t("gpa_calc.p1"),
-                t("gpa_calc.p2"),
-                t("gpa_calc.credits_note"),
-              ].map((text, i) => (
+              {(isEsp
+                ? [t("gpa_calc.p1_esp")]
+                : [t("gpa_calc.p1"), t("gpa_calc.p2"), t("gpa_calc.credits_note")]
+              ).map((text, i) => (
                 <p
                   key={i}
                   className="text-sm text-text-secondary leading-relaxed"

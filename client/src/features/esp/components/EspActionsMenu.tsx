@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Menu, Download, Upload, RotateCcw } from "lucide-react";
+import { Menu, Download, Upload, FileText, FlaskConical, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/core/lib/i18n/navigation";
+import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useTourStore } from "@/features/tour/store/useTourStore";
@@ -12,19 +14,30 @@ import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
 import { getEspCohortById } from "@/features/gpa/data/esp";
 import { validateEspImportPayload } from "@/features/esp/lib/validateEspImportPayload";
+import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
 import Swal from "sweetalert2";
 
 const TOUR_TARGETED_ITEMS = [
   '[data-tour="action-import"]',
   '[data-tour="action-export"]',
+  '[data-tour="action-pdf"]',
   '[data-tour="action-reset"]',
 ];
 
 export function EspActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
-  const { importGrades, exportGrades, resetCohortData } = useEspGpaStore();
+  const router = useRouter();
+  const { grades, importGrades, exportGrades, resetCohortData, selectedCohortId } =
+    useEspGpaStore();
+  const {
+    grades: commercialGrades,
+    importGrades: importCommercialGrades,
+    selectedCohortId: commercialSelectedCohortId,
+  } = useGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +52,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
 
   useEffect(() => {
     if (!tourActive) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setOpen(tourWantsMenuOpen);
   }, [tourActive, tourWantsMenuOpen]);
 
@@ -160,6 +173,98 @@ export function EspActionsMenu({ className }: { className?: string }) {
     e.target.value = "";
   };
 
+  const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    const isPdf =
+      file.name.toLowerCase().endsWith(".pdf") ||
+      file.type === "application/pdf";
+    if (!isPdf) {
+      toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
+      return;
+    }
+
+    setPdfLoading(true);
+
+    try {
+      const [espResult, commercialResult] = await Promise.all([
+        parseEspPdfFile(file, selectedCohortId),
+        parsePdfFile(file, commercialSelectedCohortId),
+      ]);
+
+      if (!espResult.success && !commercialResult.success) {
+        const description =
+          espResult.error === "no_courses_found"
+            ? t("pdf_error_no_courses")
+            : t("pdf_error_parse");
+        toast.error(t("pdf_error"), { description });
+        return;
+      }
+
+      const espMatched = espResult.success ? espResult.matched : 0;
+      const commercialMatched = commercialResult.success ? commercialResult.matched : 0;
+
+      const cohort = getEspCohortById(selectedCohortId);
+      const cohortLabel = cohort
+        ? `${cohort.ordinal} - ${cohort.year}`
+        : selectedCohortId;
+
+      const commercialText =
+        commercialMatched > 0
+          ? `<p style="font-size: 0.85em; color: #10b981; margin-top: 8px">${t("pdf_commercial_matched", { matched: String(commercialMatched) })}</p>`
+          : "";
+
+      const confirmed = await Swal.fire({
+        title: t("pdf_confirm_title"),
+        html: `
+          <p style="margin-bottom: 8px">${t("pdf_confirm_text", { matched: String(espMatched), cohort: cohortLabel })}</p>
+          ${commercialText}
+        `,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: t("pdf_confirm_button"),
+        cancelButtonText: t("cancel"),
+        ...swalBase,
+      });
+
+      if (confirmed.isConfirmed) {
+        if (espResult.success && espMatched > 0) {
+          importGrades({
+            cohortId: selectedCohortId,
+            grades: { ...grades, ...espResult.grades },
+          });
+        }
+        if (commercialResult.success && commercialMatched > 0) {
+          importCommercialGrades({
+            cohortId: commercialSelectedCohortId,
+            grades: { ...commercialGrades, ...commercialResult.grades },
+          });
+        }
+        toast.success(t("pdf_success"), {
+          description: t("pdf_success_text", {
+            matched: String(espMatched + commercialMatched),
+          }),
+        });
+      }
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      toast.error(t("pdf_error"), {
+        description: `${t("pdf_error_parse")} [${detail}]`,
+      });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const handleCanvasPlayground = () => {
+    setOpen(false);
+    router.push("/grades/playground");
+  };
+
   const menuItemClass =
     "flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -171,6 +276,13 @@ export function EspActionsMenu({ className }: { className?: string }) {
         accept=".json"
         className="hidden"
         onChange={handleImport}
+      />
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        className="hidden"
+        onChange={handlePdfImport}
       />
 
       <motion.button
@@ -226,6 +338,37 @@ export function EspActionsMenu({ className }: { className?: string }) {
             >
               <Upload size={15} className="shrink-0" />
               {t("export")}
+            </button>
+
+            <button
+              data-tour="action-pdf"
+              onClick={() => {
+                setOpen(false);
+                pdfInputRef.current?.click();
+              }}
+              disabled={pdfLoading}
+              className={cn(
+                menuItemClass,
+                "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+              )}
+            >
+              {pdfLoading ? (
+                <Loader2 size={15} className="animate-spin shrink-0" />
+              ) : (
+                <FileText size={15} className="shrink-0" />
+              )}
+              {t("pdf_import")}
+            </button>
+
+            <button
+              onClick={handleCanvasPlayground}
+              className={cn(
+                menuItemClass,
+                "text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20",
+              )}
+            >
+              <FlaskConical size={15} className="shrink-0" />
+              {t("canvas_playground")}
             </button>
 
             <div className="h-px bg-border-base my-1" />

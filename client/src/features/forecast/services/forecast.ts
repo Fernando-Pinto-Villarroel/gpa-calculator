@@ -1,4 +1,5 @@
 import { Course, Term } from "@/core/domain/types/course";
+import { isAtLeast } from "@/core/lib/utils/numeric";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
@@ -146,7 +147,7 @@ export function computeUniformScenarios(
       totalAC > 0
         ? (ctx.currentQualityPoints + additionalQP) / totalAC
         : 0;
-    return { grade, projectedGpa, meetsTarget: projectedGpa >= targetGpa };
+    return { grade, projectedGpa, meetsTarget: isAtLeast(projectedGpa, targetGpa) };
   });
 }
 
@@ -187,7 +188,7 @@ export function findCombinations(
     (s, cr) => s + letterGradesMap[grades[0]] * cr,
     0,
   );
-  if (maxPossibleQP < neededQP) return [];
+  if (!isAtLeast(maxPossibleQP, neededQP)) return [];
 
   if (neededQP <= 0) {
     const lowestGrade = grades[G - 1];
@@ -234,7 +235,7 @@ export function findCombinations(
           courseIdx++;
         }
       }
-      if (qp >= neededQP) {
+      if (isAtLeast(qp, neededQP)) {
         const gpa = (ctx.currentQualityPoints + qp) / totalAC;
         const allocations: GradeAllocation[] = [];
         let ci = 0;
@@ -330,7 +331,7 @@ function findCombinationsGreedy(
   const baseAssignment = new Array(K).fill(G - 1);
   let baseQP = courseCredits.reduce((s, cr) => s + lowestValue * cr, 0);
 
-  if (baseQP >= neededQP) {
+  if (isAtLeast(baseQP, neededQP)) {
     results.push(buildFromAssignment(baseAssignment));
     return results;
   }
@@ -351,7 +352,7 @@ function findCombinationsGreedy(
       iterations++;
     }
 
-    if (currentQP >= neededQP) {
+    if (isAtLeast(currentQP, neededQP)) {
       results.push(buildFromAssignment(assignment));
     }
   }
@@ -379,9 +380,9 @@ export function forecast(
 
   if (ctx.remainingCourses.length === 0) {
     return {
-      feasible: currentGpa >= targetGpa,
-      feasibleWithAllowedGrades: currentGpa >= targetGpa,
-      alreadyAchieved: currentGpa >= targetGpa,
+      feasible: isAtLeast(currentGpa, targetGpa),
+      feasibleWithAllowedGrades: isAtLeast(currentGpa, targetGpa),
+      alreadyAchieved: isAtLeast(currentGpa, targetGpa),
       currentGpa,
       remainingCourseCount: 0,
       remainingCredits: 0,
@@ -394,8 +395,9 @@ export function forecast(
     ctx.currentQualityPoints +
     ctx.remainingCourses.reduce((s, c) => s + 4.0 * c.credits, 0);
   const maxPossibleGpa = totalAC > 0 ? maxPossibleQP / totalAC : 0;
-  const feasible = maxPossibleGpa >= targetGpa;
-  const alreadyAchieved = currentGpa >= targetGpa && ctx.currentAttemptedCredits > 0;
+  const feasible = isAtLeast(maxPossibleGpa, targetGpa);
+  const alreadyAchieved =
+    isAtLeast(currentGpa, targetGpa) && ctx.currentAttemptedCredits > 0;
 
   const bestAllowedValue = allowedGrades.reduce(
     (best, g) => Math.max(best, letterGradesMap[g]),
@@ -405,7 +407,7 @@ export function forecast(
     ctx.currentQualityPoints +
     ctx.remainingCourses.reduce((s, c) => s + bestAllowedValue * c.credits, 0);
   const maxPossibleGpaWithAllowed = totalAC > 0 ? maxPossibleQPWithAllowed / totalAC : 0;
-  const feasibleWithAllowedGrades = maxPossibleGpaWithAllowed >= targetGpa;
+  const feasibleWithAllowedGrades = isAtLeast(maxPossibleGpaWithAllowed, targetGpa);
 
   const uniformScenarios = computeUniformScenarios(
     ctx,

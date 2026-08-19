@@ -124,6 +124,7 @@
     "pdf_success_text": "Successfully imported {matched} courses from the SIS PDF.",
     "pdf_unrecognized_codes": "Some course codes from the PDF were not found in your selected cohort and were skipped: {codes}",
     "pdf_esp_matched": "Also found {matched} ESP course grade(s) in this file, which will be imported into your ESP cohort.",
+    "pdf_commercial_matched": "Also found {matched} Software Engineering course grade(s) in this file, which will be imported into your Software Engineering cohort.",
     "pdf_remapped_codes": "Some course codes were automatically mapped to your cohort's equivalent codes: {codes}",
     "pdf_credit_overrides": "Some courses had different credit values than your cohort's defaults (you likely took them when credits changed). Credits were adjusted automatically: {codes}"
   },
@@ -262,6 +263,8 @@
     "disclaimer_title": "How This Works",
     "disclaimer_algorithm": "The forecast algorithm assigns higher grades to higher-credit courses first to maximize impact on your GPA. Credit breakdowns show which course weights each grade should apply to.",
     "disclaimer_credits": "Combinations are order-dependent: the grade assigned to a specific credit weight matters. Swapping grades between courses with different credits will change the resulting GPA.",
+    "disclaimer_algorithm_esp": "ESP courses carry no credit hours, so the forecast algorithm assigns the best available grades across your remaining courses without weighting any of them more heavily than another.",
+    "disclaimer_credits_esp": "Combinations are order-independent: since every ESP course counts equally toward your ESP GPA, only how many courses receive each grade matters, not which specific course it lands on.",
     "disclaimer_not_official": "This tool is for planning purposes only. Never rely solely on these projections for academic decisions. Always verify with your official academic records and advisors."
   },
   "settings": {
@@ -304,8 +307,11 @@
     },
     "gpa_calc": {
       "title": "GPA Calculation",
+      "title_esp": "ESP GPA Calculation",
       "formula": "GPA = Total Quality Points ÷ Total Credits Attempted",
+      "formula_esp": "ESP GPA = Sum of Grade Values ÷ Number of Courses Attempted",
       "p1": "Each course's quality points = letter grade value × course credit hours. Higher-credit courses carry proportionally more weight in your GPA.",
+      "p1_esp": "ESP courses carry no credit hours, so every course counts equally toward your ESP GPA — unlike the Software Engineering GPA, no course is weighted more heavily than another.",
       "p2": "A minimum cumulative GPA of 2.0 is required to graduate from the Software Engineering program, in addition to completing the ESP English program.",
       "credits_note": "This calculator pre-loads the correct credit values for every course in every cohort, so you never need to enter them manually."
     },
@@ -327,7 +333,7 @@
     },
     "esp": {
       "title": "ESP English Program",
-      "description": "ESP (English for Specific Purposes) grades are not included in the Software Engineering GPA. The ESP program has its own separate GPA calculation. While completing the ESP program is mandatory for graduation, its grades do not affect your career GPA."
+      "description": "ESP (English for Specific Purposes) has its own separate GPA, calculated as a simple average across all ESP courses since they carry no credit hours. The program is organized into Levels rather than terms, and while completing it is mandatory for graduation, it doesn't affect your Software Engineering GPA."
     },
     "privacy": {
       "title": "Privacy & Data",

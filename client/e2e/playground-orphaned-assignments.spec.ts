@@ -51,9 +51,7 @@ test.describe("Playground - orphaned assignments after group deletion", () => {
     await expect(labsRow.locator('input[type="number"]')).toBeVisible();
   });
 
-  test("an orphaned assignment shows a disabled 'No group' option in its dropdown", async ({
-    page,
-  }) => {
+  test("an orphaned assignment shows 'No group' in its dropdown trigger", async ({ page }) => {
     const row = page.getByText("Capstone Project", { exact: true }).locator("../../..");
 
     const projectsRow = page.locator('[data-tour="playground-groups-table"] tr', {
@@ -61,10 +59,9 @@ test.describe("Playground - orphaned assignments after group deletion", () => {
     });
     await projectsRow.getByRole("button", { name: "Remove group" }).click();
 
-    const select = row.locator("select");
-    await expect(select).toHaveValue(/group-projects/);
-    const disabledOption = select.locator('option[disabled]');
-    await expect(disabledOption).toHaveText("No group");
+    await expect(row.locator('[data-testid="playground-group-trigger"]')).toHaveText(
+      "No group",
+    );
   });
 
   test("reassigning an orphaned assignment to an existing group restores it to the Total", async ({
@@ -78,10 +75,15 @@ test.describe("Playground - orphaned assignments after group deletion", () => {
     await projectsRow.getByRole("button", { name: "Remove group" }).click();
     await expect(page.locator('[data-tour="playground-total"]')).toContainText("—");
 
-    await row.locator("select").selectOption({ label: "WEEKLY FACULTY PRACTICUM LABS" });
+    await row.locator('[data-testid="playground-group-trigger"]').click();
+    await row
+      .locator('[data-testid="playground-group-menu"]')
+      .getByText("WEEKLY FACULTY PRACTICUM LABS", { exact: true })
+      .click();
 
     await expect(page.locator('[data-tour="playground-total"]')).toContainText("100.00%");
-    const select = row.locator("select");
-    await expect(select.locator('option[disabled]')).toHaveCount(0);
+    await expect(row.locator('[data-testid="playground-group-trigger"]')).toHaveText(
+      "WEEKLY FACULTY PRACTICUM LABS",
+    );
   });
 });

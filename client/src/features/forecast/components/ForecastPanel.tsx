@@ -672,8 +672,8 @@ function ForecastResults({
           </h3>
         </div>
         <ul className="flex flex-col gap-1.5 text-[11px] text-text-muted leading-relaxed list-disc pl-5">
-          <li>{t("disclaimer_algorithm")}</li>
-          <li>{t("disclaimer_credits")}</li>
+          <li>{t(isEsp ? "disclaimer_algorithm_esp" : "disclaimer_algorithm")}</li>
+          <li>{t(isEsp ? "disclaimer_credits_esp" : "disclaimer_credits")}</li>
           <li>{t("disclaimer_not_official")}</li>
         </ul>
       </motion.div>

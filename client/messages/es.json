@@ -124,6 +124,7 @@
     "pdf_success_text": "Se importaron exitosamente {matched} materias desde el PDF del SIS.",
     "pdf_unrecognized_codes": "Algunos códigos de materia del PDF no se encontraron en la cohorte seleccionada y fueron omitidos: {codes}",
     "pdf_esp_matched": "También se encontraron {matched} nota(s) de cursos ESP en este archivo, que se importarán a tu cohorte de ESP.",
+    "pdf_commercial_matched": "También se encontraron {matched} nota(s) de materias de Ingeniería de Software en este archivo, que se importarán a tu cohorte de Ingeniería de Software.",
     "pdf_remapped_codes": "Algunos códigos de materia fueron mapeados automáticamente a los códigos equivalentes de tu cohorte: {codes}",
     "pdf_credit_overrides": "Algunas materias tenían valores de créditos diferentes a los de tu cohorte (probablemente las cursaste cuando los créditos cambiaron). Los créditos se ajustaron automáticamente: {codes}"
   },
@@ -262,6 +263,8 @@
     "disclaimer_title": "Cómo Funciona",
     "disclaimer_algorithm": "El algoritmo asigna las notas más altas a las materias con más créditos primero para maximizar el impacto en tu GPA. El desglose de créditos muestra a qué peso de materia debe aplicarse cada nota.",
     "disclaimer_credits": "Las combinaciones dependen del orden: la nota asignada a un peso de créditos específico importa. Intercambiar notas entre materias con diferentes créditos cambiará el GPA resultante.",
+    "disclaimer_algorithm_esp": "Las materias de ESP no tienen créditos académicos, así que el algoritmo asigna las mejores notas disponibles entre tus materias restantes sin darle más peso a ninguna en particular.",
+    "disclaimer_credits_esp": "Las combinaciones no dependen del orden: como cada materia de ESP cuenta por igual en tu GPA de ESP, solo importa cuántas materias reciben cada nota, no en cuál específicamente.",
     "disclaimer_not_official": "Esta herramienta es solo para planificación. Nunca te bases únicamente en estas proyecciones para decisiones académicas. Siempre verifica con tus registros académicos oficiales y asesores."
   },
   "settings": {
@@ -304,8 +307,11 @@
     },
     "gpa_calc": {
       "title": "Cálculo del GPA",
+      "title_esp": "Cálculo del GPA de ESP",
       "formula": "GPA = Total de Puntos de Calidad ÷ Total de Créditos Intentados",
+      "formula_esp": "GPA de ESP = Suma de Valores de Notas ÷ Cantidad de Materias Cursadas",
       "p1": "Los puntos de calidad de cada curso = valor de la nota × créditos del curso. Los cursos con más créditos tienen proporcionalmente más peso en tu GPA.",
+      "p1_esp": "Las materias de ESP no tienen créditos académicos, así que cada una cuenta por igual en tu GPA de ESP — a diferencia del GPA de Ingeniería de Software, ninguna materia pesa más que otra.",
       "p2": "Se requiere un GPA acumulado mínimo de 2.0 para graduarse del programa de Ingeniería de Software, además de completar el programa ESP de inglés.",
       "credits_note": "Esta calculadora precarga los valores correctos de créditos para cada curso de cada cohorte, por lo que nunca necesitas ingresarlos manualmente."
     },
@@ -327,7 +333,7 @@
     },
     "esp": {
       "title": "Programa ESP de Inglés",
-      "description": "Las notas del programa ESP (Inglés para Propósitos Específicos) no están incluidas en el GPA de Ingeniería de Software. El programa ESP tiene su propio cálculo de GPA separado. Si bien completar el programa ESP es obligatorio para graduarse, sus notas no afectan el GPA de tu carrera."
+      "description": "ESP (Inglés para Propósitos Específicos) tiene su propio GPA separado, calculado como un promedio simple entre todas sus materias ya que no tienen créditos académicos. El programa se organiza en Niveles en lugar de términos, y aunque completarlo es obligatorio para graduarte, no afecta el GPA de tu carrera de Ingeniería de Software."
     },
     "privacy": {
       "title": "Privacidad y Datos",

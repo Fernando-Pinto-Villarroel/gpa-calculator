@@ -20,7 +20,7 @@ test.describe("Guided tour - ESP career", () => {
     await expect(page).toHaveURL(/\/grades$/);
     const nextBtn = page.locator('[data-testid="tour-next-button"]');
     await expect(nextBtn).toBeVisible();
-    await expect(nextBtn).toContainText("1/8");
+    await expect(nextBtn).toContainText("1/9");
     await expect(page.getByText("ESP Grades Page")).toBeVisible();
   });
 
@@ -43,7 +43,7 @@ test.describe("Guided tour - ESP career", () => {
     await page.goto("/en/grades", { waitUntil: "networkidle" });
 
     const nextBtn = page.locator('[data-testid="tour-next-button"]');
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
       await expect(nextBtn).toBeVisible({ timeout: 5000 });
       await nextBtn.click();
       await page.waitForTimeout(300);
@@ -58,7 +58,7 @@ test.describe("Guided tour - ESP career", () => {
     await page.addInitScript(() => {
       localStorage.setItem(
         "jala-gpa-tour",
-        // Index 14 is the "action-import" step within the 8-step ESP /grades block (9 + 5).
+        // Index 14 is the "action-import" step within the 9-step ESP /grades block (9 + 5).
         JSON.stringify({
           state: { guidedTourCompleted: false, globalStepIndex: 14 },
           version: 0,

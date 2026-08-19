@@ -1,5 +1,18 @@
+import path from "path";
 import { test, expect } from "@playwright/test";
-import { seedProfile, switchCareer, gotoGrades } from "./fixtures";
+import { seedProfile, switchCareer, gotoGrades, readLocalStorageJson } from "./fixtures";
+
+const TEST_DATA = path.resolve(__dirname, "../../test-data");
+
+interface GradesStoreShape {
+  state: { selectedCohortId: string; gradesByCohort: Record<string, Record<string, string | null>> };
+}
+
+async function getStoreGrades(page: import("@playwright/test").Page, storageKey: string) {
+  const store = await readLocalStorageJson<GradesStoreShape>(page, storageKey);
+  const cohortId = store?.state.selectedCohortId ?? "cohort-2-2026";
+  return store?.state.gradesByCohort[cohortId] ?? {};
+}
 
 test.describe("Grades - ESP", () => {
   test.beforeEach(async ({ page }) => {
@@ -41,14 +54,57 @@ test.describe("Grades - ESP", () => {
     await expect(page.getByText("4.00")).toBeVisible();
   });
 
-  test("ESP actions menu has no PDF import option, only backup + reset", async ({ page }) => {
+  test("ESP actions menu has backup import/export, SIS PDF import, Canvas Playground, and reset", async ({
+    page,
+  }) => {
     await gotoGrades(page);
 
     await page.locator('button[aria-label="Actions"]').click();
     await expect(page.getByText("Import Cohort Backup")).toBeVisible();
     await expect(page.getByText("Export Cohort Backup")).toBeVisible();
+    await expect(page.getByText("Import from SIS PDF")).toBeVisible();
+    await expect(page.getByText("Canvas Course Playground")).toBeVisible();
     await expect(page.getByText("Reset Data")).toBeVisible();
-    await expect(page.getByText("Import from SIS PDF")).toHaveCount(0);
+  });
+
+  test("Canvas Playground is reachable from the ESP actions menu", async ({ page }) => {
+    await gotoGrades(page);
+
+    await page.locator('button[aria-label="Actions"]').click();
+    await page.getByText("Canvas Course Playground").click();
+
+    await expect(page).toHaveURL(/\/grades\/playground/);
+  });
+
+  // fer.pdf's SIS export contains both Commercial SE and ESP courses. Importing
+  // it from the ESP grades page should populate both cohorts, the same way
+  // importing it from the Commercial SE grades page already does.
+  test("importing a real SIS PDF from the ESP page populates both ESP and Commercial SE grades", async ({
+    page,
+  }) => {
+    await gotoGrades(page);
+
+    await page.locator('button[aria-label="Actions"]').click();
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page.getByText("Import from SIS PDF").click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(path.join(TEST_DATA, "fer.pdf"));
+
+    await expect(page.getByText(/courses with grades were found/)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText(/Also found \d+ Software Engineering course grade\(s\)/),
+    ).toBeVisible();
+
+    await page.getByRole("button", { name: "Yes, import grades" }).click();
+    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+
+    const espGrades = await getStoreGrades(page, "jala-esp-gpa-store");
+    expect(espGrades["ESP-501"]).toBe("A");
+
+    const commercialGrades = await getStoreGrades(page, "jala-gpa-store");
+    expect(Object.keys(commercialGrades).length).toBeGreaterThan(0);
   });
 
   test("ESP cohort selector is independent from Commercial SE's", async ({ page }) => {

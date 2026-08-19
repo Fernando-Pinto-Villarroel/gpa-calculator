@@ -7,6 +7,7 @@ import { usePlaygroundStore } from "../store/usePlaygroundStore";
 import { calculatePlaygroundTotal, sumGroupWeights } from "../services/calculatePlaygroundGrade";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { cn } from "@/core/lib/utils/cn";
+import { isApproximately } from "@/core/lib/utils/numeric";
 
 const MAX_GROUP_NAME_LINES = 5;
 
@@ -29,7 +30,7 @@ export function AssignmentGroupsPanel() {
 
   const { totalPercent } = calculatePlaygroundTotal(course.groups, course.assignments);
   const totalWeight = sumGroupWeights(course.groups);
-  const weightIsValid = totalWeight === 100;
+  const weightIsValid = isApproximately(totalWeight, 100);
 
   const swalBase = {
     background: theme === "dark" ? "#1e293b" : "#fff",
@@ -150,7 +151,7 @@ export function AssignmentGroupsPanel() {
                     weightIsValid ? "text-text-primary" : "text-danger",
                   )}
                 >
-                  {totalWeight}%
+                  {Math.round(totalWeight * 100) / 100}%
                 </td>
                 <td />
               </tr>

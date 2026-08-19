@@ -124,6 +124,7 @@
     "pdf_success_text": "Importadas com sucesso {matched} disciplinas do PDF do SIS.",
     "pdf_unrecognized_codes": "Alguns códigos de disciplina do PDF não foram encontrados na coorte selecionada e foram ignorados: {codes}",
     "pdf_esp_matched": "Também foram encontradas {matched} nota(s) de cursos ESP neste arquivo, que serão importadas para sua coorte de ESP.",
+    "pdf_commercial_matched": "Também foram encontradas {matched} nota(s) de disciplinas de Engenharia de Software neste arquivo, que serão importadas para sua coorte de Engenharia de Software.",
     "pdf_remapped_codes": "Alguns códigos de disciplina foram mapeados automaticamente para os códigos equivalentes da sua coorte: {codes}",
     "pdf_credit_overrides": "Algumas disciplinas tinham valores de créditos diferentes dos padrões da sua coorte (provavelmente você as cursou quando os créditos mudaram). Os créditos foram ajustados automaticamente: {codes}"
   },
@@ -262,6 +263,8 @@
     "disclaimer_title": "Como Funciona",
     "disclaimer_algorithm": "O algoritmo atribui as notas mais altas às disciplinas com mais créditos primeiro para maximizar o impacto no seu GPA. O detalhamento de créditos mostra a quais pesos de disciplina cada nota deve ser aplicada.",
     "disclaimer_credits": "As combinações dependem da ordem: a nota atribuída a um peso de créditos específico importa. Trocar notas entre disciplinas com créditos diferentes alterará o GPA resultante.",
+    "disclaimer_algorithm_esp": "As disciplinas do ESP não têm créditos acadêmicos, então o algoritmo atribui as melhores notas disponíveis entre suas disciplinas restantes sem dar mais peso a nenhuma delas.",
+    "disclaimer_credits_esp": "As combinações não dependem da ordem: como cada disciplina do ESP conta igualmente para o seu GPA de ESP, só importa quantas disciplinas recebem cada nota, não qual delas especificamente.",
     "disclaimer_not_official": "Esta ferramenta é apenas para planejamento. Nunca se baseie exclusivamente nestas projeções para decisões acadêmicas. Sempre verifique com seus registros acadêmicos oficiais e orientadores."
   },
   "settings": {
@@ -304,8 +307,11 @@
     },
     "gpa_calc": {
       "title": "Cálculo do GPA",
+      "title_esp": "Cálculo do GPA do ESP",
       "formula": "GPA = Total de Pontos de Qualidade ÷ Total de Créditos Tentados",
+      "formula_esp": "GPA do ESP = Soma dos Valores das Notas ÷ Número de Disciplinas Cursadas",
       "p1": "Os pontos de qualidade de cada curso = valor da nota × créditos do curso. Cursos com mais créditos têm peso proporcionalmente maior no seu GPA.",
+      "p1_esp": "As disciplinas do ESP não têm créditos acadêmicos, então cada uma conta igualmente para o seu GPA do ESP — diferente do GPA de Engenharia de Software, nenhuma disciplina pesa mais que outra.",
       "p2": "Um GPA acumulado mínimo de 2.0 é necessário para se graduar no programa de Engenharia de Software, além de concluir o programa ESP de inglês.",
       "credits_note": "Esta calculadora pré-carrega os valores corretos de créditos para cada curso de cada coorte, então você nunca precisa inseri-los manualmente."
     },
@@ -327,7 +333,7 @@
     },
     "esp": {
       "title": "Programa ESP de Inglês",
-      "description": "As notas do programa ESP (Inglês para Fins Específicos) não estão incluídas no GPA de Engenharia de Software. O programa ESP tem seu próprio cálculo de GPA separado. Embora concluir o programa ESP seja obrigatório para a graduação, suas notas não afetam o GPA da sua carreira."
+      "description": "O ESP (Inglês para Fins Específicos) tem seu próprio GPA separado, calculado como uma média simples entre todas as suas disciplinas, já que elas não têm créditos acadêmicos. O programa é organizado em Níveis em vez de termos, e embora concluí-lo seja obrigatório para a graduação, ele não afeta o GPA da sua carreira de Engenharia de Software."
     },
     "privacy": {
       "title": "Privacidade e Dados",
