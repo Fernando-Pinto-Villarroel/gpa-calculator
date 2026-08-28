@@ -26,4 +26,23 @@ test.describe("Forecast combinations - search finds genuinely best combinations"
     const sectionText = await combinationsSection.innerText();
     expect(sectionText).toMatch(/\d+×A(?!-)/);
   });
+
+  // CombinationCard suppresses the "×Ncr" credit-group badges for ESP
+  // (`!isEsp && alloc.creditGroups.map(...)`), since ESP courses carry no
+  // credit hours. This was implemented but never actually verified.
+  test("ESP combinations show grade badges but never credit badges", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await gotoForecast(page);
+
+    const targetInput = page.locator('[data-tour="forecast-target"] input');
+    await targetInput.fill("3.0");
+    await page.waitForTimeout(600);
+
+    const combinationsSection = page.locator('[data-tour="forecast-combinations"]');
+    await expect(combinationsSection).toBeVisible({ timeout: 10000 });
+
+    const sectionText = await combinationsSection.innerText();
+    expect(sectionText).toMatch(/\d+×A(?!-)/);
+    expect(sectionText).not.toMatch(/\d+×\d+cr/);
+  });
 });

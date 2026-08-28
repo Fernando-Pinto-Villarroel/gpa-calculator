@@ -81,4 +81,49 @@ test.describe("Mid-edit interruptions - career/language switches don't crash or 
       "Unsaved Draft Title",
     );
   });
+
+  test("switching career mid-edit on a credits input saves the in-progress value via the natural blur, without corrupting it", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const badge = page.locator('[data-tour="first-credits-badge"]');
+    await badge.dblclick();
+    const creditInput = page.locator('[data-tour="first-course-card"] input[type="number"]');
+    await creditInput.fill("3");
+
+    await page.locator('button[aria-label="Career"]').click();
+    await page.getByText("English for Specific Purposes").click();
+    await expect(page.locator("body")).not.toContainText("Error");
+
+    const store = await readLocalStorageJson<{
+      state: { gradesByCohort: Record<string, Record<string, unknown>> };
+    }>(page, "jala-gpa-store");
+    const entry = store!.state.gradesByCohort["cohort-2-2026"]["CSPR-111"];
+    expect(entry).toEqual([{ credits: 3, grade: null, approved: false }]);
+  });
+
+  test("switching cohort mid-edit on a credits input saves the in-progress value to the original cohort via the natural blur", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const badge = page.locator('[data-tour="first-credits-badge"]');
+    await badge.dblclick();
+    const creditInput = page.locator('[data-tour="first-course-card"] input[type="number"]');
+    await creditInput.fill("3");
+
+    await page.locator('[data-tour="cohort-selector"]').click();
+    await page.getByRole("button", { name: /Cohort 1 \(I - 2023\)/ }).click();
+    await expect(page.locator("body")).not.toContainText("Error");
+
+    const store = await readLocalStorageJson<{
+      state: { selectedCohortId: string; gradesByCohort: Record<string, Record<string, unknown>> };
+    }>(page, "jala-gpa-store");
+    expect(store!.state.selectedCohortId).toBe("cohort-1-2023");
+    const entry = store!.state.gradesByCohort["cohort-2-2026"]["CSPR-111"];
+    expect(entry).toEqual([{ credits: 3, grade: null, approved: false }]);
+  });
 });

@@ -1,5 +1,9 @@
+import path from "path";
+import fs from "fs";
 import { test, expect } from "@playwright/test";
 import { seedProfile, gotoGrades, gotoPlayground, readLocalStorageJson } from "./fixtures";
+
+const TEST_DATA = path.resolve(__dirname, "../../test-data");
 
 async function importGradesJson(
   page: import("@playwright/test").Page,
@@ -335,5 +339,53 @@ test.describe("Playground backup import - edge cases", () => {
     await page.getByRole("button", { name: "Yes", exact: true }).click();
 
     await expect(page.getByText("Round Trip Course")).toBeVisible();
+  });
+});
+
+// fer.json/irwin.json/victor.json are real users' exported backups for
+// cohort-1-2023/cohort-1-2024, not the app's current default (cohort-2-2026).
+// Older cohorts use a different course-code scheme entirely (e.g. "APR-114"
+// vs "CSPR-111"), so these exercise real curriculum-versioning differences
+// and the "import switches the active cohort" behavior with genuine data,
+// not synthetic fixtures.
+test.describe("Grades backup import - real backups for non-default cohorts", () => {
+  test.beforeEach(async ({ page }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+  });
+
+  test("fer.json (legacy format, no version field, cohort-1-2023) imports and switches the active cohort", async ({
+    page,
+  }) => {
+    const content = fs.readFileSync(path.join(TEST_DATA, "fer.json"), "utf-8");
+    await importGradesJson(page, content, "fer.json");
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+
+    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("I - 2023");
+    await expect(page.getByText("APR-114").first()).toBeVisible();
+    const firstCard = page.locator('[data-tour="first-course-card"]');
+    await expect(firstCard.getByRole("button", { name: "A-", exact: true })).toBeVisible();
+  });
+
+  test("irwin.json (CourseAttempt[] retake shape, cohort-1-2023) imports without crashing", async ({
+    page,
+  }) => {
+    const content = fs.readFileSync(path.join(TEST_DATA, "irwin.json"), "utf-8");
+    await importGradesJson(page, content, "irwin.json");
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+
+    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("I - 2023");
+    await expect(page.getByText("Term GPA:")).toBeVisible();
+    // No error toast, no crash: the page's main content rendered normally.
+    await expect(page.locator('[data-tour="config-toolbar"]')).toBeVisible();
+  });
+
+  test("victor.json (cohort-1-2024) imports and switches to that cohort", async ({ page }) => {
+    const content = fs.readFileSync(path.join(TEST_DATA, "victor.json"), "utf-8");
+    await importGradesJson(page, content, "victor.json");
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+
+    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("I - 2024");
+    await expect(page.getByText("Term GPA:")).toBeVisible();
   });
 });

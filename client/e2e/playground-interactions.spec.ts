@@ -85,4 +85,21 @@ test.describe("Playground - fine-grained interactions", () => {
     const total = await page.locator('[data-tour="playground-total"]').innerText();
     expect(total).toMatch(/\d+\.\d{2}%/);
   });
+
+  test("deleting every assignment shows an empty state (Total: —) without crashing, and Add Assignment recovers it", async ({
+    page,
+  }) => {
+    for (let i = 0; i < 30; i++) {
+      const trashButtons = page.getByTitle("Remove assignment");
+      if ((await trashButtons.count()) === 0) break;
+      await trashButtons.first().click();
+      await page.waitForTimeout(200);
+    }
+
+    await expect(page.getByTitle("Remove assignment")).toHaveCount(0);
+    await expect(page.locator('[data-tour="playground-total"]')).toContainText("—");
+
+    await page.getByRole("button", { name: "Add Assignment" }).click();
+    await expect(page.getByTitle("Remove assignment")).toHaveCount(1);
+  });
 });

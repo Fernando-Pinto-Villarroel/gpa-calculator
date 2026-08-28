@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { seedProfile, switchCareer, gotoGrades, gotoDashboard, readLocalStorageJson } from "./fixtures";
+import {
+  seedProfile,
+  switchCareer,
+  gotoGrades,
+  gotoDashboard,
+  gotoStatistics,
+  readLocalStorageJson,
+} from "./fixtures";
 
 test.describe("Career switching", () => {
   test("defaults to Commercial Software Engineering", async ({ page }) => {
@@ -93,5 +100,20 @@ test.describe("Career switching", () => {
       .innerHTML();
 
     expect(commercialIconHtml).not.toBe(espIconHtml);
+  });
+
+  test("switching career while already on the Statistics page updates its charts in place, without a manual reload", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoStatistics(page);
+    await expect(page.getByText("Current Cumulative GPA")).toBeVisible();
+    await expect(page.getByText("Total Credits Earned")).toBeVisible();
+
+    await switchCareer(page, "esp");
+
+    await expect(page.getByText("Total Courses Completed")).toBeVisible();
+    await expect(page.getByText("Total Credits Earned")).toHaveCount(0);
+    await expect(page.getByText("Levels GPA Progression")).toBeVisible();
   });
 });

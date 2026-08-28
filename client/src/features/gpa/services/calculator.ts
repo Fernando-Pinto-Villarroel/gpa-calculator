@@ -210,14 +210,14 @@ export function getGradeDistribution(
   Object.values(grades).forEach((entry) => {
     if (!hasGradeData(entry)) return;
 
-    if (isCourseAttempts(entry)) {
-      entry.forEach((attempt) => {
-        if (attempt.grade === null) return;
-        distribution[attempt.grade] = (distribution[attempt.grade] || 0) + 1;
-      });
-    } else if (entry !== null) {
-      distribution[entry] = (distribution[entry] || 0) + 1;
-    }
+    // One count per course, using its effective grade (the approved attempt,
+    // or the latest graded attempt) — not one count per attempt. Otherwise a
+    // single retaken course (e.g. F then an approved B) shows up as two
+    // separate courses in the distribution, contradicting both the chart's
+    // "N courses" label and every other retake-aware stat in the app.
+    const grade = getEffectiveGrade(entry);
+    if (grade === null) return;
+    distribution[grade] = (distribution[grade] || 0) + 1;
   });
 
   return distribution as Record<LetterGrade, number>;

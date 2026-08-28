@@ -67,6 +67,23 @@ test.describe("Grades - ESP", () => {
     await expect(page.getByText("Reset Data")).toBeVisible();
   });
 
+  test("Reset Data actually clears ESP grades back to defaults (not just visible in the menu)", async ({
+    page,
+  }) => {
+    await gotoGrades(page);
+
+    await page.getByRole("button", { name: "—" }).first().click();
+    await page.getByRole("button", { name: "A", exact: true }).click();
+    await expect(page.getByText("4.00")).toBeVisible();
+
+    await page.locator('button[aria-label="Actions"]').click();
+    await page.getByText("Reset Data").click();
+    await page.getByRole("button", { name: "Yes, reset it" }).click();
+
+    await expect(page.getByText("0.00")).toBeVisible();
+    await expect(page.getByRole("button", { name: "—" }).first()).toBeVisible();
+  });
+
   test("Canvas Playground is reachable from the ESP actions menu", async ({ page }) => {
     await gotoGrades(page);
 

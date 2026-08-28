@@ -93,6 +93,24 @@ test.describe("Canvas Course Playground", () => {
     expect(rowsFinal).toBe(rowsBefore);
   });
 
+  test("removing every weight group shows Total: — and the weight-mismatch warning, without crashing", async ({
+    page,
+  }) => {
+    await gotoPlayground(page);
+
+    for (let i = 0; i < 15; i++) {
+      const removeButtons = page.getByRole("button", { name: "Remove group" });
+      if ((await removeButtons.count()) === 0) break;
+      await removeButtons.first().click();
+      await page.waitForTimeout(150);
+    }
+
+    await expect(page.getByRole("button", { name: "Remove group" })).toHaveCount(0);
+    await expect(page.locator('[data-tour="playground-total"]')).toContainText("—");
+    await expect(page.getByText("Weights must add up to 100%")).toBeVisible();
+    await expect(page.locator('[data-tour="playground-groups-table"]')).toContainText("0%");
+  });
+
   test("reset assignments restores the default template", async ({ page }) => {
     await gotoPlayground(page);
 

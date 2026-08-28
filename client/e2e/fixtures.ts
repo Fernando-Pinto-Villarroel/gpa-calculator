@@ -75,6 +75,10 @@ export async function gotoForecast(page: Page, locale = "en") {
   await page.goto(localePath(locale, "/forecast"), { waitUntil: "networkidle" });
 }
 
+export async function gotoAbout(page: Page, locale = "en") {
+  await page.goto(localePath(locale, "/about"), { waitUntil: "networkidle" });
+}
+
 export async function switchCareer(
   page: Page,
   career: "commercial" | "esp",

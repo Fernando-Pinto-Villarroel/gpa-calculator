@@ -40,6 +40,34 @@ test.describe("Statistics charts show mathematically correct values", () => {
     await expect(tooltip).toContainText(EXPECTED_CUMULATIVE_GPA);
   });
 
+  // Terms GPA Progression had zero accuracy coverage — only its presence was
+  // ever asserted. With only Term I graded, its term GPA equals the
+  // cumulative GPA, so the same expected value applies.
+  test("Terms GPA Progression chart's data point matches the computed term GPA exactly", async ({
+    page,
+  }) => {
+    const card = page.locator("h3", { hasText: "Terms GPA Progression" }).locator("../..");
+    const dot = card.locator(".recharts-line-dot").first();
+    await dot.hover();
+
+    const tooltip = page.locator(".recharts-tooltip-wrapper:not(:empty)");
+    await expect(tooltip).toContainText(EXPECTED_CUMULATIVE_GPA);
+  });
+
+  // Credit Accumulation had zero accuracy coverage. Term I's known set is
+  // CSPR-111(2cr) + MATH-111(3cr) + HIST-111(2cr) + CSOS-112(2cr) +
+  // MATH-112(3cr) + CSDB-112(2cr) = 14 earned credits, all graded/approved.
+  test("Credit Accumulation chart's earned-credits bar matches the graded courses' credit total", async ({
+    page,
+  }) => {
+    const card = page.locator("h3", { hasText: "Credit Accumulation" }).locator("../..");
+    const earnedBar = card.locator(".recharts-bar-rectangle").first();
+    await earnedBar.hover();
+
+    const tooltip = page.locator(".recharts-tooltip-wrapper:not(:empty)");
+    await expect(tooltip).toContainText("14");
+  });
+
   test("Grade Distribution chart's bars show the exact course counts per grade", async ({
     page,
   }) => {
@@ -60,6 +88,41 @@ test.describe("Statistics charts show mathematically correct values", () => {
     await page.mouse.move(0, 0);
     await page.waitForTimeout(200);
     await bars.nth(2).hover();
+    await expect(tooltip).toContainText("1 courses");
+  });
+});
+
+// getGradeDistribution used to iterate every CourseAttempt in a retake array
+// and count each one, so a single course retaken from F to an approved B
+// showed up as two separate courses in the chart (one under F, one under B)
+// instead of one course under its effective grade — contradicting both the
+// "N courses" tooltip label and every other retake-aware stat in the app.
+test.describe("Statistics charts respect retake approval, not raw attempt history", () => {
+  test("a course retaken from F to an approved B counts once, under B — not once under each grade", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    await page.locator('[data-tour="first-retake-btn"]').click();
+    await page.getByText("Yes, mark as retaken").click();
+    await page.getByText("Add Attempt").click();
+    const attempt2 = page.getByText("Attempt 2", { exact: true }).locator("../..");
+    await attempt2.getByRole("button", { name: /^F/ }).click();
+    await page.getByRole("button", { name: "B", exact: true }).click();
+    await attempt2.locator("button").last().click();
+    await page.getByText("Save", { exact: true }).click();
+
+    await gotoStatistics(page);
+    await page.waitForTimeout(600);
+
+    const card = page.locator("h3", { hasText: "Grade Distribution" }).locator("../..");
+    const bars = card.locator(".recharts-rectangle");
+    await expect(bars).toHaveCount(1);
+
+    const tooltip = page.locator(".recharts-tooltip-wrapper:not(:empty)");
+    await bars.first().hover();
+    await expect(tooltip).toContainText("B");
     await expect(tooltip).toContainText("1 courses");
   });
 });
