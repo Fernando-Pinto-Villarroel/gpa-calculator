@@ -317,6 +317,7 @@
       "formula_esp": "ESP GPA = Sum of Grade Values ÷ Number of Courses Attempted",
       "p1": "Each course's quality points = letter grade value × course credit hours. Higher-credit courses carry proportionally more weight in your GPA.",
       "p1_esp": "ESP courses carry no credit hours, so every course counts equally toward your ESP GPA — unlike the Software Engineering GPA, no course is weighted more heavily than another.",
+      "p1_esp_note": "Depending on your English level, some courses (often Labs) may not be assigned to you — that simply means you've already met that requirement, and it has no effect on your GPA.",
       "p2": "A minimum cumulative GPA of 2.0 is required to graduate from the Software Engineering program, in addition to completing the ESP English program.",
       "credits_note": "This calculator pre-loads the correct credit values for every course in every cohort, so you never need to enter them manually."
     },
@@ -338,7 +339,7 @@
     },
     "esp": {
       "title": "ESP English Program",
-      "description": "ESP (English for Specific Purposes) has its own separate GPA, calculated as a simple average across all ESP courses since they carry no credit hours. The program is organized into Levels rather than terms, and while completing it is mandatory for graduation, it doesn't affect your Software Engineering GPA."
+      "description": "ESP (English for Specific Purposes) has its own separate GPA, calculated as a simple average across all ESP courses since they carry no credit hours. The program is organized into Levels rather than terms, and while completing it is mandatory for graduation, it doesn't affect your Software Engineering GPA (some Labs may not be assigned to you, depending on your English level)."
     },
     "privacy": {
       "title": "Privacy & Data",
@@ -396,7 +397,9 @@
     "esp_config_cohort_title": "Select Your ESP Cohort",
     "esp_config_cohort_content": "Choose the cohort that matches when you enrolled in the ESP program. Unlike other careers, ESP has no terms — courses are grouped into three fixed Levels shown side by side.",
     "esp_config_course_card_title": "Course Card",
-    "esp_config_course_card_content": "Each card represents an ESP course or lab within its Level. Click the grade dropdown on the right to select your letter grade (A, B+, C, etc.).",
+    "esp_config_course_card_content": "Each card represents an ESP course or lab within its Level. Click the grade dropdown on the right to select your letter grade (A, B+, C, etc.). Depending on your English level, some courses (often Labs) may not be assigned to you — that's expected and won't affect your GPA.",
+    "esp_config_credits_title": "Credit Hours",
+    "esp_config_credits_content": "ESP courses normally carry no credit hours, so this badge should always be 0 — every course counts equally toward your ESP GPA.",
     "config_credits_title": "Credit Hours",
     "config_credits_content": "Shows the pre-loaded credit hours for this course. In rare cases — if you took the course when its credits were different — double-click this badge to override the value.",
     "config_retake_title": "Failed Course / Retakes",

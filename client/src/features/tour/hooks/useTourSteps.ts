@@ -138,8 +138,8 @@ export function useTourSteps(): TourStep[] {
         ? '[data-tour="first-credits-badge-m"]'
         : '[data-tour="first-credits-badge"]',
       placement: "auto",
-      title: t("config_credits_title"),
-      content: t("config_credits_content"),
+      title: t("esp_config_credits_title"),
+      content: t("esp_config_credits_content"),
       disableBeacon: true,
     },
     {

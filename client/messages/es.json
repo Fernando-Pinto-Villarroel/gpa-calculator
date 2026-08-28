@@ -317,6 +317,7 @@
       "formula_esp": "GPA de ESP = Suma de Valores de Notas ÷ Cantidad de Materias Cursadas",
       "p1": "Los puntos de calidad de cada curso = valor de la nota × créditos del curso. Los cursos con más créditos tienen proporcionalmente más peso en tu GPA.",
       "p1_esp": "Las materias de ESP no tienen créditos académicos, así que cada una cuenta por igual en tu GPA de ESP — a diferencia del GPA de Ingeniería de Software, ninguna materia pesa más que otra.",
+      "p1_esp_note": "Según tu nivel de inglés, es posible que no se te asignen algunas materias (a menudo Labs) — eso simplemente significa que ya cumpliste ese requisito, y no afecta tu GPA.",
       "p2": "Se requiere un GPA acumulado mínimo de 2.0 para graduarse del programa de Ingeniería de Software, además de completar el programa ESP de inglés.",
       "credits_note": "Esta calculadora precarga los valores correctos de créditos para cada curso de cada cohorte, por lo que nunca necesitas ingresarlos manualmente."
     },
@@ -338,7 +339,7 @@
     },
     "esp": {
       "title": "Programa ESP de Inglés",
-      "description": "ESP (Inglés para Propósitos Específicos) tiene su propio GPA separado, calculado como un promedio simple entre todas sus materias ya que no tienen créditos académicos. El programa se organiza en Niveles en lugar de términos, y aunque completarlo es obligatorio para graduarte, no afecta el GPA de tu carrera de Ingeniería de Software."
+      "description": "ESP (Inglés para Propósitos Específicos) tiene su propio GPA separado, calculado como un promedio simple entre todas sus materias ya que no tienen créditos académicos. El programa se organiza en Niveles en lugar de términos, y aunque completarlo es obligatorio para graduarte, no afecta el GPA de tu carrera de Ingeniería de Software (es posible que no se te asignen algunos Labs, según tu nivel de inglés)."
     },
     "privacy": {
       "title": "Privacidad y Datos",
@@ -396,7 +397,9 @@
     "esp_config_cohort_title": "Selecciona Tu Cohorte ESP",
     "esp_config_cohort_content": "Elige la cohorte que coincide con cuando ingresaste al programa ESP. A diferencia de otras carreras, ESP no tiene términos — los cursos se agrupan en tres Niveles fijos mostrados en paralelo.",
     "esp_config_course_card_title": "Tarjeta de Curso",
-    "esp_config_course_card_content": "Cada tarjeta representa un curso o laboratorio de ESP dentro de su Nivel. Haz clic en el menú de calificación a la derecha para seleccionar tu nota (A, B+, C, etc.).",
+    "esp_config_course_card_content": "Cada tarjeta representa un curso o laboratorio de ESP dentro de su Nivel. Haz clic en el menú de calificación a la derecha para seleccionar tu nota (A, B+, C, etc.). Según tu nivel de inglés, es posible que no se te asignen algunas materias (a menudo Labs) — eso es esperado y no afecta tu GPA.",
+    "esp_config_credits_title": "Horas Crédito",
+    "esp_config_credits_content": "Las materias de ESP normalmente no tienen créditos académicos, así que esta insignia debería mostrar siempre 0 — cada materia cuenta por igual en tu GPA de ESP.",
     "config_credits_title": "Horas Crédito",
     "config_credits_content": "Muestra los créditos pre-cargados de esta materia. En casos excepcionales, si tomaste la materia cuando tenía créditos distintos, haz doble clic para cambiar el valor.",
     "config_retake_title": "Materia Reprobada / Reintentos",

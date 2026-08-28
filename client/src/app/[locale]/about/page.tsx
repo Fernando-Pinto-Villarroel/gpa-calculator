@@ -181,7 +181,7 @@ export default function AboutPage({ params }: Props) {
                 </span>
               </div>
               {(isEsp
-                ? [t("gpa_calc.p1_esp")]
+                ? [t("gpa_calc.p1_esp"), t("gpa_calc.p1_esp_note")]
                 : [t("gpa_calc.p1"), t("gpa_calc.p2"), t("gpa_calc.credits_note")]
               ).map((text, i) => (
                 <p
