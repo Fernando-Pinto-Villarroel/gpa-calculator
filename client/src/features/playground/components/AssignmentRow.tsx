@@ -210,7 +210,17 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
 
       <div className="shrink-0">
         {editingScore ? (
-          <div className="flex items-center gap-1">
+          <div
+            className="flex items-center gap-1"
+            onBlur={(e) => {
+              // Only save+close once focus leaves both inputs entirely —
+              // moving focus between the score and max fields (e.g. via Tab
+              // or a click) must not commit and unmount the editor mid-edit.
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                saveScore();
+              }
+            }}
+          >
             <input
               ref={scoreInputRef}
               type="number"
@@ -230,7 +240,6 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
               min={0}
               value={maxInput}
               onChange={(e) => setMaxInput(clampNonNegative(e.target.value))}
-              onBlur={saveScore}
               onKeyDown={(e) => {
                 if (e.key === "Enter") saveScore();
                 if (e.key === "Escape") setEditingScore(false);

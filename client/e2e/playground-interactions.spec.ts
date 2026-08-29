@@ -86,6 +86,39 @@ test.describe("Playground - fine-grained interactions", () => {
     expect(total).toMatch(/\d+\.\d{2}%/);
   });
 
+  // Only the maxPoints input had onBlur={saveScore} — clicking away right
+  // after editing the score field (without ever focusing maxPoints) fired no
+  // blur handler at all, so the typed score was silently dropped.
+  test("clicking away directly from the score field (without visiting maxPoints) still saves it", async ({
+    page,
+  }) => {
+    await page.locator('[data-tour="playground-score-btn"]').click();
+    const scoreInputs = page.locator('input[type="number"]');
+    await scoreInputs.nth(0).fill("36");
+    await page.locator('[data-tour="playground-title"]').first().click();
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('[data-tour="playground-first-assignment"]')).toContainText("36");
+  });
+
+  test("tabbing from the score field to the maxPoints field doesn't prematurely close the editor", async ({
+    page,
+  }) => {
+    await page.locator('[data-tour="playground-score-btn"]').click();
+    const scoreInputs = page.locator('input[type="number"]');
+    await scoreInputs.nth(0).fill("36");
+    await scoreInputs.nth(0).press("Tab");
+
+    await expect(scoreInputs.nth(1)).toBeVisible();
+    await scoreInputs.nth(1).fill("50");
+    await scoreInputs.nth(1).blur();
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('[data-tour="playground-first-assignment"]')).toContainText(
+      "36 / 50",
+    );
+  });
+
   test("deleting every assignment shows an empty state (Total: —) without crashing, and Add Assignment recovers it", async ({
     page,
   }) => {
