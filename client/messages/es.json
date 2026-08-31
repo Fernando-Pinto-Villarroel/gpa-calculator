@@ -318,6 +318,7 @@
       "p1": "Los puntos de calidad de cada curso = valor de la nota × créditos del curso. Los cursos con más créditos tienen proporcionalmente más peso en tu GPA.",
       "p1_esp": "Las materias de ESP no tienen créditos académicos, así que cada una cuenta por igual en tu GPA de ESP — a diferencia del GPA de Ingeniería de Software, ninguna materia pesa más que otra.",
       "p1_esp_note": "Según tu nivel de inglés, es posible que no se te asignen algunas materias (a menudo Labs) — eso simplemente significa que ya cumpliste ese requisito, y no afecta tu GPA.",
+      "retakes_note": "Si repites una materia reprobada, la nota del intento original sigue contando en tu GPA acumulado junto con la nueva — repetir una materia no la borra de tu historial de GPA.",
       "p2": "Se requiere un GPA acumulado mínimo de 2.0 para graduarse del programa de Ingeniería de Software, además de completar el programa ESP de inglés.",
       "credits_note": "Esta calculadora precarga los valores correctos de créditos para cada curso de cada cohorte, por lo que nunca necesitas ingresarlos manualmente."
     },
