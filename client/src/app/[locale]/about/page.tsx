@@ -175,10 +175,30 @@ export default function AboutPage({ params }: Props) {
             className="flex-1"
           >
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-jala-700/8 border border-jala-700/20">
-                <span className="text-sm font-semibold text-text-accent font-mono leading-snug">
-                  {isEsp ? t("gpa_calc.formula_esp") : t("gpa_calc.formula")}
-                </span>
+              <div className="flex flex-col items-center gap-2 px-4 py-4 rounded-lg bg-jala-700/8 border border-jala-700/20">
+                <div className="flex items-center gap-3 text-text-accent">
+                  <span className="text-sm font-semibold whitespace-nowrap">
+                    {isEsp ? t("gpa_calc.formula_label_esp") : t("gpa_calc.formula_label")}
+                  </span>
+                  <span className="text-sm font-semibold">=</span>
+                  <div className="flex flex-col items-center text-sm font-semibold leading-tight">
+                    <span className="px-1 pb-1 border-b-2 border-current">
+                      {isEsp
+                        ? t("gpa_calc.formula_numerator_esp")
+                        : t("gpa_calc.formula_numerator")}
+                    </span>
+                    <span className="px-1 pt-1">
+                      {isEsp
+                        ? t("gpa_calc.formula_denominator_esp")
+                        : t("gpa_calc.formula_denominator")}
+                    </span>
+                  </div>
+                </div>
+                {!isEsp && (
+                  <div className="text-xs font-mono text-text-muted pt-1 border-t border-jala-700/15 w-full text-center">
+                    {t("gpa_calc.quality_points_formula")}
+                  </div>
+                )}
               </div>
               {(isEsp
                 ? [t("gpa_calc.p1_esp"), t("gpa_calc.p1_esp_note")]

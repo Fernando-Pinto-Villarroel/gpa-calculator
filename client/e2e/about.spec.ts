@@ -10,7 +10,9 @@ test.describe("About page", () => {
 
     await expect(page.getByText("About the Project")).toBeVisible();
     await expect(page.getByText("GPA Calculation", { exact: true })).toBeVisible();
-    await expect(page.getByText("GPA = Total Quality Points ÷ Total Credits Attempted")).toBeVisible();
+    await expect(page.getByText("Total Quality Points", { exact: true })).toBeVisible();
+    await expect(page.getByText("Total Credits Attempted", { exact: true })).toBeVisible();
+    await expect(page.getByText("Quality Points = Grade Value × Credits")).toBeVisible();
     await expect(page.getByText("ESP GPA Calculation")).toHaveCount(0);
 
     await expect(page.getByRole("heading", { name: "ESP English Program" })).toBeVisible();
@@ -24,9 +26,9 @@ test.describe("About page", () => {
     await gotoAbout(page);
 
     await expect(page.getByText("ESP GPA Calculation")).toBeVisible();
-    await expect(
-      page.getByText("ESP GPA = Sum of Grade Values ÷ Number of Courses Attempted"),
-    ).toBeVisible();
+    await expect(page.getByText("Sum of Grade Values", { exact: true })).toBeVisible();
+    await expect(page.getByText("Number of Courses Attempted", { exact: true })).toBeVisible();
+    await expect(page.getByText("Quality Points = Grade Value × Credits")).toHaveCount(0);
     await expect(page.getByText("GPA Calculation", { exact: true })).toHaveCount(0);
     await expect(page.getByText("This calculator pre-loads the correct credit values")).toHaveCount(0);
   });
