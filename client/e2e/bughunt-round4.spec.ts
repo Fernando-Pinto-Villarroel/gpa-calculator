@@ -264,7 +264,7 @@ test.describe("ESP dashboard separates completed courses from completed labs", (
     const text = await page.locator("main").innerText();
 
     expect(text).toMatch(/Completed ESP Courses\s*\n\s*1\s*\n\s*\/ 6/);
-    expect(text).toMatch(/Completed ESP Labs\s*\n\s*3\s*\n\s*of 7/);
+    expect(text).toMatch(/Completed ESP Labs\s*\n\s*4\s*\n\s*of 7/);
     expect(text).not.toContain("Courses Passed");
     expect(text).not.toContain("Completed Subjects");
   });

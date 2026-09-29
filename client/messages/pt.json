@@ -67,7 +67,7 @@
       "deans_list_terms": "Períodos totalmente avaliados com GPA do período entre 3.50 e 3.99.",
       "presidents_list_terms": "Períodos totalmente avaliados com GPA do período perfeito de 4.00.",
       "earned_credits": "Créditos das disciplinas aprovadas, sobre o total de créditos do seu currículo.",
-      "completed_esp_labs": "Labs aprovados sobre os {total} que contam para você: os labs do seu nível inicial, mais qualquer Special Lab em que você lançar nota. Os Special Labs só são atribuídos se você precisar de reforço.",
+      "completed_esp_labs": "Labs que você já cursou, com qualquer nota porque os labs não podem ser refeitos, sobre os {total} que contam para você: os labs do seu nível inicial, mais qualquer Special Lab em que você lançar nota. Os Special Labs só são atribuídos se você precisar de reforço.",
       "rate_of_progress": "Créditos aprovados divididos pelos créditos cursados, contando cada tentativa de uma disciplina refeita. É uma das duas condições do SAP (Progresso Acadêmico Satisfatório) do catálogo estudantil, junto com um GPA acumulado de pelo menos 2.0: abaixo de 67% você está em risco SAP.",
       "starting_level": "O nível em que você começa o ESP, segundo o teste de nivelamento. Define qual das alternativas M2-M5 conta para o seu GPA e progresso."
     }
@@ -661,6 +661,8 @@
       "esp": "Programa de certificado ESP: mude para ele com o seletor de curso no cabeçalho. Ele tem suas próprias notas, GPA, níveis e nível de alocação.",
       "playground": "Playground de Cursos Canvas: simule a nota de uma disciplina a partir das tarefas e pesos, ou importe de um PDF do Canvas.",
       "standing": "A situação acadêmica agora segue o catálogo estudantil: taxa de progresso junto com o GPA e o limite de três tentativas por disciplina.",
+      "offline": "Funciona offline: depois da sua primeira visita o app carrega sem conexão e suas notas continuam sendo salvas no seu dispositivo.",
+      "import": "Importe seu PDF do SIS ou um backup em qualquer um dos programas, incluindo suas notas e reprovações do ESP, e o app detecta a qual programa cada nota pertence.",
       "tooltips": "Cada cartão do painel tem um ícone de informação que explica o que ele mede.",
       "speed": "Navegação mais rápida e muitas correções de precisão (uma nota reprovada nunca conta como aprovada)."
     },

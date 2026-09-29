@@ -1,5 +1,5 @@
 import { Term } from "@/core/domain/types/course";
-import { CourseGradeEntry, isCourseApproved } from "@/core/domain/types/grades";
+import { CourseGradeEntry, hasGradeData, isCourseApproved } from "@/core/domain/types/grades";
 import { isPendingOptionalCourse } from "@/features/gpa/services/calculator";
 
 const ESP_COURSE_TYPE = "Core";
@@ -89,7 +89,7 @@ export function calculateEspLabCompletion(
         !isPendingOptionalCourse(course, grades[course.courseCode] ?? null),
     );
   const completedCourses = applicableLabs.filter((course) =>
-    isCourseApproved(grades[course.courseCode] ?? null),
+    hasGradeData(grades[course.courseCode] ?? null),
   ).length;
   const totalCourses = applicableLabs.length;
 

@@ -222,3 +222,18 @@ test.describe("ESP forecast separates remaining courses from remaining labs", ()
     expect(text).not.toContain("Remaining Labs");
   });
 });
+
+test.describe("ESP labs count as completed once they have any grade", () => {
+  test("failing grades on labs still count, since labs cannot be retaken", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await seedStore(
+      page,
+      "jala-esp-gpa-store",
+      { "ESP-101-M3L1": "F", "ESP-101-M4L1": "D-", "ESP-201-M6": "A" },
+      { placementLevelByCohort: {} },
+    );
+    await gotoDashboard(page);
+    const text = await page.locator("main").innerText();
+    expect(text).toMatch(/Completed ESP Labs\s*\n\s*3\s*\n\s*of 6/);
+  });
+});

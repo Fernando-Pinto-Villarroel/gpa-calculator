@@ -265,7 +265,7 @@ test.describe("Gabi feedback #6 — completion doesn't depend on labs, no bogus 
     await page.waitForTimeout(300);
     const dashText = await page.locator("main").innerText();
     expect(dashText).toMatch(/Completed ESP Courses\s*\n\s*6/);
-    expect(dashText).toMatch(/Completed ESP Labs\s*\n\s*0\s*\n\s*of 6/);
+    expect(dashText).toMatch(/Completed ESP Labs\s*\n\s*6\s*\n\s*of 6/);
 
     // GPA still correctly reflects the failing labs — labs count toward
     // GPA, they just don't block completion.

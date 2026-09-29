@@ -4,14 +4,17 @@ skinparam shadowing false
 
 actor Student
 participant "Grade Entry Page" as Config
-participant "GPA Store" as Store
+participant "Career GPA Store" as Store
 
-Student -> Config : Selects cohort and term
-Config -> Store : getTermsByCohortId(cohortId)
-Store --> Config : Return term course list
+Student -> Config : Selects career and cohort
+Config -> Store : Load terms (Commercial SE)\nor levels (ESP) of the cohort
+Store --> Config : Return course list
 Student -> Config : Sets or changes a course grade
-Config -> Store : setGrade(courseCode, grade)
+Config -> Store : setGradeEntry(courseCode, entry)
 Store -> Store : Persist update to localStorage
+opt Failing grade on a course
+  Config --> Student : Offer a retake, warn after two failed attempts\nand flag dismissal after the third
+end
 Config -> Config : calculateTermGpa(grades, term)
-Config --> Student : Updated term GPA\nDean's List / President's List status
+Config --> Student : Updated term or level GPA\n(Dean's List and President's List for Commercial SE only)
 @enduml

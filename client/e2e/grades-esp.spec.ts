@@ -135,3 +135,22 @@ test.describe("Grades - ESP", () => {
     await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("Cohort 8");
   });
 });
+
+test.describe("Grade dropdown never pushes the page down", () => {
+  test("a card near the bottom opens its options upward and the page height stays the same", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await gotoGrades(page);
+    const trigger = page.getByRole("button", { name: "—" }).last();
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(400);
+    const before = await page.evaluate(() => document.documentElement.scrollHeight);
+    const triggerBox = (await trigger.boundingBox())!;
+    await trigger.click();
+    const option = page.getByRole("button", { name: "B+", exact: true }).last();
+    await expect(option).toBeVisible();
+    const optionBox = (await option.boundingBox())!;
+    expect(optionBox.y).toBeLessThan(triggerBox.y);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(before);
+  });
+});

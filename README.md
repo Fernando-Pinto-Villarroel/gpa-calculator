@@ -326,7 +326,7 @@ The following sequence diagrams illustrate the primary scenarios this tool was b
 
 ---
 
-**Scenario 3 — Explore honor eligibility**
+**Scenario 3 — Explore honor eligibility and academic standing**
 
 ![scenario-3](./docs/media/images/scenario-3.png)
 

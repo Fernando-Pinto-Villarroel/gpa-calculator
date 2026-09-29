@@ -112,7 +112,7 @@ test.describe("Dashboard info tooltips", () => {
     await gotoDashboard(page);
 
     await page.getByRole("button", { name: "What is Completed ESP Labs?" }).first().hover();
-    await expect(page.getByRole("tooltip")).toContainText("Labs passed out of the 6 that count for you");
+    await expect(page.getByRole("tooltip")).toContainText("Labs you have taken, with any grade since labs cannot be retaken, out of the 6 that count for you");
   });
 
   test("on a touch screen, tapping the icon opens the tooltip and tapping again closes it", async ({
@@ -220,7 +220,7 @@ test.describe("ESP cohort I - 2023 has no module 2 (no ESP 1, no Lab M2L2)", () 
     await gotoDashboard(page);
     expect(await dashboardText(page)).toMatch(/Completed ESP Labs\s*\n\s*0\s*\n\s*of 7/);
     await page.getByRole("button", { name: "What is Completed ESP Labs?" }).first().hover();
-    await expect(page.getByRole("tooltip")).toContainText("Labs passed out of the 7 that count for you");
+    await expect(page.getByRole("tooltip")).toContainText("Labs you have taken, with any grade since labs cannot be retaken, out of the 7 that count for you");
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "What is Completed ESP Courses?" }).first().focus();
     await expect(

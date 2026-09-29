@@ -54,3 +54,29 @@ test.describe("What's new in version 2", () => {
     await expect(dialog(page)).toHaveCount(0);
   });
 });
+
+test.describe("Reopening What's new from the About page", () => {
+  test("clicking the version opens the dialog for anyone, and closing it does not reopen it", async ({ page }) => {
+    await seedTour(page, { guidedTourCompleted: true, globalStepIndex: 0, whatsNewSeenVersion: "2.0.0" });
+    await page.goto("/en/about", { waitUntil: "networkidle" });
+    await expect(dialog(page)).toHaveCount(0);
+
+    const version = page.getByRole("button", { name: /Version 2\.0\.0/ });
+    const before = await version.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { color: s.color, decoration: s.textDecorationLine };
+    });
+    expect(before.decoration).toBe("none");
+
+    await version.click();
+    await expect(dialog(page)).toBeVisible();
+    await page.getByRole("button", { name: "Maybe later" }).click();
+    await expect(dialog(page)).toHaveCount(0);
+
+    await version.click();
+    await expect(dialog(page)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toHaveCount(0);
+  });
+
+});

@@ -67,7 +67,7 @@
       "deans_list_terms": "Fully graded terms with a term GPA between 3.50 and 3.99.",
       "presidents_list_terms": "Fully graded terms with a perfect 4.00 term GPA.",
       "earned_credits": "Credits of the courses you have passed, out of the total credits of your curriculum.",
-      "completed_esp_labs": "Labs passed out of the {total} that count for you: the labs of your starting level, plus any Special Lab you grade. Special Labs are only assigned if you need reinforcement.",
+      "completed_esp_labs": "Labs you have taken, with any grade since labs cannot be retaken, out of the {total} that count for you: the labs of your starting level, plus any Special Lab you grade. Special Labs are only assigned if you need reinforcement.",
       "rate_of_progress": "Credits passed divided by credits attempted, counting every attempt of a retaken course. It is one of the two SAP (Satisfactory Academic Progress) conditions in the student catalog, together with a cumulative GPA of at least 2.0: below 67% you are at SAP risk.",
       "starting_level": "The level you start ESP at, from the placement test. It decides which of the M2-M5 alternatives count toward your GPA and progress."
     }
@@ -661,6 +661,8 @@
       "esp": "ESP certificate program: switch to it with the career selector in the header. It has its own grades, GPA, levels and placement level.",
       "playground": "Canvas Course Playground: simulate a course grade from its assignments and weights, or import it from a Canvas PDF.",
       "standing": "Academic standing now follows the student catalog: rate of progress alongside GPA, and the three-attempt limit per course.",
+      "offline": "Works offline: after your first visit the app loads without a connection and your grades keep saving on your device.",
+      "import": "Import your SIS PDF or a backup into either program, including your ESP grades and retakes, and the app detects which program each grade belongs to.",
       "tooltips": "Every dashboard card has an info icon that explains what it measures.",
       "speed": "Faster navigation, plus many accuracy fixes (a failing grade never counts as passed)."
     },

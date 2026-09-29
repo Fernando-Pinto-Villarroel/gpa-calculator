@@ -11,6 +11,10 @@ import {
 } from "@/core/domain/types/letterGrades";
 import { cn } from "@/core/lib/utils/cn";
 
+const MENU_MAX_HEIGHT = 192;
+const MENU_GAP = 8;
+const VIEWPORT_BOTTOM_RESERVED = 80;
+
 interface GradeSelectorProps {
   courseCode: string;
   grade: LetterGrade | null;
@@ -38,6 +42,7 @@ export function GradeSelector({
   noGradeLabel,
 }: GradeSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,6 +55,16 @@ export function GradeSelector({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const toggle = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - VIEWPORT_BOTTOM_RESERVED - rect.bottom;
+      const needed = MENU_MAX_HEIGHT + MENU_GAP;
+      setOpenUp(spaceBelow < needed && rect.top > spaceBelow);
+    }
+    setOpen((v) => !v);
+  };
+
   const select = (g: LetterGrade | null) => {
     onChange(courseCode, g);
     setOpen(false);
@@ -58,7 +73,7 @@ export function GradeSelector({
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         className={cn(
           "flex items-center justify-between gap-1 w-full px-2.5 py-1.5 rounded-md text-xs font-semibold",
           "border border-border-base bg-bg-elevated hover:border-border-accent",
@@ -79,13 +94,14 @@ export function GradeSelector({
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            initial={{ opacity: 0, y: openUp ? 4 : -4, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            exit={{ opacity: 0, y: openUp ? 4 : -4, scale: 0.97 }}
             transition={{ duration: 0.12 }}
             className={cn(
-              "absolute left-0 top-full mt-1 w-24 rounded-lg border border-border-base bg-bg-surface shadow-xl z-20",
+              "absolute left-0 w-24 rounded-lg border border-border-base bg-bg-surface shadow-xl z-20",
               "overflow-hidden max-h-48 overflow-y-auto",
+              openUp ? "bottom-full mb-1" : "top-full mt-1",
             )}
           >
             <button

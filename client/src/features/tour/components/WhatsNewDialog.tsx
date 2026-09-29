@@ -6,9 +6,11 @@ import { useTranslations } from "next-intl";
 import {
   Gauge,
   Gift,
+  FileUp,
   Info,
   Languages,
   NotebookPen,
+  WifiOff,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -21,6 +23,8 @@ const HIGHLIGHTS: { key: string; icon: LucideIcon }[] = [
   { key: "esp", icon: Languages },
   { key: "playground", icon: NotebookPen },
   { key: "standing", icon: Gauge },
+  { key: "offline", icon: WifiOff },
+  { key: "import", icon: FileUp },
   { key: "tooltips", icon: Info },
   { key: "speed", icon: Zap },
 ];
@@ -29,11 +33,19 @@ export function WhatsNewDialog() {
   const t = useTranslations("whats_new");
   const router = useRouter();
   const isClient = useIsClient();
-  const { guidedTourCompleted, isActive, whatsNewSeenVersion, markWhatsNewSeen, startTour } =
-    useTourStore();
+  const {
+    guidedTourCompleted,
+    isActive,
+    whatsNewSeenVersion,
+    whatsNewOpen,
+    markWhatsNewSeen,
+    startTour,
+  } = useTourStore();
 
   const open =
-    isClient && guidedTourCompleted && !isActive && whatsNewSeenVersion !== APP_VERSION;
+    isClient &&
+    !isActive &&
+    (whatsNewOpen || (guidedTourCompleted && whatsNewSeenVersion !== APP_VERSION));
 
   useEffect(() => {
     if (!open) return;

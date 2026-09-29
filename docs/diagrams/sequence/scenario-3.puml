@@ -7,11 +7,12 @@ participant "Dashboard" as Home
 participant "Statistics Page" as Stats
 
 Student -> Home : Views cumulative GPA
-Home -> Home : getHonorStatus(gpa)
-Home --> Student : Honor badge + Cum Laude threshold progress
+Home -> Home : getAcademicStanding(gpa, rateOfProgress)
+Home --> Student : Standing badge (honor, Academic Risk or SAP Risk)\nwith the reason and Cum Laude progress
 Student -> Stats : Navigates to Statistics
 Stats -> Stats : getTermHonorCounts(grades, terms)
 Stats --> Student : Dean's List and President's List term counts
 Student -> Stats : Reviews GPA progression chart
 Stats --> Student : Term-by-term cumulative GPA trend
+note over Home, Stats : ESP has no honors or standing,\nit shows its own level GPA instead
 @enduml

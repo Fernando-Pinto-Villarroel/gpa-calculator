@@ -24,6 +24,7 @@ import { cn } from "@/core/lib/utils/cn";
 import { APP_VERSION } from "@/core/config/app";
 import { FeedbackButton } from "@/features/about/components/FeedbackButton";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
+import { useTourStore } from "@/features/tour/store/useTourStore";
 
 
 type Props = {
@@ -112,6 +113,7 @@ export default function AboutPage({ params }: Props) {
   use(params);
   const t = useTranslations("about");
   const isEsp = useCareerStore((s) => s.selectedCareerId) === "esp";
+  const openWhatsNew = useTourStore((s) => s.openWhatsNew);
 
   const acknowledgmentsSection = (
     <Section
@@ -469,9 +471,14 @@ export default function AboutPage({ params }: Props) {
         transition={{ duration: 0.4, delay: 0.5 }}
         className="flex items-center justify-center mt-8 py-4 border-t border-border-base"
       >
-        <p className="text-xs text-text-muted">
+        <button
+          type="button"
+          onClick={openWhatsNew}
+          aria-haspopup="dialog"
+          className="text-xs text-text-muted cursor-pointer"
+        >
           {t("version_label")} {APP_VERSION}
-        </p>
+        </button>
       </motion.div>
 
       <FeedbackButton />

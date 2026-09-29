@@ -7,6 +7,8 @@ interface TourState {
   globalStepIndex: number;
   isActive: boolean;
   whatsNewSeenVersion: string | null;
+  whatsNewOpen: boolean;
+  openWhatsNew: () => void;
   markWhatsNewSeen: () => void;
   startTour: () => void;
   resumeTour: () => void;
@@ -23,7 +25,9 @@ export const useTourStore = create<TourState>()(
       globalStepIndex: 0,
       isActive: false,
       whatsNewSeenVersion: null,
-      markWhatsNewSeen: () => set({ whatsNewSeenVersion: APP_VERSION }),
+      whatsNewOpen: false,
+      openWhatsNew: () => set({ whatsNewOpen: true }),
+      markWhatsNewSeen: () => set({ whatsNewSeenVersion: APP_VERSION, whatsNewOpen: false }),
       startTour: () => set({ isActive: true, globalStepIndex: 0 }),
       resumeTour: () => set({ isActive: true }),
       skipTour: () =>
