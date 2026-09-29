@@ -39,8 +39,7 @@ test.describe("Grades - ESP", () => {
     await expect(page.getByText("Cumulative GPA:")).toBeVisible();
     await expect(page.getByText("0.00")).toBeVisible();
 
-    const creditBadges = page.getByText("0 cr").first();
-    await expect(creditBadges).toBeVisible();
+    await expect(page.getByText(/^\d+ cr$/)).toHaveCount(0);
   });
 
   test("grading an ESP course updates cumulative GPA using gpaWeight, not 0 credits", async ({

@@ -1,10 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { APP_VERSION } from "@/core/config/app";
 
 interface TourState {
   guidedTourCompleted: boolean;
   globalStepIndex: number;
   isActive: boolean;
+  whatsNewSeenVersion: string | null;
+  markWhatsNewSeen: () => void;
   startTour: () => void;
   resumeTour: () => void;
   skipTour: () => void;
@@ -19,10 +22,24 @@ export const useTourStore = create<TourState>()(
       guidedTourCompleted: false,
       globalStepIndex: 0,
       isActive: false,
+      whatsNewSeenVersion: null,
+      markWhatsNewSeen: () => set({ whatsNewSeenVersion: APP_VERSION }),
       startTour: () => set({ isActive: true, globalStepIndex: 0 }),
       resumeTour: () => set({ isActive: true }),
-      skipTour: () => set({ isActive: false, guidedTourCompleted: true, globalStepIndex: 0 }),
-      completeTour: () => set({ isActive: false, guidedTourCompleted: true, globalStepIndex: 0 }),
+      skipTour: () =>
+        set({
+          isActive: false,
+          guidedTourCompleted: true,
+          globalStepIndex: 0,
+          whatsNewSeenVersion: APP_VERSION,
+        }),
+      completeTour: () =>
+        set({
+          isActive: false,
+          guidedTourCompleted: true,
+          globalStepIndex: 0,
+          whatsNewSeenVersion: APP_VERSION,
+        }),
       setGlobalStepIndex: (index) => set({ globalStepIndex: index }),
       resetTour: () =>
         set({ isActive: false, guidedTourCompleted: false, globalStepIndex: 0 }),
@@ -32,6 +49,7 @@ export const useTourStore = create<TourState>()(
       partialize: (s) => ({
         guidedTourCompleted: s.guidedTourCompleted,
         globalStepIndex: s.globalStepIndex,
+        whatsNewSeenVersion: s.whatsNewSeenVersion,
       }),
     },
   ),

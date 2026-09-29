@@ -23,6 +23,12 @@ import { cn } from "@/core/lib/utils/cn";
 import { getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
 import { splitImportPayload } from "@/features/config/lib/splitImportPayload";
 import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import {
+  EspPlacementLevel,
+  getPlacementLevelAfterImport,
+  resolveEspPlacementLevel,
+} from "@/features/esp/lib/placement";
 import Swal from "sweetalert2";
 
 const TOUR_TARGETED_ITEMS = [
@@ -47,6 +53,7 @@ export function ActionsMenu({ className }: { className?: string }) {
     grades: espGrades,
     importGrades: importEspGrades,
     selectedCohortId: espSelectedCohortId,
+    placementLevel: espPlacementLevel,
   } = useEspGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -227,7 +234,11 @@ export function ActionsMenu({ className }: { className?: string }) {
           importGrades({ cohortId: data.cohortId, grades: data.commercialGrades });
         }
         if (data.espGrades) {
-          importEspGrades({ cohortId: data.cohortId, grades: data.espGrades });
+          importEspGrades({
+            cohortId: data.cohortId,
+            grades: data.espGrades,
+            placementLevel: data.espPlacementLevel,
+          });
         }
         toast.success(t("import_success"), {
           description: t(`import_success_text_${scope}`, { cohortId: data.cohortId }),
@@ -324,6 +335,7 @@ export function ActionsMenu({ className }: { className?: string }) {
       });
 
       if (confirmed.isConfirmed) {
+        let placementChangedTo: EspPlacementLevel | undefined;
         if (result.success && matched > 0) {
           importGrades({
             cohortId: selectedCohortId,
@@ -331,15 +343,27 @@ export function ActionsMenu({ className }: { className?: string }) {
           });
         }
         if (espResult.success && espMatched > 0) {
+          const mergedEspGrades = { ...espGrades, ...espResult.grades };
+          const espTerms = getEspTermsByCohortId(espSelectedCohortId);
+          const placement = getPlacementLevelAfterImport(
+            mergedEspGrades,
+            espTerms,
+            resolveEspPlacementLevel(espGrades, espTerms, espPlacementLevel),
+          );
+          placementChangedTo = placement.changed ? placement.level : undefined;
           importEspGrades({
             cohortId: espSelectedCohortId,
-            grades: { ...espGrades, ...espResult.grades },
+            grades: mergedEspGrades,
+            placementLevel: placement.changed ? null : undefined,
           });
         }
+        const successText = t("pdf_success_text", {
+          matched: String(matched + espMatched),
+        });
         toast.success(t("pdf_success"), {
-          description: t("pdf_success_text", {
-            matched: String(matched + espMatched),
-          }),
+          description: placementChangedTo
+            ? `${successText} ${t("pdf_placement_level_adjusted", { level: placementChangedTo })}`
+            : successText,
         });
       }
     } catch (err) {

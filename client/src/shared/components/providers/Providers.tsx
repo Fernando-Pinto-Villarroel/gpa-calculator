@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
+import { WhatsNewDialog } from "@/features/tour/components/WhatsNewDialog";
 import en from "../../../../messages/en.json";
 import es from "../../../../messages/es.json";
 import pt from "../../../../messages/pt.json";
@@ -67,6 +68,7 @@ export function Providers({ children, locale }: ProvidersProps) {
         <ThemeInitializer />
         <ThemedToaster />
         <GuidedTour locale={locale} />
+        <WhatsNewDialog />
         {children}
       </TooltipProvider>
     </NextIntlClientProvider>

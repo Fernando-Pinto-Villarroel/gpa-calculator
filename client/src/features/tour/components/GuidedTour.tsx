@@ -289,6 +289,7 @@ export function GuidedTour({ locale }: GuidedTourProps) {
             finish: t("finish"),
             skipPage: t("skip_page"),
             skipTour: t("skip"),
+            language: t("language"),
           }}
           colors={{
             primary: primaryColor,

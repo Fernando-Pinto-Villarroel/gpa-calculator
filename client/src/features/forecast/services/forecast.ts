@@ -1,4 +1,4 @@
-import { Course, Term } from "@/core/domain/types/course";
+import { Course, Term, isRetakable } from "@/core/domain/types/course";
 import { isAtLeast } from "@/core/lib/utils/numeric";
 import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import {
@@ -6,6 +6,7 @@ import {
   isCourseAttempts,
   isCourseApproved,
   hasGradeData,
+  hasExhaustedAttempts,
   getEffectiveCredits,
 } from "@/core/domain/types/grades";
 
@@ -47,6 +48,7 @@ export interface ForecastResult {
   alreadyAchieved: boolean;
   currentGpa: number;
   remainingCourseCount: number;
+  remainingCourseCodes: string[];
   remainingCredits: number;
   uniformScenarios: UniformScenario[];
   combinations: GradeCombination[];
@@ -109,11 +111,15 @@ export function buildForecastContext(
           currentQP += qp;
           currentAC += ac;
         }
-        if (!isCourseApproved(entry)) {
-          const gpaWeight = course.gpaWeight ?? course.credits;
+        const isSettled =
+          isCourseApproved(entry) ||
+          hasExhaustedAttempts(entry) ||
+          (!isRetakable(course) && hasGradeData(entry));
+        if (!isSettled) {
           remaining.push({
             courseCode: course.courseCode,
-            credits: getEffectiveCredits(entry, gpaWeight),
+            credits:
+              course.gpaWeight ?? getEffectiveCredits(entry, course.credits),
             termOrdinal: term.ordinal,
           });
         }
@@ -220,11 +226,9 @@ export function findCombinations(
     return findCombinationsGreedy(ctx, targetGpa, grades, courseCredits, maxResults);
   }
 
-  const results: GradeCombination[] = [];
+  const valid: { dist: number[]; qp: number }[] = [];
 
   function search(gradeIdx: number, remaining: number, dist: number[]) {
-    if (results.length >= maxResults * 20) return;
-
     if (gradeIdx === G - 1) {
       dist.push(remaining);
       let qp = 0;
@@ -235,41 +239,12 @@ export function findCombinations(
           courseIdx++;
         }
       }
-      if (isAtLeast(qp, neededQP)) {
-        const gpa = (ctx.currentQualityPoints + qp) / totalAC;
-        const allocations: GradeAllocation[] = [];
-        let ci = 0;
-        for (let g = 0; g < G; g++) {
-          if (dist[g] > 0) {
-            const creditMap: Record<number, number> = {};
-            for (let j = 0; j < dist[g]; j++) {
-              const cr = courseCredits[ci];
-              creditMap[cr] = (creditMap[cr] ?? 0) + 1;
-              ci++;
-            }
-            allocations.push({
-              grade: grades[g],
-              count: dist[g],
-              creditGroups: Object.entries(creditMap)
-                .map(([cr, cnt]) => ({ credits: Number(cr), count: cnt }))
-                .sort((a, b) => b.credits - a.credits),
-            });
-          } else {
-            ci += dist[g];
-          }
-        }
-        results.push({ allocations, projectedGpa: gpa });
-      }
+      if (isAtLeast(qp, neededQP)) valid.push({ dist: [...dist], qp });
       dist.pop();
       return;
     }
 
-    // Try higher counts of this grade first (grades are sorted best-to-worst,
-    // so this explores the highest-GPA combinations first). Since the search
-    // below is capped at maxResults * 20 results for performance, exploring
-    // low-to-high here would fill that cap with worst-first combinations,
-    // potentially never reaching any that use the best allowed grade at all.
-    for (let count = remaining; count >= 0; count--) {
+    for (let count = 0; count <= remaining; count++) {
       dist.push(count);
       search(gradeIdx + 1, remaining - count, dist);
       dist.pop();
@@ -278,9 +253,33 @@ export function findCombinations(
 
   search(0, K, []);
 
-  results.sort((a, b) => b.projectedGpa - a.projectedGpa);
+  valid.sort((a, b) => a.qp - b.qp);
 
-  return results.slice(0, maxResults);
+  return valid
+    .slice(0, maxResults)
+    .map(({ dist, qp }) => {
+      const allocations: GradeAllocation[] = [];
+      let ci = 0;
+      for (let g = 0; g < G; g++) {
+        if (dist[g] > 0) {
+          const creditMap: Record<number, number> = {};
+          for (let j = 0; j < dist[g]; j++) {
+            const cr = courseCredits[ci];
+            creditMap[cr] = (creditMap[cr] ?? 0) + 1;
+            ci++;
+          }
+          allocations.push({
+            grade: grades[g],
+            count: dist[g],
+            creditGroups: Object.entries(creditMap)
+              .map(([cr, cnt]) => ({ credits: Number(cr), count: cnt }))
+              .sort((a, b) => b.credits - a.credits),
+          });
+        }
+      }
+      return { allocations, projectedGpa: (ctx.currentQualityPoints + qp) / totalAC };
+    })
+    .sort((a, b) => b.projectedGpa - a.projectedGpa);
 }
 
 function findCombinationsGreedy(
@@ -385,6 +384,7 @@ export function forecast(
       alreadyAchieved: isAtLeast(currentGpa, targetGpa),
       currentGpa,
       remainingCourseCount: 0,
+      remainingCourseCodes: [],
       remainingCredits: 0,
       uniformScenarios: [],
       combinations: [],
@@ -428,6 +428,7 @@ export function forecast(
     alreadyAchieved,
     currentGpa,
     remainingCourseCount: ctx.remainingCourses.length,
+    remainingCourseCodes: ctx.remainingCourses.map((c) => c.courseCode),
     remainingCredits: ctx.totalRemainingCredits,
     uniformScenarios,
     combinations,

@@ -1,39 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { StatsOverview } from "@/features/statistics/components/StatsOverview";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
-
-const CumulativeGpaProgressChart = dynamic(
-  () =>
-    import("@/features/statistics/components/CumulativeGpaProgressChart").then(
-      (m) => m.CumulativeGpaProgressChart,
-    ),
-  { ssr: false },
-);
-const TermGpaProgressChart = dynamic(
-  () =>
-    import("@/features/statistics/components/TermGpaProgressChart").then(
-      (m) => m.TermGpaProgressChart,
-    ),
-  { ssr: false },
-);
-const GradeDistributionChart = dynamic(
-  () =>
-    import("@/features/statistics/components/GradeDistributionChart").then(
-      (m) => m.GradeDistributionChart,
-    ),
-  { ssr: false },
-);
-const CreditChart = dynamic(
-  () =>
-    import("@/features/statistics/components/CreditChart").then(
-      (m) => m.CreditChart,
-    ),
-  { ssr: false },
-);
+import { CumulativeGpaProgressChart } from "@/features/statistics/components/CumulativeGpaProgressChart";
+import { TermGpaProgressChart } from "@/features/statistics/components/TermGpaProgressChart";
+import { GradeDistributionChart } from "@/features/statistics/components/GradeDistributionChart";
+import { CreditChart } from "@/features/statistics/components/CreditChart";
+import { useIsClient } from "@/shared/hooks/useIsClient";
 
 function ChartCard({
   title,
@@ -68,6 +43,7 @@ export default function StatisticsPage() {
   const t = useTranslations("statistics");
   const { selectedCareerId } = useCareerStore();
   const isEsp = selectedCareerId === "esp";
+  const isClient = useIsClient();
 
   return (
     <div className="flex flex-col min-h-full gap-4 px-4 md:px-6 py-5 pb-24 md:pb-8">
@@ -76,11 +52,15 @@ export default function StatisticsPage() {
       <div data-tour="stats-charts">
         <ChartCard
           title={t("cumulative_gpa_progression")}
-          description={t("cumulative_gpa_progression_desc")}
+          description={t(
+            isEsp
+              ? "cumulative_gpa_progression_desc_esp"
+              : "cumulative_gpa_progression_desc",
+          )}
           delay={0.1}
         >
           <div className="h-72 md:h-80">
-            <CumulativeGpaProgressChart />
+            {isClient && <CumulativeGpaProgressChart />}
           </div>
         </ChartCard>
       </div>
@@ -93,7 +73,7 @@ export default function StatisticsPage() {
         delay={0.15}
       >
         <div className="h-72 md:h-80">
-          <TermGpaProgressChart />
+          {isClient && <TermGpaProgressChart />}
         </div>
       </ChartCard>
 
@@ -103,7 +83,7 @@ export default function StatisticsPage() {
         delay={0.18}
       >
         <div className="h-56 md:h-64">
-          <GradeDistributionChart />
+          {isClient && <GradeDistributionChart />}
         </div>
       </ChartCard>
 
@@ -115,7 +95,7 @@ export default function StatisticsPage() {
         delay={0.24}
       >
         <div className="h-44 md:h-48">
-          <CreditChart />
+          {isClient && <CreditChart />}
         </div>
       </ChartCard>
     </div>

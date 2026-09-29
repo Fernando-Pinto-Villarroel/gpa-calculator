@@ -1,20 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
 import { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/core/lib/utils/cn";
+import { InfoTooltip } from "@/shared/components/ui/InfoTooltip";
 
 interface StatCardProps {
   label: string;
   value: string;
   subvalue?: string;
   icon: LucideIcon;
-  tooltip?: string;
+  info?: string;
+  detail?: string;
   variant?: "default" | "success" | "warning" | "danger" | "gold";
   delay?: number;
   isDesktop?: boolean;
@@ -41,36 +39,59 @@ export function StatCard({
   value,
   subvalue,
   icon: Icon,
-  tooltip,
+  info,
+  detail,
   variant = "default",
   delay = 0,
   isDesktop = false,
 }: StatCardProps) {
-  const card = (
+  const t = useTranslations("home.stats_info");
+
+  return (
     <motion.div
+      data-testid="stat-card"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
       className={cn(
-        "flex items-center rounded-xl border bg-bg-surface",
+        "relative flex rounded-xl border bg-bg-surface",
         "hover:border-border-strong transition-colors duration-200",
         variantStyles[variant],
-        isDesktop ? "p-6 gap-5" : "p-4 gap-4",
+        isDesktop
+          ? "items-center p-6 gap-5 min-h-[7.25rem]"
+          : "flex-col items-center justify-center text-center h-[9.75rem] p-4 gap-2 sm:h-auto sm:flex-row sm:items-center sm:gap-4 sm:text-left sm:h-full",
       )}
     >
+      {info && (
+        <InfoTooltip
+          text={info}
+          detail={detail}
+          label={t("label", { stat: label })}
+          iconSize={isDesktop ? 15 : 14}
+          className={cn(
+            "absolute",
+            isDesktop ? "top-2.5 right-2.5" : "top-2 right-2",
+          )}
+        />
+      )}
       <div
         className={cn(
           "flex items-center justify-center rounded-xl shrink-0",
           iconVariantStyles[variant],
-          isDesktop ? "w-14 h-14" : "w-11 h-11",
+          isDesktop ? "w-14 h-14" : "w-10 h-10",
         )}
       >
-        <Icon size={isDesktop ? 24 : 20} />
+        <Icon size={isDesktop ? 24 : 18} />
       </div>
-      <div className="min-w-0 flex-1">
+      <div
+        className={cn(
+          "min-w-0 w-full sm:flex-1",
+          info && (isDesktop ? "pr-3" : "sm:pr-3"),
+        )}
+      >
         <p
           className={cn(
-            "text-text-muted truncate",
+            "text-text-muted leading-snug line-clamp-2",
             isDesktop ? "text-sm" : "text-xs",
           )}
         >
@@ -87,7 +108,7 @@ export function StatCard({
         {subvalue && (
           <p
             className={cn(
-              "text-text-muted truncate leading-none mt-0.5",
+              "text-text-muted truncate leading-snug mt-0.5",
               isDesktop ? "text-sm" : "text-xs",
             )}
           >
@@ -96,19 +117,5 @@ export function StatCard({
         )}
       </div>
     </motion.div>
-  );
-
-  if (!tooltip) return card;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{card}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        className="px-2.5 py-1.5 rounded-lg text-xs bg-bg-elevated border border-border-base text-text-secondary shadow-md max-w-48"
-      >
-        {tooltip}
-      </TooltipContent>
-    </Tooltip>
   );
 }

@@ -16,13 +16,15 @@ import {
   Medal,
   Trophy,
   GraduationCap,
+  ListChecks,
+  Gauge,
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/core/lib/utils/cn";
+import { APP_VERSION } from "@/core/config/app";
 import { FeedbackButton } from "@/features/about/components/FeedbackButton";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
 
-const APP_VERSION = "2.0.0";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -42,6 +44,9 @@ const GRADE_SCALE = [
   { grade: "D−", range: "60–62", points: "0.7" },
   { grade: "F", range: "< 60", points: "0.0" },
 ];
+
+const SE_STANDING_KEYS = ["conditions", "rop", "consequences", "app", "attempts", "esp"] as const;
+const ESP_STANDING_KEYS = ["no_sap", "retakes", "labs", "graduation"] as const;
 
 function Section({
   icon: Icon,
@@ -108,6 +113,62 @@ export default function AboutPage({ params }: Props) {
   const t = useTranslations("about");
   const isEsp = useCareerStore((s) => s.selectedCareerId) === "esp";
 
+  const acknowledgmentsSection = (
+    <Section
+      icon={Heart}
+      title={t("acknowledgments.title")}
+      delay={0.22}
+      className={isEsp ? "flex-1" : undefined}
+    >
+      <p className="text-sm text-text-secondary leading-relaxed">
+        {(() => {
+          const text = t("acknowledgments.description");
+          const linkRegex = /\[([^\]]*)\]\(([^)]*)\)/g;
+          const parts = [];
+          let lastIndex = 0;
+          let match;
+
+          while ((match = linkRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+              parts.push(text.slice(lastIndex, match.index));
+            }
+
+            parts.push(
+              <a
+                key={match.index}
+                href={match[2]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-accent hover:underline transition-colors"
+              >
+                {match[1]}
+              </a>,
+            );
+            lastIndex = match.index + match[0].length;
+          }
+
+          if (lastIndex < text.length) {
+            parts.push(text.slice(lastIndex));
+          }
+          return parts;
+        })()}
+      </p>
+    </Section>
+  );
+
+  const privacySection = (
+    <Section
+      icon={Shield}
+      title={t("privacy.title")}
+      delay={0.38}
+      className="flex-1"
+    >
+      <p className="text-sm text-text-secondary leading-relaxed">
+        {t("privacy.description")}
+      </p>
+    </Section>
+  );
+
   return (
     <div className="px-4 md:px-6 lg:px-8 py-6 pb-24 md:pb-8 max-w-screen-2xl mx-auto w-full">
       <motion.div
@@ -172,7 +233,7 @@ export default function AboutPage({ params }: Props) {
             icon={Calculator}
             title={isEsp ? t("gpa_calc.title_esp") : t("gpa_calc.title")}
             delay={0.14}
-            className="flex-1"
+            className={isEsp ? undefined : "flex-1"}
           >
             <div className="flex flex-col gap-3">
               <div className="flex flex-col items-center gap-2 px-4 py-4 rounded-lg bg-jala-700/8 border border-jala-700/20">
@@ -181,7 +242,7 @@ export default function AboutPage({ params }: Props) {
                     {isEsp ? t("gpa_calc.formula_label_esp") : t("gpa_calc.formula_label")}
                   </span>
                   <span className="text-sm font-semibold">=</span>
-                  <div className="flex flex-col items-center text-sm font-semibold leading-tight">
+                  <div className="flex flex-col items-center text-center text-sm font-semibold leading-tight">
                     <span className="px-1 pb-1 border-b-2 border-current">
                       {isEsp
                         ? t("gpa_calc.formula_numerator_esp")
@@ -218,6 +279,8 @@ export default function AboutPage({ params }: Props) {
               ))}
             </div>
           </Section>
+
+          {isEsp && privacySection}
         </div>
 
         <div className="flex flex-col gap-4">
@@ -290,100 +353,94 @@ export default function AboutPage({ params }: Props) {
           </Section>
 
           <Section
-            icon={Heart}
-            title={t("acknowledgments.title")}
-            delay={0.22}
+            icon={Gauge}
+            title={t(isEsp ? "grading.standing.title_esp" : "grading.standing.title")}
+            delay={0.2}
             className="flex-1"
           >
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {(() => {
-                const text = t("acknowledgments.description");
-                const linkRegex = /\[([^\]]*)\]\(([^)]*)\)/g;
-                const parts = [];
-                let lastIndex = 0;
-                let match;
-
-                while ((match = linkRegex.exec(text)) !== null) {
-                  if (match.index > lastIndex) {
-                    parts.push(text.slice(lastIndex, match.index));
-                  }
-
-                  parts.push(
-                    <a
-                      key={match.index}
-                      href={match[2]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-text-accent hover:underline transition-colors"
-                    >
-                      {match[1]}
-                    </a>,
-                  );
-                  lastIndex = match.index + match[0].length;
-                }
-
-                if (lastIndex < text.length) {
-                  parts.push(text.slice(lastIndex));
-                }
-                return parts;
-              })()}
-            </p>
+            <ul className="flex flex-col gap-3">
+              {(isEsp ? ESP_STANDING_KEYS : SE_STANDING_KEYS).map((key) => (
+                <li key={key} className="flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-text-accent mt-1.5 shrink-0" />
+                  <span className="text-sm text-text-secondary leading-relaxed">
+                    {t(`grading.standing.${isEsp ? "esp" : "se"}.${key}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </Section>
         </div>
 
         <div className="flex flex-col gap-4">
-          <Section icon={Award} title={t("honors.title")} delay={0.26}>
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
-                  {t("honors.career_title")}
-                </p>
-                <p className="text-xs text-text-muted mb-2.5">
-                  {t("honors.career_desc")}
-                </p>
-                <div className="flex flex-col gap-2">
-                  <HonorRow
-                    icon={Award}
-                    text={t("honors.summa")}
-                    color="text-amber-400"
-                  />
-                  <HonorRow
-                    icon={Award}
-                    text={t("honors.magna")}
-                    color="text-slate-400"
-                  />
-                  <HonorRow
-                    icon={Award}
-                    text={t("honors.cum_laude")}
-                    color="text-amber-600"
-                  />
+          {isEsp ? (
+            <Section icon={ListChecks} title={t("esp_rules.title")} delay={0.26}>
+              <ul className="flex flex-col gap-3">
+                {(
+                  ["placement", "hidden", "completion", "no_honors"] as const
+                ).map((key) => (
+                  <li key={key} className="flex items-start gap-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-text-accent mt-1.5 shrink-0" />
+                    <span className="text-sm text-text-secondary leading-relaxed">
+                      {t(`esp_rules.${key}`)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : (
+            <Section icon={Award} title={t("honors.title")} delay={0.26}>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
+                    {t("honors.career_title")}
+                  </p>
+                  <p className="text-xs text-text-muted mb-2.5">
+                    {t("honors.career_desc")}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <HonorRow
+                      icon={Award}
+                      text={t("honors.summa")}
+                      color="text-amber-400"
+                    />
+                    <HonorRow
+                      icon={Award}
+                      text={t("honors.magna")}
+                      color="text-slate-400"
+                    />
+                    <HonorRow
+                      icon={Award}
+                      text={t("honors.cum_laude")}
+                      color="text-amber-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="h-px bg-border-base" />
+
+                <div>
+                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
+                    {t("honors.term_title")}
+                  </p>
+                  <p className="text-xs text-text-muted mb-2.5">
+                    {t("honors.term_desc")}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <HonorRow
+                      icon={Trophy}
+                      text={t("honors.presidents_list")}
+                      color="text-amber-400"
+                    />
+                    <HonorRow
+                      icon={Medal}
+                      text={t("honors.deans_list")}
+                      color="text-text-accent"
+                    />
+                  </div>
                 </div>
               </div>
-
-              <div className="h-px bg-border-base" />
-
-              <div>
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
-                  {t("honors.term_title")}
-                </p>
-                <p className="text-xs text-text-muted mb-2.5">
-                  {t("honors.term_desc")}
-                </p>
-                <div className="flex flex-col gap-2">
-                  <HonorRow
-                    icon={Trophy}
-                    text={t("honors.presidents_list")}
-                    color="text-amber-400"
-                  />
-                  <HonorRow
-                    icon={Medal}
-                    text={t("honors.deans_list")}
-                    color="text-text-accent"
-                  />
-                </div>
-              </div>
-            </div>
-          </Section>
+            </Section>
+          )}
 
           <Section icon={Users} title={t("cohorts.title")} delay={0.3}>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -391,22 +448,18 @@ export default function AboutPage({ params }: Props) {
             </p>
           </Section>
 
-          <Section icon={Globe} title={t("esp.title")} delay={0.34}>
+          <Section
+            icon={Globe}
+            title={t("esp.title")}
+            delay={0.34}
+          >
             <p className="text-sm text-text-secondary leading-relaxed">
               {t("esp.description")}
             </p>
           </Section>
 
-          <Section
-            icon={Shield}
-            title={t("privacy.title")}
-            delay={0.38}
-            className="flex-1"
-          >
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {t("privacy.description")}
-            </p>
-          </Section>
+          {acknowledgmentsSection}
+          {!isEsp && privacySection}
         </div>
       </div>
 

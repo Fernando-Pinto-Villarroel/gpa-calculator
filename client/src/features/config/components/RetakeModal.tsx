@@ -2,16 +2,19 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, RotateCcw, CheckCircle, Circle, Lightbulb } from "lucide-react";
+import { X, Plus, Trash2, RotateCcw, CheckCircle, Circle, Lightbulb, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Course } from "@/core/domain/types/course";
-import { LetterGrade, ALL_GRADES, letterGradesMap } from "@/core/domain/types/letterGrades";
+import { LetterGrade, ALL_GRADES, letterGradesMap, isFailingGrade } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
   CourseAttempt,
   isCourseAttempts,
   isCreditOverrideOnly,
   getEffectiveGrade,
+  isApprovedAttempt,
+  countFailedAttempts,
+  MAX_COURSE_ATTEMPTS,
 } from "@/core/domain/types/grades";
 import { cn } from "@/core/lib/utils/cn";
 
@@ -21,6 +24,8 @@ interface RetakeModalProps {
   entry: CourseGradeEntry;
   onSave: (entry: CourseGradeEntry) => void;
   onClose: () => void;
+  isEsp?: boolean;
+  canRetake?: boolean;
 }
 
 function gradeColor(grade: LetterGrade | null): string {
@@ -28,7 +33,7 @@ function gradeColor(grade: LetterGrade | null): string {
   const pts = letterGradesMap[grade];
   if (pts >= 3.7) return "text-success";
   if (pts >= 3.0) return "text-text-accent";
-  if (grade === "F" || grade === "D-") return "text-danger";
+  if (isFailingGrade(grade)) return "text-danger";
   return "text-warning";
 }
 
@@ -39,12 +44,14 @@ interface AttemptRowProps {
   tConfig: ReturnType<typeof useTranslations>;
   onUpdate: (updated: CourseAttempt) => void;
   onRemove: () => void;
+  isEsp?: boolean;
 }
 
-function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove }: AttemptRowProps) {
+function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove, isEsp }: AttemptRowProps) {
   const [gradeOpen, setGradeOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
+  const canApprove = attempt.grade !== null && !isFailingGrade(attempt.grade);
 
   useEffect(() => {
     if (!gradeOpen) return;
@@ -90,22 +97,24 @@ function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex flex-col gap-0.5 flex-1">
-          <span className="text-[10px] text-text-muted">{tConfig("retake_credits")}</span>
-          <input
-            type="number"
-            min={1}
-            max={4}
-            step={1}
-            value={attempt.credits}
-            onChange={(e) => handleCreditsChange(e.target.value)}
-            className={cn(
-              "w-full px-2 py-1.5 rounded-md text-xs font-semibold",
-              "border border-border-base bg-bg-surface text-text-primary",
-              "focus:outline-none focus:border-border-accent",
-            )}
-          />
-        </div>
+        {!isEsp && (
+          <div className="flex flex-col gap-0.5 flex-1">
+            <span className="text-[10px] text-text-muted">{tConfig("retake_credits")}</span>
+            <input
+              type="number"
+              min={1}
+              max={4}
+              step={1}
+              value={attempt.credits}
+              onChange={(e) => handleCreditsChange(e.target.value)}
+              className={cn(
+                "w-full px-2 py-1.5 rounded-md text-xs font-semibold",
+                "border border-border-base bg-bg-surface text-text-primary",
+                "focus:outline-none focus:border-border-accent",
+              )}
+            />
+          </div>
+        )}
 
         <div className="flex flex-col gap-0.5 flex-1">
           <span className="text-[10px] text-text-muted">{tConfig("retake_grade")}</span>
@@ -156,14 +165,17 @@ function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove
           <span className="text-[10px] text-text-muted">{tConfig("retake_approved")}</span>
           <button
             onClick={() => onUpdate({ ...attempt, approved: !attempt.approved })}
+            disabled={!canApprove}
+            title={canApprove ? undefined : tConfig("retake_approved_disabled_hint")}
             className={cn(
               "flex items-center justify-center w-8 h-8 rounded-md transition-colors",
-              attempt.approved
+              attempt.approved && canApprove
                 ? "text-success bg-success/10 border border-success/30"
                 : "text-text-muted bg-bg-elevated border border-border-base hover:border-border-accent",
+              !canApprove && "opacity-40 cursor-not-allowed hover:border-border-base",
             )}
           >
-            {attempt.approved ? <CheckCircle size={16} /> : <Circle size={16} />}
+            {attempt.approved && canApprove ? <CheckCircle size={16} /> : <Circle size={16} />}
           </button>
         </div>
       </div>
@@ -173,7 +185,7 @@ function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove
 
 type ModalView = "asking" | "managing";
 
-export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeModalProps) {
+export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = false, canRetake = true }: RetakeModalProps) {
   const tConfig = useTranslations("config");
   const tCourses = useTranslations("courses");
 
@@ -220,7 +232,19 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
     ]);
   };
 
-  const handleUpdateAttempt = (index: number, updated: CourseAttempt) => {
+  const failedAttempts = countFailedAttempts(attempts);
+  const hasApprovedAttempt = attempts.some(isApprovedAttempt);
+  const atAttemptLimit = attempts.length >= MAX_COURSE_ATTEMPTS;
+  const showLastAttemptWarning =
+    !hasApprovedAttempt && failedAttempts === MAX_COURSE_ATTEMPTS - 1;
+  const showDismissalWarning =
+    !hasApprovedAttempt && failedAttempts >= MAX_COURSE_ATTEMPTS;
+
+  const handleUpdateAttempt = (index: number, requested: CourseAttempt) => {
+    const updated =
+      requested.grade !== null && !isFailingGrade(requested.grade)
+        ? requested
+        : { ...requested, approved: false };
     setAttempts(attempts.map((a, i) => {
       if (i === index) return updated;
       if (updated.approved) return { ...a, approved: false };
@@ -235,7 +259,7 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
   const handleRevert = () => {
     const source = attempts.length > 0 ? attempts : null;
     const grade = getEffectiveGrade(source ?? entry);
-    const effectiveAttempt = source?.find((a) => a.approved && a.grade !== null)
+    const effectiveAttempt = source?.find(isApprovedAttempt)
       ?? source?.[source.length - 1];
     const credits = effectiveAttempt?.credits ?? course.credits;
 
@@ -310,7 +334,7 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {attempts.length === 1 && attempts[0].approved && (
+              {attempts.length === 1 && isApprovedAttempt(attempts[0]) && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-success/30 bg-success/8">
                   <Lightbulb size={14} className="text-success shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -326,6 +350,25 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
                   </div>
                 </div>
               )}
+              {(showLastAttemptWarning || showDismissalWarning) && (
+                <div
+                  className={cn(
+                    "flex items-start gap-2.5 px-3 py-2.5 rounded-lg border",
+                    showDismissalWarning
+                      ? "border-danger/30 bg-danger/8 text-danger"
+                      : "border-warning/30 bg-warning/8 text-warning",
+                  )}
+                >
+                  <TriangleAlert size={14} className="shrink-0 mt-0.5" />
+                  <p className="text-xs leading-snug">
+                    {tConfig(
+                      `${isEsp ? "retake_esp" : "retake"}_${
+                        showDismissalWarning ? "dismissal" : "last_attempt"
+                      }_warning`,
+                    )}
+                  </p>
+                </div>
+              )}
               <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
                 {attempts.map((attempt, i) => (
                   <AttemptRow
@@ -336,17 +379,20 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose }: RetakeMo
                     tConfig={tConfig}
                     onUpdate={(updated) => handleUpdateAttempt(i, updated)}
                     onRemove={() => handleRemoveAttempt(i)}
+                    isEsp={isEsp}
                   />
                 ))}
               </div>
 
-              <button
-                onClick={handleAddAttempt}
-                className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border border-dashed border-border-strong text-text-secondary hover:text-text-primary hover:border-border-accent transition-colors"
-              >
-                <Plus size={13} />
-                {tConfig("retake_add_attempt")}
-              </button>
+              {canRetake && !atAttemptLimit && (
+                <button
+                  onClick={handleAddAttempt}
+                  className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border border-dashed border-border-strong text-text-secondary hover:text-text-primary hover:border-border-accent transition-colors"
+                >
+                  <Plus size={13} />
+                  {tConfig("retake_add_attempt")}
+                </button>
+              )}
 
               <button
                 onClick={handleRevert}

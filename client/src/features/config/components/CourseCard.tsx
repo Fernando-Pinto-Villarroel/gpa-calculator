@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Course } from "@/core/domain/types/course";
-import { LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
+import { Course, isRetakable } from "@/core/domain/types/course";
+import { LetterGrade, letterGradesMap, isFailingGrade } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
   CourseAttempt,
@@ -16,6 +16,7 @@ import { RetakeModal } from "./RetakeModal";
 import { cn } from "@/core/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { TriangleAlert, CheckCircle, Info } from "lucide-react";
+import { InfoTooltip } from "@/shared/components/ui/InfoTooltip";
 
 interface CourseCardTourIds {
   card?: string;
@@ -28,6 +29,7 @@ interface CourseCardProps {
   entry: CourseGradeEntry;
   onChange: (courseCode: string, entry: CourseGradeEntry) => void;
   tourIds?: CourseCardTourIds;
+  isEsp?: boolean;
 }
 
 function creditsBadgeClass(credits: number): string {
@@ -66,6 +68,7 @@ export function CourseCard({
   entry,
   onChange,
   tourIds,
+  isEsp = false,
 }: CourseCardProps) {
   const t = useTranslations("config");
   const tCourses = useTranslations("courses");
@@ -73,6 +76,15 @@ export function CourseCard({
   const [editingCredits, setEditingCredits] = useState(false);
   const [creditInput, setCreditInput] = useState("");
   const creditInputRef = useRef<HTMLInputElement>(null);
+
+  const canRetake = isRetakable(course);
+
+  useEffect(() => {
+    if (editingCredits && creditInputRef.current) {
+      creditInputRef.current.focus();
+      creditInputRef.current.select();
+    }
+  }, [editingCredits]);
 
   const creditOverride = isCreditOverrideOnly(entry);
   const singleApproved = isSingleApprovedAttempt(entry);
@@ -91,15 +103,10 @@ export function CourseCard({
     (singleApproved || creditOverride) &&
     (entry as CourseAttempt[])[0].credits !== course.credits;
 
-  useEffect(() => {
-    if (editingCredits && creditInputRef.current) {
-      creditInputRef.current.focus();
-      creditInputRef.current.select();
-    }
-  }, [editingCredits]);
+  const canEditCredits = !isEsp && !isFullRetake;
 
   const startEditingCredits = () => {
-    if (isFullRetake) return;
+    if (!canEditCredits) return;
     setCreditInput(String(displayCredits));
     setEditingCredits(true);
   };
@@ -153,7 +160,7 @@ export function CourseCard({
         : null;
 
     if (overrideCredits !== null && overrideCredits !== course.credits) {
-      if (grade === "F" || grade === "D-") {
+      if (canRetake && isFailingGrade(grade)) {
         setRetakeModalOpen(true);
       } else {
         onChange(courseCode, [
@@ -162,7 +169,7 @@ export function CourseCard({
       }
     } else {
       onChange(courseCode, grade);
-      if (grade === "F" || grade === "D-") {
+      if (canRetake && isFailingGrade(grade)) {
         setRetakeModalOpen(true);
       }
     }
@@ -200,21 +207,26 @@ export function CourseCard({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              data-tour={tourIds?.retakeBtn}
-              onClick={() => setRetakeModalOpen(true)}
-              title={t("failed_course_button_title")}
-              className={cn(
-                "flex items-center justify-center w-5 h-5 rounded transition-colors",
-                isFullRetake
-                  ? "text-warning hover:text-warning/80"
-                  : "text-text-muted/50 hover:text-warning",
-              )}
-            >
-              <TriangleAlert size={12} />
-            </button>
+            {isEsp && course.optional && (
+              <InfoTooltip text={t("special_lab_hint")} label={t("special_lab_hint")} />
+            )}
+            {(canRetake || isFullRetake) && (
+              <button
+                data-tour={tourIds?.retakeBtn}
+                onClick={() => setRetakeModalOpen(true)}
+                title={t("failed_course_button_title")}
+                className={cn(
+                  "flex items-center justify-center w-5 h-5 rounded transition-colors",
+                  isFullRetake
+                    ? "text-warning hover:text-warning/80"
+                    : "text-text-muted/50 hover:text-warning",
+                )}
+              >
+                <TriangleAlert size={12} />
+              </button>
+            )}
 
-            {editingCredits ? (
+            {isEsp ? null : editingCredits ? (
               <div className="flex items-center gap-1">
                 <input
                   ref={creditInputRef}
@@ -241,15 +253,13 @@ export function CourseCard({
             ) : (
               <span
                 data-tour={tourIds?.credits}
-                onDoubleClick={!isFullRetake ? startEditingCredits : undefined}
-                title={
-                  !isFullRetake ? t("credits_double_click_hint") : undefined
-                }
+                onDoubleClick={canEditCredits ? startEditingCredits : undefined}
+                title={canEditCredits ? t("credits_double_click_hint") : undefined}
                 className={cn(
                   "text-[10px] font-semibold px-1.5 py-0.5 rounded",
                   creditsBadgeClass(displayCredits),
                   creditsOverridden && "ring-1 ring-warning/60",
-                  !isFullRetake && "cursor-pointer select-none",
+                  canEditCredits && "cursor-pointer select-none",
                 )}
               >
                 {displayCredits} {t("credits_label")}
@@ -321,6 +331,8 @@ export function CourseCard({
         entry={entry}
         onSave={handleRetakeSave}
         onClose={() => setRetakeModalOpen(false)}
+        isEsp={isEsp}
+        canRetake={canRetake}
       />
     </>
   );

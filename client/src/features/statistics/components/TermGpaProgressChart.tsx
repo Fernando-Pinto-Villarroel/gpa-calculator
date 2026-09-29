@@ -16,6 +16,7 @@ import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getTermGpaProgression } from "@/features/gpa/services/calculator";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
@@ -61,6 +62,7 @@ export function TermGpaProgressChart() {
   const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
   const grades = isEsp ? espGrades : commercialGrades;
   const t = useTranslations("statistics");
   const tConfig = useTranslations("config");
@@ -73,8 +75,10 @@ export function TermGpaProgressChart() {
   // is a different hue entirely).
   const { accent700: lineColor } = getCareerPalette(selectedCareerId);
 
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
   const data = getTermGpaProgression(grades, terms).map((item) => ({
     ...item,
@@ -113,39 +117,43 @@ export function TermGpaProgressChart() {
           tick={{ fill: axisColor, fontSize: 10 }}
           tickLine={false}
           axisLine={false}
-          ticks={[0, 1, 2, 3, 3.5, 4].map(gpaToScale)}
+          ticks={(isEsp ? [0, 1, 2, 3, 4] : [0, 1, 2, 3, 3.5, 4]).map(gpaToScale)}
           tickFormatter={(v: number) => scaleToGpa(v).toFixed(1)}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend
           wrapperStyle={{ fontSize: 11, paddingTop: 8, paddingLeft: 65 }}
         />
-        <ReferenceLine
-          y={gpaToScale(4.0)}
-          stroke="#10b981"
-          strokeDasharray="4 3"
-          label={{
-            value: "President's",
-            fill: "#10b981",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
-        <ReferenceLine
-          y={gpaToScale(3.5)}
-          stroke="#3b82f6"
-          strokeDasharray="4 3"
-          label={{
-            value: "Dean's",
-            fill: "#3b82f6",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
+        {!isEsp && (
+          <>
+            <ReferenceLine
+              y={gpaToScale(4.0)}
+              stroke="#10b981"
+              strokeDasharray="4 3"
+              label={{
+                value: "President's",
+                fill: "#10b981",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={gpaToScale(3.5)}
+              stroke="#3b82f6"
+              strokeDasharray="4 3"
+              label={{
+                value: "Dean's",
+                fill: "#3b82f6",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+          </>
+        )}
         <Line
           type="monotone"
           dataKey="termGpa"
-          name={t("term_gpa")}
+          name={t(isEsp ? "level_gpa" : "term_gpa")}
           stroke={lineColor}
           strokeWidth={2.5}
           dot={{ fill: lineColor, r: 4 }}

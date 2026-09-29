@@ -71,22 +71,30 @@ test.describe("Cumulative GPA honor status - ESP parity", () => {
     await gotoGrades(page);
   });
 
-  test("failing every ESP Level 1 course shows SAP Risk, not 'No grades entered yet'", async ({
+  test("failing every ESP Level 1 course shows a 0.00 GPA with no academic-standing badge, not 'No grades entered yet'", async ({
     page,
   }) => {
+    // Level 1 is ESP-101, Lab M3L1, Lab M4L1, ESP-201 — labs can't be
+    // retaken, so failing them records the F directly with no retake modal.
     for (let i = 0; i < 4; i++) {
       const trigger = page.getByRole("button", { name: "—" }).first();
       const wrapper = trigger.locator("..");
       await trigger.click();
       await wrapper.getByRole("button", { name: "F", exact: true }).click();
-      await page.getByText("No, keep single grade").click();
       await page.waitForTimeout(150);
+      const keepSingleGrade = page.getByText("No, keep single grade");
+      if (await keepSingleGrade.count()) {
+        await keepSingleGrade.click();
+        await page.waitForTimeout(150);
+      }
     }
     await gotoDashboard(page);
 
     const mainText = await page.locator("main").innerText();
     expect(mainText).not.toContain("No grades entered yet");
-    await expect(page.getByText("SAP Risk", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText(/Your GPA is below 2\.00/).first()).toBeVisible();
+    await expect(page.getByText("0.00").first()).toBeVisible();
+    await expect(page.getByText("SAP Risk", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Academic Risk", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/Your GPA is below 2\.00/)).toHaveCount(0);
   });
 });

@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+import { routing } from "@/core/lib/i18n/routing";
 import { Providers } from "@/shared/components/providers/Providers";
 import { Navbar } from "@/shared/components/layout/Navbar";
 import { AnimatedBackground } from "@/shared/components/ui/AnimatedBackground";
@@ -9,6 +13,10 @@ export const metadata: Metadata = {
   description: "Academic GPA Calculator for Jala University",
 };
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -16,6 +24,8 @@ type Props = {
 
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  setRequestLocale(locale);
 
   return (
     <Providers locale={locale}>

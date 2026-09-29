@@ -190,3 +190,19 @@ body.swal2-shown .swal2-container {
   position: fixed !important;
   inset: 0;
 }
+
+@keyframes info-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.info-tooltip-content {
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  animation: info-tooltip-in 140ms ease-out;
+}

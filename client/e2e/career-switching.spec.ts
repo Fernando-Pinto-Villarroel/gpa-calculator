@@ -79,7 +79,8 @@ test.describe("Career switching", () => {
     await seedProfile(page, { career: "esp" });
     await gotoDashboard(page);
 
-    await expect(page.getByText("Courses Passed").first()).toBeVisible();
+    await expect(page.getByText("Completed ESP Courses").first()).toBeVisible();
+    await expect(page.getByText("Completed ESP Labs").first()).toBeVisible();
     await expect(page.getByText("Levels Completed").first()).toBeVisible();
     await expect(page.getByText("Earned Credits")).toHaveCount(0);
   });

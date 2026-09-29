@@ -27,7 +27,11 @@ export async function seedProfile(page: Page, options: SeedOptions = {}) {
         localStorage.setItem(
           "jala-gpa-tour",
           JSON.stringify({
-            state: { guidedTourCompleted: tourCompleted, globalStepIndex: 0 },
+            state: {
+              guidedTourCompleted: tourCompleted,
+              globalStepIndex: 0,
+              whatsNewSeenVersion: "2.0.0",
+            },
             version: 0,
           }),
         );

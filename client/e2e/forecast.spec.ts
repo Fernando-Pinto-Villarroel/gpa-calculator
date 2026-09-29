@@ -45,7 +45,7 @@ test.describe("Forecast", () => {
     await seedProfile(page, { career: "esp" });
     await gotoForecast(page);
 
-    await page.getByRole("button", { name: "Term", exact: true }).click();
+    await page.getByRole("button", { name: "Level", exact: true }).click();
     const options = await page.locator("select option").allTextContents();
     expect(options.some((o) => o.includes("Level"))).toBe(true);
 

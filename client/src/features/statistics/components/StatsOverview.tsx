@@ -14,11 +14,14 @@ import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import {
   calculateGpa,
-  getHonorStatus,
+  getAcademicStanding,
+  getRateOfProgress,
   getTermHonorCounts,
 } from "@/features/gpa/services/calculator";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
+import { calculateEspCompletion } from "@/features/esp/lib/completion";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
 import { cn } from "@/core/lib/utils/cn";
 
@@ -63,44 +66,51 @@ function OverviewCard({
   );
 }
 
-const HONOR_LABELS: Record<string, string> = {
-  summa_cum_laude: "Summa Cum Laude",
-  magna_cum_laude: "Magna Cum Laude",
-  cum_laude: "Cum Laude",
-  good_standing: "Good Standing",
-  at_risk: "At Risk",
-  sap_risk: "SAP Risk",
-};
-
 export function StatsOverview() {
   const t = useTranslations("statistics");
+  const tHome = useTranslations("home");
   const { selectedCareerId } = useCareerStore();
   const isEsp = selectedCareerId === "esp";
   const commercialGrades = useGpaStore((s) => s.grades);
   const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
   const grades = isEsp ? espGrades : commercialGrades;
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
 
   const {
     gpa,
     completedCourses,
     approvedCredits,
+    attemptedCredits,
     approvedCourses,
     totalCourses,
     totalCredits,
   } = calculateGpa(grades, terms);
   const hasGrades = completedCourses > 0;
-  const honorStatus = hasGrades ? getHonorStatus(gpa) : null;
-  const completion =
-    totalCourses > 0 ? Math.round((approvedCourses / totalCourses) * 100) : 0;
-  const { deansListCount, presidentsListCount } = getTermHonorCounts(
-    grades,
-    terms,
-  );
+  const honorStatus = hasGrades
+    ? getAcademicStanding(gpa, getRateOfProgress({ approvedCredits, attemptedCredits })).status
+    : null;
+  const espCompletion = isEsp ? calculateEspCompletion(grades, terms) : null;
+  const completedCoursesForDisplay = espCompletion
+    ? espCompletion.completedCourses
+    : approvedCourses;
+  const totalCoursesForDisplay = espCompletion
+    ? espCompletion.totalCourses
+    : totalCourses;
+  const completion = espCompletion
+    ? espCompletion.completionPercent
+    : totalCourses > 0
+      ? Math.round((approvedCourses / totalCourses) * 100)
+      : 0;
+  const { deansListCount, presidentsListCount } = isEsp
+    ? { deansListCount: 0, presidentsListCount: 0 }
+    : getTermHonorCounts(grades, terms);
 
   const cards = [
     {
@@ -114,8 +124,8 @@ export function StatsOverview() {
       ? {
           icon: BookOpen,
           label: t("overview.total_courses_completed"),
-          value: String(approvedCourses),
-          sub: `of ${totalCourses} total`,
+          value: String(completedCoursesForDisplay),
+          sub: `of ${totalCoursesForDisplay} total`,
           color: "text-success bg-success/15",
           delay: 0.06,
         }
@@ -131,33 +141,35 @@ export function StatsOverview() {
       icon: Target,
       label: t("overview.completion"),
       value: `${completion}%`,
-      sub: `${approvedCourses} of ${totalCourses} courses`,
+      sub: `${completedCoursesForDisplay} of ${totalCoursesForDisplay} courses`,
       color: "text-warning bg-warning/15",
       delay: 0.12,
     },
-    {
-      icon: Award,
-      label: t("overview.projected_honor"),
-      value: honorStatus ? (HONOR_LABELS[honorStatus] ?? honorStatus) : "—",
-      color: "text-amber-400 bg-amber-400/15",
-      delay: 0.18,
-    },
-    {
-      icon: Medal,
-      label: t(isEsp ? "overview.deans_list_levels" : "overview.deans_list_terms"),
-      value: String(deansListCount),
-      color: "text-text-accent bg-jala-700/15",
-      delay: 0.24,
-    },
-    {
-      icon: Trophy,
-      label: t(
-        isEsp ? "overview.presidents_list_levels" : "overview.presidents_list_terms",
-      ),
-      value: String(presidentsListCount),
-      color: "text-amber-400 bg-amber-400/15",
-      delay: 0.3,
-    },
+    ...(isEsp
+      ? []
+      : [
+          {
+            icon: Award,
+            label: t("overview.projected_honor"),
+            value: honorStatus ? tHome(`honor.${honorStatus}`) : "—",
+            color: "text-amber-400 bg-amber-400/15",
+            delay: 0.18,
+          },
+          {
+            icon: Medal,
+            label: t("overview.deans_list_terms"),
+            value: String(deansListCount),
+            color: "text-text-accent bg-jala-700/15",
+            delay: 0.24,
+          },
+          {
+            icon: Trophy,
+            label: t("overview.presidents_list_terms"),
+            value: String(presidentsListCount),
+            color: "text-amber-400 bg-amber-400/15",
+            delay: 0.3,
+          },
+        ]),
   ];
 
   return (

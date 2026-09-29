@@ -13,6 +13,9 @@ import {
 import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getGradeDistribution } from "@/features/gpa/services/calculator";
+import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
+import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
 import { ALL_GRADES, letterGradesMap } from "@/core/domain/types/letterGrades";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
@@ -41,13 +44,23 @@ export function GradeDistributionChart() {
   const { selectedCareerId } = useCareerStore();
   const isEsp = selectedCareerId === "esp";
   const commercialGrades = useGpaStore((s) => s.grades);
+  const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
+  const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
   const grades = isEsp ? espGrades : commercialGrades;
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const terms = isEsp
+    ? getEspTermsForPlacement(
+        rawEspTerms,
+        resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel),
+      )
+    : getTermsByCohortId(commercialCohortId);
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
   const { accent500 } = getCareerPalette(selectedCareerId);
 
-  const distribution = getGradeDistribution(grades);
+  const distribution = getGradeDistribution(grades, terms);
   const data = ALL_GRADES.map((g) => ({
     grade: g,
     count: distribution[g] ?? 0,

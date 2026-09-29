@@ -13,6 +13,7 @@ export function baseTerms(): Term[] {
             type: "Core",
             credits: 0,
             gpaWeight: 1,
+            placementTrack: "level-1",
           },
           {
             name: "Lab M3L1",
@@ -20,6 +21,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-1",
           },
           {
             name: "Lab M4L1",
@@ -27,6 +30,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-1",
           },
           {
             name: "ESP 2 - Beginning English for Software Engineers II",
@@ -34,6 +39,7 @@ export function baseTerms(): Term[] {
             type: "Core",
             credits: 0,
             gpaWeight: 1,
+            placementTrack: "level-1",
           },
         ],
       },
@@ -49,6 +55,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-2",
           },
           {
             name: "Lab M3L2",
@@ -56,6 +64,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-2",
           },
           {
             name: "Lab M4L2",
@@ -63,6 +73,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-2",
           },
           {
             name: "Lab M5L2",
@@ -70,6 +82,8 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
+            placementTrack: "level-2",
           },
           {
             name: "Lab M6",
@@ -77,6 +91,7 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
           },
           {
             name: "Lab M7",
@@ -84,6 +99,7 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
           },
           {
             name: "ESP 3 - Business English",
@@ -98,6 +114,7 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
           },
           {
             name: "Lab M10",
@@ -105,6 +122,7 @@ export function baseTerms(): Term[] {
             type: "Core Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
           },
           {
             name: "ESP 4 - English for Software Engineering I",
@@ -119,6 +137,7 @@ export function baseTerms(): Term[] {
             type: "Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
             optional: true,
           },
         ],
@@ -135,6 +154,7 @@ export function baseTerms(): Term[] {
             type: "Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
             optional: true,
           },
           {
@@ -143,6 +163,7 @@ export function baseTerms(): Term[] {
             type: "Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
             optional: true,
           },
           {
@@ -151,6 +172,7 @@ export function baseTerms(): Term[] {
             type: "Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
             optional: true,
           },
           {
@@ -159,6 +181,7 @@ export function baseTerms(): Term[] {
             type: "Lab",
             credits: 0,
             gpaWeight: 1,
+            retakable: false,
             optional: true,
           },
           {
@@ -179,4 +202,17 @@ export function baseTerms(): Term[] {
       },
     },
   ];
+}
+
+export function termsWithoutCourses(terms: Term[], courseCodes: string[]): Term[] {
+  const excluded = new Set(courseCodes);
+  return terms.map((term) => ({
+    ...term,
+    modules: Object.fromEntries(
+      Object.entries(term.modules).map(([moduleName, courses]) => [
+        moduleName,
+        courses.filter((course) => !excluded.has(course.courseCode)),
+      ]),
+    ),
+  }));
 }

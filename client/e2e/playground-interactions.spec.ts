@@ -71,7 +71,7 @@ test.describe("Playground - fine-grained interactions", () => {
       name: /Attendance & Professionalism only subtracts/,
     });
     await infoButton.click();
-    await expect(page.getByText(/full attendance keeps its default 50\/50/)).toBeVisible();
+    await expect(page.getByRole("tooltip")).toContainText(/full attendance keeps its default 50\/50/);
   });
 
   test("weighting Total shows two decimal places", async ({ page }) => {

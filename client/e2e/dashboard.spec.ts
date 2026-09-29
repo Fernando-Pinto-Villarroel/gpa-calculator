@@ -31,10 +31,10 @@ test.describe("Dashboard", () => {
     await expect(page.getByText("Dean's List Terms").first()).toBeVisible();
     await expect(page.getByText("Lowest Grade").first()).toBeVisible();
     await expect(page.getByText("Earned Credits").first()).toBeVisible();
-    await expect(page.getByText("Remaining Credits").first()).toBeVisible();
+    await expect(page.getByText("Rate of Progress").first()).toBeVisible();
     await expect(page.getByText("President's List Terms").first()).toBeVisible();
 
-    await expect(page.getByText("133", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("of 133", { exact: true }).first()).toBeVisible();
   });
 
   test("shows honor threshold markers", async ({ page }) => {

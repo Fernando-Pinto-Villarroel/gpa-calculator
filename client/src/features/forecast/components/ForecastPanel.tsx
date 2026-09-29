@@ -21,6 +21,7 @@ import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
 import { ALL_GRADES, LetterGrade, letterGradesMap } from "@/core/domain/types/letterGrades";
 import { forecast, ForecastScope } from "../services/forecast";
@@ -88,10 +89,13 @@ export function ForecastPanel() {
   const commercialSelectedTermId = useGpaStore((s) => s.selectedTermId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
 
   const grades = isEsp ? espGrades : commercialGrades;
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
   const selectedTermId = isEsp
     ? (terms[0]?.id ?? "level-1")
@@ -100,7 +104,12 @@ export function ForecastPanel() {
   const savedConfig = useMemo(() => loadForecastConfig(selectedTermId), []);
 
   const [scope, setScope] = useState<ForecastScope>(savedConfig.scope);
-  const [termId, setTermId] = useState(savedConfig.termId);
+  const [storedTermId, setTermId] = useState(savedConfig.termId);
+  const termId = terms.some((term) => term.id === storedTermId)
+    ? storedTermId
+    : (terms.find((term) => term.id === selectedTermId)?.id ??
+      terms[0]?.id ??
+      storedTermId);
   const [targetGpa, setTargetGpa] = useState(savedConfig.targetGpa);
   const [allowedGrades, setAllowedGrades] = useState<LetterGrade[]>(savedConfig.allowedGrades);
   const [maxCombinations, setMaxCombinations] = useState(savedConfig.maxCombinations);
@@ -109,10 +118,24 @@ export function ForecastPanel() {
   const [displayedChange, setDisplayedChange] = useState(0);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const termScopeKey = isEsp ? "scope_level" : "scope_term";
+  const labCodes = useMemo(
+    () =>
+      new Set(
+        isEsp
+          ? terms.flatMap((term) => Object.values(term.modules).flat()).filter((c) => c.type !== "Core").map((c) => c.courseCode)
+          : [],
+      ),
+    [isEsp, terms],
+  );
   const parsedTarget = parseFloat(targetGpa);
   const validTarget = !isNaN(parsedTarget) && parsedTarget > 0 && parsedTarget <= 4.0;
 
-  const honorPresets = scope === "term" ? TERM_HONOR_PRESETS : CAREER_HONOR_PRESETS;
+  const honorPresets = isEsp
+    ? []
+    : scope === "term"
+      ? TERM_HONOR_PRESETS
+      : CAREER_HONOR_PRESETS;
 
   const inputsKey = `${scope}-${termId}-${targetGpa}-${allowedGrades.join(",")}-${maxCombinations}`;
   const prevInputsRef = useRef(inputsKey);
@@ -179,7 +202,7 @@ export function ForecastPanel() {
                     : "text-text-secondary hover:text-text-primary",
                 )}
               >
-                {t("scope_term")}
+                {t(termScopeKey)}
               </button>
               <button
                 onClick={() => setScope("cumulative")}
@@ -380,7 +403,7 @@ export function ForecastPanel() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            <ForecastResults result={result} t={t} scope={scope} isEsp={isEsp} />
+            <ForecastResults result={result} t={t} scope={scope} isEsp={isEsp} labCodes={labCodes} />
           </motion.div>
         )
       )}
@@ -447,12 +470,18 @@ function ForecastResults({
   t,
   scope,
   isEsp,
+  labCodes,
 }: {
   result: NonNullable<ReturnType<typeof forecast>>;
   t: ReturnType<typeof useTranslations>;
   scope: ForecastScope;
   isEsp: boolean;
+  labCodes: Set<string>;
 }) {
+  const termScopeKey = isEsp ? "scope_level" : "scope_term";
+  const remainingLabCount = result.remainingCourseCodes.filter((code) => labCodes.has(code)).length;
+  const remainingEspCourseCount = result.remainingCourseCount - remainingLabCount;
+
   return (
     <div className="flex flex-col gap-4">
       <motion.div
@@ -467,7 +496,7 @@ function ForecastResults({
           </div>
           <div>
             <p className="text-xs text-text-muted">
-              {scope === "term" ? t("term_gpa_label") : t("cumulative_gpa_label")}
+              {scope === "term" ? t(isEsp ? "level_gpa_label" : "term_gpa_label") : t("cumulative_gpa_label")}
             </p>
             <p className="text-xl font-bold text-text-primary tabular-nums">
               {result.currentGpa > 0 ? result.currentGpa.toFixed(3) : "\u2014"}
@@ -479,17 +508,35 @@ function ForecastResults({
           <div className="flex items-center justify-center w-10 h-10 rounded-xl text-warning bg-warning/10">
             <Sparkles size={18} />
           </div>
-          <div>
-            <p className="text-xs text-text-muted">{t("remaining_courses")}</p>
-            <p className="text-xl font-bold text-text-primary">
-              {result.remainingCourseCount}
-              {!isEsp && (
+          {isEsp ? (
+            <div className="flex items-start gap-5">
+              <div>
+                <p className="text-xs text-text-muted">{t("remaining_courses")}</p>
+                <p className="text-xl font-bold text-text-primary tabular-nums">
+                  {remainingEspCourseCount}
+                </p>
+              </div>
+              <div className="pl-5 border-l border-border-base">
+                <p className="text-xs text-text-muted">{t("remaining_labs")}</p>
+                <p className="text-xl font-bold text-text-primary tabular-nums">
+                  {remainingLabCount}
+                </p>
+                <p className="text-[10px] text-text-muted leading-tight mt-0.5">
+                  {t("labs_mandatory_note")}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-xs text-text-muted">{t("remaining_courses")}</p>
+              <p className="text-xl font-bold text-text-primary">
+                {result.remainingCourseCount}
                 <span className="text-sm font-normal text-text-muted ml-1.5">
                   ({result.remainingCredits} cr)
                 </span>
-              )}
-            </p>
-          </div>
+              </p>
+            </div>
+          )}
         </div>
 
         <div
@@ -542,7 +589,7 @@ function ForecastResults({
             >
               {result.remainingCourseCount === 0
                 ? scope === "term"
-                  ? t("no_remaining_term")
+                  ? t(isEsp ? "no_remaining_level" : "no_remaining_term")
                   : t("no_remaining")
                 : result.alreadyAchieved
                   ? t("already_achieved")
@@ -569,9 +616,9 @@ function ForecastResults({
               {t("quick_scenarios")}
             </h3>
             <p className="text-xs text-text-muted mt-0.5">
-              {t("quick_scenarios_desc", {
+              {t(isEsp ? "quick_scenarios_desc_esp" : "quick_scenarios_desc", {
                 count: result.remainingCourseCount,
-                scope: scope === "term" ? t("scope_term") : t("scope_cumulative"),
+                scope: scope === "term" ? t(termScopeKey) : t("scope_cumulative"),
               })}
             </p>
           </div>
@@ -608,10 +655,10 @@ function ForecastResults({
                   )}
                 </div>
                 <p className="text-[11px] text-text-secondary leading-snug">
-                  {t("quick_scenario_sentence", {
+                  {t(isEsp ? "quick_scenario_sentence_esp" : "quick_scenario_sentence", {
                     grade: scenario.grade,
                     count: result.remainingCourseCount,
-                    scope: scope === "term" ? t("scope_term").toLowerCase() : t("scope_cumulative").toLowerCase(),
+                    scope: scope === "term" ? t(termScopeKey).toLowerCase() : t("scope_cumulative").toLowerCase(),
                   })}
                 </p>
                 <span className="text-base font-bold tabular-nums text-text-primary">

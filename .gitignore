@@ -11,6 +11,7 @@ modules.xml
 vcs.xml
 
 ai-context/
+.claude/
 CLAUDE.md
 examples/
 documentation/

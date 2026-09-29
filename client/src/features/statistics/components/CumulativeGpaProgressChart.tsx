@@ -16,6 +16,7 @@ import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getTermGpaProgression } from "@/features/gpa/services/calculator";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
@@ -61,6 +62,7 @@ export function CumulativeGpaProgressChart() {
   const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
   const grades = isEsp ? espGrades : commercialGrades;
   const t = useTranslations("statistics");
   const tConfig = useTranslations("config");
@@ -68,8 +70,10 @@ export function CumulativeGpaProgressChart() {
   const isDark = theme === "dark";
   const { accent500 } = getCareerPalette(selectedCareerId);
 
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
   const data = getTermGpaProgression(grades, terms).map((item) => ({
     ...item,
@@ -108,7 +112,9 @@ export function CumulativeGpaProgressChart() {
           tick={{ fill: axisColor, fontSize: 10 }}
           tickLine={false}
           axisLine={false}
-          ticks={[0, 1, 2, 3, 3.2, 3.5, 3.8, 4].map(gpaToScale)}
+          ticks={(isEsp ? [0, 1, 2, 3, 4] : [0, 1, 2, 3, 3.2, 3.5, 3.8, 4]).map(
+            gpaToScale,
+          )}
           interval={0}
           tickFormatter={(v: number) => scaleToGpa(v).toFixed(1)}
         />
@@ -116,50 +122,54 @@ export function CumulativeGpaProgressChart() {
         <Legend
           wrapperStyle={{ fontSize: 11, paddingTop: 8, paddingLeft: 65 }}
         />
-        <ReferenceLine
-          y={gpaToScale(3.8)}
-          stroke="#f59e0b"
-          strokeDasharray="4 3"
-          label={{
-            value: "Summa",
-            fill: "#f59e0b",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
-        <ReferenceLine
-          y={gpaToScale(3.5)}
-          stroke="#94a3b8"
-          strokeDasharray="4 3"
-          label={{
-            value: "Magna",
-            fill: "#94a3b8",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
-        <ReferenceLine
-          y={gpaToScale(3.2)}
-          stroke="#b45309"
-          strokeDasharray="4 3"
-          label={{
-            value: "Cum Laude",
-            fill: "#b45309",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
-        <ReferenceLine
-          y={gpaToScale(2.0)}
-          stroke="#ef4444"
-          strokeDasharray="4 3"
-          label={{
-            value: "Min",
-            fill: "#ef4444",
-            fontSize: 10,
-            position: "right",
-          }}
-        />
+        {!isEsp && (
+          <>
+            <ReferenceLine
+              y={gpaToScale(3.8)}
+              stroke="#f59e0b"
+              strokeDasharray="4 3"
+              label={{
+                value: "Summa",
+                fill: "#f59e0b",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={gpaToScale(3.5)}
+              stroke="#94a3b8"
+              strokeDasharray="4 3"
+              label={{
+                value: "Magna",
+                fill: "#94a3b8",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={gpaToScale(3.2)}
+              stroke="#b45309"
+              strokeDasharray="4 3"
+              label={{
+                value: "Cum Laude",
+                fill: "#b45309",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={gpaToScale(2.0)}
+              stroke="#ef4444"
+              strokeDasharray="4 3"
+              label={{
+                value: "Min",
+                fill: "#ef4444",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+          </>
+        )}
         <Line
           type="monotone"
           dataKey="cumulativeGpa"

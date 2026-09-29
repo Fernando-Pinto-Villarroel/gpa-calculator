@@ -5,21 +5,27 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { CourseGradeEntry } from "@/core/domain/types/grades";
 import { buildDefaultGradesForTerms } from "../services/calculator";
 import { DEFAULT_ESP_COHORT_ID, getEspCohortById } from "../data/esp/index";
+import { EspPlacementLevel } from "@/features/esp/lib/placement";
 
 interface EspGpaStore {
   gradesByCohort: Record<string, Record<string, CourseGradeEntry>>;
   grades: Record<string, CourseGradeEntry>;
   selectedCohortId: string;
+  placementLevelByCohort: Record<string, EspPlacementLevel | null>;
+  placementLevel: EspPlacementLevel | null;
   setGradeEntry: (courseCode: string, entry: CourseGradeEntry) => void;
   setSelectedCohortId: (cohortId: string) => void;
+  setPlacementLevel: (level: EspPlacementLevel | null) => void;
   importGrades: (data: {
     cohortId: string;
     grades: Record<string, CourseGradeEntry>;
+    placementLevel?: EspPlacementLevel | null;
   }) => void;
   exportGrades: () => {
     version: number;
     cohortId: string;
     grades: Record<string, CourseGradeEntry>;
+    placementLevel: EspPlacementLevel | null;
   };
   resetToDefaults: () => void;
   clearAllGrades: () => void;
@@ -41,6 +47,17 @@ export const useEspGpaStore = create<EspGpaStore>()(
       },
       grades: defaultGradesForCohort(DEFAULT_ESP_COHORT_ID),
       selectedCohortId: DEFAULT_ESP_COHORT_ID,
+      placementLevelByCohort: {},
+      placementLevel: null,
+
+      setPlacementLevel: (level) =>
+        set((state) => ({
+          placementLevel: level,
+          placementLevelByCohort: {
+            ...state.placementLevelByCohort,
+            [state.selectedCohortId]: level,
+          },
+        })),
 
       setGradeEntry: (courseCode, entry) =>
         set((state) => {
@@ -65,12 +82,13 @@ export const useEspGpaStore = create<EspGpaStore>()(
               ...state.gradesByCohort,
               [cohortId]: cohortGrades,
             },
+            placementLevel: state.placementLevelByCohort[cohortId] ?? null,
           };
         }),
 
       importGrades: (data) =>
         set((state) => {
-          const { cohortId, grades } = data;
+          const { cohortId, grades, placementLevel } = data;
           return {
             grades,
             selectedCohortId: cohortId,
@@ -78,6 +96,15 @@ export const useEspGpaStore = create<EspGpaStore>()(
               ...state.gradesByCohort,
               [cohortId]: grades,
             },
+            ...(placementLevel !== undefined
+              ? {
+                  placementLevel,
+                  placementLevelByCohort: {
+                    ...state.placementLevelByCohort,
+                    [cohortId]: placementLevel,
+                  },
+                }
+              : { placementLevel: state.placementLevelByCohort[cohortId] ?? null }),
           };
         }),
 
@@ -85,6 +112,7 @@ export const useEspGpaStore = create<EspGpaStore>()(
         version: 2,
         cohortId: get().selectedCohortId,
         grades: get().grades,
+        placementLevel: get().placementLevel,
       }),
 
       resetToDefaults: () =>
@@ -130,6 +158,7 @@ export const useEspGpaStore = create<EspGpaStore>()(
       partialize: (state) => ({
         gradesByCohort: state.gradesByCohort,
         selectedCohortId: state.selectedCohortId,
+        placementLevelByCohort: state.placementLevelByCohort,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -137,6 +166,7 @@ export const useEspGpaStore = create<EspGpaStore>()(
           state.grades =
             state.gradesByCohort?.[cohortId] ??
             defaultGradesForCohort(cohortId);
+          state.placementLevel = state.placementLevelByCohort?.[cohortId] ?? null;
         }
       },
     },

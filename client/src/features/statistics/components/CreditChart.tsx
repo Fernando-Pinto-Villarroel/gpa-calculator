@@ -15,6 +15,8 @@ import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import { getCreditsPerTerm } from "@/features/gpa/services/calculator";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import { getEspTermsForPlacement, resolveEspPlacementLevel } from "@/features/esp/lib/placement";
+import { calculateEspCompletionByLevel } from "@/features/esp/lib/completion";
 import { useTranslations } from "next-intl";
 import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
@@ -84,6 +86,7 @@ export function CreditChart() {
   const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
   const grades = isEsp ? espGrades : commercialGrades;
   const t = useTranslations("statistics");
   const tConfig = useTranslations("config");
@@ -91,10 +94,18 @@ export function CreditChart() {
   const isDark = theme === "dark";
   const { accent500 } = getCareerPalette(selectedCareerId);
 
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
-  const raw = getCreditsPerTerm(grades, terms);
+  const raw = isEsp
+    ? calculateEspCompletionByLevel(grades, terms).map((level) => ({
+        ...level,
+        earned: level.coursesCompleted,
+        total: level.totalCourses,
+      }))
+    : getCreditsPerTerm(grades, terms);
   const data: ChartDataPoint[] = raw.map((d) => ({
     label: tConfig(isEsp ? "level_label" : "term_label", {
       ordinal: d.termOrdinal,

@@ -7,6 +7,7 @@ import {
   LetterGrade,
   ALL_GRADES,
   letterGradesMap,
+  isFailingGrade,
 } from "@/core/domain/types/letterGrades";
 import { cn } from "@/core/lib/utils/cn";
 
@@ -22,7 +23,7 @@ function gradeColor(grade: LetterGrade | null): string {
   const pts = letterGradesMap[grade];
   const isExcellent = pts >= 3.7;
   const isGood = pts >= 3.0 && !isExcellent;
-  const isFailing = grade === "F" || grade === "D-";
+  const isFailing = isFailingGrade(grade);
 
   if (isExcellent) return "text-success";
   if (isGood) return "text-text-accent";

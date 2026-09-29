@@ -15,6 +15,7 @@ export interface GpaResult {
   gpa: number;
   completedCredits: number;
   approvedCredits: number;
+  attemptedCredits: number;
   totalCredits: number;
   completedCourses: number;
   approvedCourses: number;
@@ -73,7 +74,7 @@ function computeQualityPointsAndCredits(entry: CourseGradeEntry, course: Course)
   };
 }
 
-function isPendingOptionalCourse(course: Course, entry: CourseGradeEntry): boolean {
+export function isPendingOptionalCourse(course: Course, entry: CourseGradeEntry): boolean {
   return Boolean(course.optional) && !hasGradeData(entry);
 }
 
@@ -128,6 +129,7 @@ export function calculateGpa(
     gpa,
     completedCredits,
     approvedCredits,
+    attemptedCredits: totalAttemptedCredits,
     totalCredits,
     completedCourses,
     approvedCourses,
@@ -136,13 +138,42 @@ export function calculateGpa(
   };
 }
 
-export function getHonorStatus(gpa: number): HonorStatus {
-  if (isAtLeast(gpa, 3.8)) return "summa_cum_laude";
-  if (isAtLeast(gpa, 3.5)) return "magna_cum_laude";
-  if (isAtLeast(gpa, 3.2)) return "cum_laude";
-  if (gpa > 2.5) return "good_standing";
-  if (isAtLeast(gpa, 2.0)) return "at_risk";
-  return "sap_risk";
+export const SAP_MIN_GPA = 2.0;
+export const AT_RISK_MAX_GPA = 2.5;
+export const SAP_MIN_RATE_OF_PROGRESS_PERCENT = 67;
+export const AT_RISK_MAX_RATE_OF_PROGRESS_PERCENT = 75;
+
+export type AcademicRiskReason = "gpa" | "rate_of_progress";
+
+export interface AcademicStanding {
+  status: HonorStatus;
+  riskReason: AcademicRiskReason | null;
+  rateOfProgress: number;
+}
+
+export function getRateOfProgress(result: Pick<GpaResult, "approvedCredits" | "attemptedCredits">): number {
+  return result.attemptedCredits > 0 ? result.approvedCredits / result.attemptedCredits : 1;
+}
+
+export function getAcademicStanding(gpa: number, rateOfProgress: number): AcademicStanding {
+  const sapByGpa = !isAtLeast(gpa, SAP_MIN_GPA);
+  const ropPercent = Math.round(rateOfProgress * 100);
+  const sapByRop = ropPercent < SAP_MIN_RATE_OF_PROGRESS_PERCENT;
+  if (sapByGpa || sapByRop) {
+    return { status: "sap_risk", riskReason: sapByGpa ? "gpa" : "rate_of_progress", rateOfProgress };
+  }
+
+  const atRiskByGpa = !(gpa > AT_RISK_MAX_GPA);
+  const atRiskByRop = ropPercent < AT_RISK_MAX_RATE_OF_PROGRESS_PERCENT;
+  if (atRiskByGpa || atRiskByRop) {
+    return { status: "at_risk", riskReason: atRiskByGpa ? "gpa" : "rate_of_progress", rateOfProgress };
+  }
+
+  let status: HonorStatus = "good_standing";
+  if (isAtLeast(gpa, 3.8)) status = "summa_cum_laude";
+  else if (isAtLeast(gpa, 3.5)) status = "magna_cum_laude";
+  else if (isAtLeast(gpa, 3.2)) status = "cum_laude";
+  return { status, riskReason: null, rateOfProgress };
 }
 
 export function getTermGpaProgression(
@@ -204,10 +235,17 @@ export function getTermGpaProgression(
 
 export function getGradeDistribution(
   grades: Record<string, CourseGradeEntry>,
+  terms: Term[],
 ): Record<LetterGrade, number> {
   const distribution: Record<string, number> = {};
 
-  Object.values(grades).forEach((entry) => {
+  const entries = terms.flatMap((term) =>
+    Object.values(term.modules)
+      .flat()
+      .map((course) => grades[course.courseCode] ?? null),
+  );
+
+  entries.forEach((entry) => {
     if (!hasGradeData(entry)) return;
 
     // One count per course, using its effective grade (the approved attempt,

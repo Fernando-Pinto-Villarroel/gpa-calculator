@@ -51,7 +51,7 @@ test.describe("Cross-feature propagation - ESP", () => {
     await page.getByRole("button", { name: "B+", exact: true }).click();
 
     await gotoDashboard(page);
-    await expect(page.getByText("Courses Passed").first()).toBeVisible();
+    await expect(page.getByText("Completed ESP Courses").first()).toBeVisible();
     await expect(page.getByText("3.3").first()).toBeVisible();
 
     await gotoStatistics(page);

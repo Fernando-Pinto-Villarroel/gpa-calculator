@@ -35,10 +35,14 @@ test.describe("Statistics", () => {
     await page.waitForSelector("text=Compiling", { state: "detached", timeout: 5000 }).catch(() => {});
 
     await expect(page.getByText("Total Courses Completed")).toBeVisible();
-    await expect(page.getByText("Dean's List Levels")).toBeVisible();
-    await expect(page.getByText("President's List Levels")).toBeVisible();
     await expect(page.getByText("Levels GPA Progression")).toBeVisible();
     await expect(page.getByText("Course Completion")).toBeVisible();
+
+    // ESP has no Latin honors and no Dean's/President's List.
+    await expect(page.getByText("Dean's List Levels")).toHaveCount(0);
+    await expect(page.getByText("President's List Levels")).toHaveCount(0);
+    await expect(page.getByText("Cum Laude", { exact: false })).toHaveCount(0);
+    await expect(page.getByText("Projected Honor")).toHaveCount(0);
 
     await expect(page.getByText("Total Credits Earned")).toHaveCount(0);
     await expect(page.getByText("Terms GPA Progression")).toHaveCount(0);

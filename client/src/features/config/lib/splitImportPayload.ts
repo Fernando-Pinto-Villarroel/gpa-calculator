@@ -2,11 +2,13 @@ import { LetterGrade, ALL_GRADES } from "@/core/domain/types/letterGrades";
 import { CourseGradeEntry, CourseAttempt } from "@/core/domain/types/grades";
 import { getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
 import { getEspCohortById } from "@/features/gpa/data/esp";
+import { EspPlacementLevel } from "@/features/esp/lib/placement";
 
 export interface SplitImportPayload {
   cohortId: string;
   commercialGrades: Record<string, CourseGradeEntry> | null;
   espGrades: Record<string, CourseGradeEntry> | null;
+  espPlacementLevel: EspPlacementLevel | null | undefined;
 }
 
 export type SplitImportError =
@@ -114,12 +116,22 @@ export function splitImportPayload(raw: unknown): SplitImportResult {
     return { valid: false, error: { code: "no_matching_courses" } };
   }
 
+  let espPlacementLevel: EspPlacementLevel | null | undefined = undefined;
+  if ("placementLevel" in obj) {
+    if (obj.placementLevel === "1" || obj.placementLevel === "2") {
+      espPlacementLevel = obj.placementLevel;
+    } else if (obj.placementLevel === null) {
+      espPlacementLevel = null;
+    }
+  }
+
   return {
     valid: true,
     data: {
       cohortId,
       commercialGrades: hasCommercial ? commercialGrades : null,
       espGrades: hasEsp ? espGrades : null,
+      espPlacementLevel,
     },
   };
 }

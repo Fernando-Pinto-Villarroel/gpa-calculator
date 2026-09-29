@@ -12,9 +12,14 @@ import { useThemeStore } from "@/features/theme/store/useThemeStore";
 import { useTourStore } from "@/features/tour/store/useTourStore";
 import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
-import { getEspCohortById } from "@/features/gpa/data/esp";
 import { splitImportPayload } from "@/features/config/lib/splitImportPayload";
 import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
+import { getEspCohortById, getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import {
+  EspPlacementLevel,
+  getPlacementLevelAfterImport,
+  resolveEspPlacementLevel,
+} from "@/features/esp/lib/placement";
 import Swal from "sweetalert2";
 
 const TOUR_TARGETED_ITEMS = [
@@ -27,8 +32,14 @@ const TOUR_TARGETED_ITEMS = [
 export function EspActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
   const router = useRouter();
-  const { grades, importGrades, exportGrades, resetCohortData, selectedCohortId } =
-    useEspGpaStore();
+  const {
+    grades,
+    importGrades,
+    exportGrades,
+    resetCohortData,
+    selectedCohortId,
+    placementLevel: espPlacementLevel,
+  } = useEspGpaStore();
   const {
     grades: commercialGrades,
     importGrades: importCommercialGrades,
@@ -171,7 +182,11 @@ export function EspActionsMenu({ className }: { className?: string }) {
 
       if (confirmed.isConfirmed) {
         if (data.espGrades) {
-          importGrades({ cohortId: data.cohortId, grades: data.espGrades });
+          importGrades({
+            cohortId: data.cohortId,
+            grades: data.espGrades,
+            placementLevel: data.espPlacementLevel,
+          });
         }
         if (data.commercialGrades) {
           importCommercialGrades({ cohortId: data.cohortId, grades: data.commercialGrades });
@@ -245,10 +260,20 @@ export function EspActionsMenu({ className }: { className?: string }) {
       });
 
       if (confirmed.isConfirmed) {
+        let placementChangedTo: EspPlacementLevel | undefined;
         if (espResult.success && espMatched > 0) {
+          const mergedEspGrades = { ...grades, ...espResult.grades };
+          const espTerms = getEspTermsByCohortId(selectedCohortId);
+          const placement = getPlacementLevelAfterImport(
+            mergedEspGrades,
+            espTerms,
+            resolveEspPlacementLevel(grades, espTerms, espPlacementLevel),
+          );
+          placementChangedTo = placement.changed ? placement.level : undefined;
           importGrades({
             cohortId: selectedCohortId,
-            grades: { ...grades, ...espResult.grades },
+            grades: mergedEspGrades,
+            placementLevel: placement.changed ? null : undefined,
           });
         }
         if (commercialResult.success && commercialMatched > 0) {
@@ -257,10 +282,13 @@ export function EspActionsMenu({ className }: { className?: string }) {
             grades: { ...commercialGrades, ...commercialResult.grades },
           });
         }
+        const successText = t("pdf_success_text", {
+          matched: String(espMatched + commercialMatched),
+        });
         toast.success(t("pdf_success"), {
-          description: t("pdf_success_text", {
-            matched: String(espMatched + commercialMatched),
-          }),
+          description: placementChangedTo
+            ? `${successText} ${t("pdf_placement_level_adjusted", { level: placementChangedTo })}`
+            : successText,
         });
       }
     } catch (err) {

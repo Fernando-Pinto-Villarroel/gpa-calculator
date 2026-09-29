@@ -31,7 +31,7 @@ test.describe("Guided tour - ESP career", () => {
       localStorage.setItem(
         "jala-gpa-tour",
         JSON.stringify({
-          state: { guidedTourCompleted: false, globalStepIndex: 9 },
+          state: { guidedTourCompleted: false, globalStepIndex: 8 },
           version: 0,
         }),
       );
@@ -58,9 +58,9 @@ test.describe("Guided tour - ESP career", () => {
     await page.addInitScript(() => {
       localStorage.setItem(
         "jala-gpa-tour",
-        // Index 14 is the "action-import" step within the 9-step ESP /grades block (9 + 5).
+        // Index 13 is the "action-import" step within the 9-step ESP /grades block (8 + 5).
         JSON.stringify({
-          state: { guidedTourCompleted: false, globalStepIndex: 14 },
+          state: { guidedTourCompleted: false, globalStepIndex: 13 },
           version: 0,
         }),
       );

@@ -9,6 +9,7 @@ export interface TourStep extends Step {
 export function useTourSteps(): TourStep[] {
   const t = useTranslations("tour");
   const { selectedCareerId } = useCareerStore();
+  const isEsp = selectedCareerId === "esp";
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const isMobileDashboard =
     typeof window !== "undefined" && window.innerWidth < 1024;
@@ -124,6 +125,14 @@ export function useTourSteps(): TourStep[] {
     },
     {
       route: "/grades",
+      target: '[data-tour="esp-level-selector"]',
+      placement: "bottom",
+      title: t("esp_config_level_title"),
+      content: t("esp_config_level_content"),
+      disableBeacon: true,
+    },
+    {
+      route: "/grades",
       target: isMobile
         ? '[data-tour="first-course-card-m"]'
         : '[data-tour="first-course-card"]',
@@ -135,21 +144,11 @@ export function useTourSteps(): TourStep[] {
     {
       route: "/grades",
       target: isMobile
-        ? '[data-tour="first-credits-badge-m"]'
-        : '[data-tour="first-credits-badge"]',
-      placement: "auto",
-      title: t("esp_config_credits_title"),
-      content: t("esp_config_credits_content"),
-      disableBeacon: true,
-    },
-    {
-      route: "/grades",
-      target: isMobile
         ? '[data-tour="first-retake-btn-m"]'
         : '[data-tour="first-retake-btn"]',
       placement: "auto",
       title: t("config_retake_title"),
-      content: t("config_retake_content"),
+      content: t("esp_config_retake_content"),
       disableBeacon: true,
     },
     {
@@ -250,16 +249,20 @@ export function useTourSteps(): TourStep[] {
       content: t("dashboard_gpa_content"),
       disableBeacon: true,
     },
-    {
-      route: "",
-      target: isMobileDashboard
-        ? '[data-tour="honor-badge-m"]'
-        : '[data-tour="honor-badge"]',
-      placement: "auto",
-      title: t("dashboard_honor_title"),
-      content: t("dashboard_honor_content"),
-      disableBeacon: true,
-    },
+    ...(isEsp
+      ? []
+      : [
+          {
+            route: "",
+            target: isMobileDashboard
+              ? '[data-tour="honor-badge-m"]'
+              : '[data-tour="honor-badge"]',
+            placement: "auto" as const,
+            title: t("dashboard_honor_title"),
+            content: t("dashboard_honor_content"),
+            disableBeacon: true,
+          },
+        ]),
     {
       route: "",
       target: isMobileDashboard
@@ -267,7 +270,7 @@ export function useTourSteps(): TourStep[] {
         : '[data-tour="stat-cards"]',
       placement: "auto",
       title: t("dashboard_stats_title"),
-      content: t("dashboard_stats_content"),
+      content: t(isEsp ? "dashboard_stats_content_esp" : "dashboard_stats_content"),
       disableBeacon: true,
     },
     ...gradesSteps,
@@ -418,7 +421,7 @@ export function useTourSteps(): TourStep[] {
       target: isMobileDashboard ? "body" : '[data-tour="stats-overview"]',
       placement: isMobileDashboard ? "center" : "auto",
       title: t("statistics_overview_title"),
-      content: t("statistics_overview_content"),
+      content: t(isEsp ? "statistics_overview_content_esp" : "statistics_overview_content"),
       disableBeacon: true,
     },
     {
@@ -426,7 +429,7 @@ export function useTourSteps(): TourStep[] {
       target: isMobileDashboard ? "body" : '[data-tour="stats-charts"]',
       placement: isMobileDashboard ? "center" : "top",
       title: t("statistics_charts_title"),
-      content: t("statistics_charts_content"),
+      content: t(isEsp ? "statistics_charts_content_esp" : "statistics_charts_content"),
       disableBeacon: true,
     },
     {
@@ -434,7 +437,7 @@ export function useTourSteps(): TourStep[] {
       target: '[data-tour="forecast-scope"]',
       placement: "bottom",
       title: t("forecast_scope_title"),
-      content: t("forecast_scope_content"),
+      content: t(isEsp ? "forecast_scope_content_esp" : "forecast_scope_content"),
       disableBeacon: true,
     },
     {
@@ -442,7 +445,7 @@ export function useTourSteps(): TourStep[] {
       target: '[data-tour="forecast-target"]',
       placement: "bottom",
       title: t("forecast_target_title"),
-      content: t("forecast_target_content"),
+      content: t(isEsp ? "forecast_target_content_esp" : "forecast_target_content"),
       disableBeacon: true,
     },
     {

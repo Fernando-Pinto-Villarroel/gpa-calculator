@@ -20,6 +20,7 @@ export interface TourTooltipLabels {
   finish: string;
   skipPage: string;
   skipTour: string;
+  language: string;
 }
 
 export interface TourTooltipLocaleOption {
@@ -116,7 +117,7 @@ export function TourTooltip({
           <button
             type="button"
             data-testid="tour-locale-select"
-            aria-label="Language"
+            aria-label={labels.language}
             onClick={() => setLocaleMenuOpen((v) => !v)}
             style={{
               display: "flex",

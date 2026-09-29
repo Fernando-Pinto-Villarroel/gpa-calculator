@@ -39,6 +39,26 @@ function isPassingGrade(grade: LetterGrade): boolean {
   return !FAILING_GRADES.has(grade);
 }
 
+function buildAttemptsFromNewestFirst(
+  courseEntries: PdfCourseEntry[],
+): CourseAttempt[] {
+  const chronological = [...courseEntries].reverse();
+
+  let approvedIdx = -1;
+  for (let i = chronological.length - 1; i >= 0; i--) {
+    if (isPassingGrade(chronological[i].grade)) {
+      approvedIdx = i;
+      break;
+    }
+  }
+
+  return chronological.map((entry, i) => ({
+    credits: entry.credits,
+    grade: entry.grade,
+    approved: i === approvedIdx,
+  }));
+}
+
 function sliceToConsolidated(rawText: string): string {
   const consolidatedIdx = rawText.indexOf("Consolidated");
   return consolidatedIdx !== -1 ? rawText.slice(consolidatedIdx) : rawText;
@@ -251,23 +271,7 @@ export function buildGradesFromPdfEntries(
       continue;
     }
 
-    const reversed = [...courseEntries].reverse();
-
-    let approvedIdx = -1;
-    for (let i = reversed.length - 1; i >= 0; i--) {
-      if (isPassingGrade(reversed[i].grade)) {
-        approvedIdx = i;
-        break;
-      }
-    }
-
-    const attempts: CourseAttempt[] = reversed.map((entry, i) => ({
-      credits: entry.credits,
-      grade: entry.grade,
-      approved: i === approvedIdx,
-    }));
-
-    grades[courseCode] = attempts;
+    grades[courseCode] = buildAttemptsFromNewestFirst(courseEntries);
     matched++;
 
     if (expectedCredits !== undefined) {
@@ -363,8 +367,10 @@ export function buildEspGradesFromPdfEntries(
   let matched = 0;
 
   for (const [courseCode, courseEntries] of grouped) {
-    const last = courseEntries[courseEntries.length - 1];
-    grades[courseCode] = last.grade;
+    grades[courseCode] =
+      courseEntries.length === 1
+        ? courseEntries[0].grade
+        : buildAttemptsFromNewestFirst(courseEntries);
     matched++;
   }
 

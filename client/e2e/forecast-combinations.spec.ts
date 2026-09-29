@@ -1,30 +1,61 @@
 import { test, expect } from "@playwright/test";
 import { seedProfile, gotoForecast } from "./fixtures";
 
-// findCombinations() does a capped DFS over grade-count distributions and
-// stops once it has collected maxResults*20 valid candidates, then sorts and
-// slices to the top maxResults by projected GPA. The search previously tried
-// LOW counts of the best allowed grade first, so for a large remaining-course
-// pool the cap could be hit entirely within the "0 uses of the best grade"
-// subtree — meaning the shown "best combinations" could systematically never
-// include the top allowed grade at all, even though the user explicitly
-// selected it. Fixed by exploring high-to-low instead of low-to-high.
-test.describe("Forecast combinations - search finds genuinely best combinations", () => {
-  test("with many remaining courses, the top combination uses the best allowed grade", async ({
-    page,
-  }) => {
+async function projectedGpas(page: import("@playwright/test").Page): Promise<number[]> {
+  const text = await page.locator('[data-tour="forecast-combinations"]').innerText();
+  return (text.match(/^\d\.\d{3}$/gm) ?? []).map(Number);
+}
+
+// "Optimal grade distributions to reach your target" means the least a
+// student needs: every combination shown must reach the target, and they must
+// be the ones closest to it. Version 1 behaved like this; a v2 change explored
+// the search space best-grades-first under a result cap, so it mostly showed
+// "all A" combinations, which do not help planning.
+test.describe("Forecast combinations - the least you need to reach the target", () => {
+  test("a 3.0 target with no grades is reached with all B, not with all A", async ({ page }) => {
     await seedProfile(page);
     await gotoForecast(page);
 
-    const targetInput = page.locator('[data-tour="forecast-target"] input');
-    await targetInput.fill("3.0");
+    await page.locator('[data-tour="forecast-target"] input').fill("3.0");
     await page.waitForTimeout(600);
 
-    const combinationsSection = page.locator('[data-tour="forecast-combinations"]');
-    await expect(combinationsSection).toBeVisible({ timeout: 10000 });
+    const section = page.locator('[data-tour="forecast-combinations"]');
+    await expect(section).toBeVisible({ timeout: 10000 });
+    const gpas = await projectedGpas(page);
+    expect(gpas.length).toBeGreaterThan(0);
+    for (const gpa of gpas) {
+      expect(gpa).toBeGreaterThanOrEqual(3.0);
+      expect(gpa).toBeLessThan(3.05);
+    }
+    expect(await section.innerText()).toMatch(/\d+×B(?![+-])/);
+  });
 
-    const sectionText = await combinationsSection.innerText();
-    expect(sectionText).toMatch(/\d+×A(?!-)/);
+  test("a 3.5 target proposes combinations just above 3.5, not 4.00", async ({ page }) => {
+    await seedProfile(page);
+    await gotoForecast(page);
+
+    await page.locator('[data-tour="forecast-target"] input').fill("3.5");
+    await page.waitForTimeout(600);
+
+    await expect(page.locator('[data-tour="forecast-combinations"]')).toBeVisible({ timeout: 10000 });
+    const gpas = await projectedGpas(page);
+    expect(gpas.length).toBeGreaterThan(0);
+    for (const gpa of gpas) {
+      expect(gpa).toBeGreaterThanOrEqual(3.5);
+      expect(gpa).toBeLessThan(3.56);
+    }
+  });
+
+  test("a target that needs the best grade includes it", async ({ page }) => {
+    await seedProfile(page);
+    await gotoForecast(page);
+
+    await page.locator('[data-tour="forecast-target"] input').fill("3.9");
+    await page.waitForTimeout(600);
+
+    const section = page.locator('[data-tour="forecast-combinations"]');
+    await expect(section).toBeVisible({ timeout: 10000 });
+    expect(await section.innerText()).toMatch(/\d+×A(?!-)/);
   });
 
   // CombinationCard suppresses the "×Ncr" credit-group badges for ESP
@@ -42,7 +73,7 @@ test.describe("Forecast combinations - search finds genuinely best combinations"
     await expect(combinationsSection).toBeVisible({ timeout: 10000 });
 
     const sectionText = await combinationsSection.innerText();
-    expect(sectionText).toMatch(/\d+×A(?!-)/);
+    expect(sectionText).toMatch(/\d+×[A-F][+-]?/);
     expect(sectionText).not.toMatch(/\d+×\d+cr/);
   });
 });

@@ -27,6 +27,10 @@ export const letterGradesMap: Record<LetterGrade, number> = {
   F: 0.0,
 };
 
+export function isFailingGrade(grade: LetterGrade): boolean {
+  return grade === "F" || grade === "D-";
+}
+
 export const ALL_GRADES: LetterGrade[] = [
   "A",
   "A-",

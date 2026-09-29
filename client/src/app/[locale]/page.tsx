@@ -7,7 +7,8 @@ import {
   Star,
   TriangleAlert,
   CreditCard,
-  BookMarked,
+  Gauge,
+  Flag,
   Timer,
   Medal,
   Trophy,
@@ -16,16 +17,31 @@ import { useGpaStore } from "@/features/gpa/store/useGpaStore";
 import { useEspGpaStore } from "@/features/gpa/store/useEspGpaStore";
 import {
   calculateGpa,
-  getHonorStatus,
+  getAcademicStanding,
+  getRateOfProgress,
+  SAP_MIN_RATE_OF_PROGRESS_PERCENT,
+  AT_RISK_MAX_RATE_OF_PROGRESS_PERCENT,
   getBestAndWorstCourses,
   getCompletedTermsCount,
   getTermHonorCounts,
 } from "@/features/gpa/services/calculator";
 import { getTermsByCohortId } from "@/features/gpa/data/software-engineering-design-architecture/index";
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
+import {
+  getEspTermsForPlacement,
+  isPlacementLevelDetected,
+  resolveEspPlacementLevel,
+} from "@/features/esp/lib/placement";
+import {
+  calculateEspCompletion,
+  calculateEspLabCompletion,
+  calculateEspLevelsCompleted,
+} from "@/features/esp/lib/completion";
 import { letterGradesMap } from "@/core/domain/types/letterGrades";
 import { GpaDisplay } from "@/features/dashboard/components/GpaDisplay";
 import { HonorBadge } from "@/features/dashboard/components/HonorBadge";
+import { AttemptsExhaustedAlert } from "@/features/dashboard/components/AttemptsExhaustedAlert";
+import { hasExhaustedAttempts } from "@/core/domain/types/grades";
 import { StatCard } from "@/features/dashboard/components/StatCard";
 import { useCareerStore } from "@/features/career/store/useCareerStore";
 
@@ -46,10 +62,13 @@ export default function HomePage({ params }: Props) {
   const commercialCohortId = useGpaStore((s) => s.selectedCohortId);
   const espGrades = useEspGpaStore((s) => s.grades);
   const espCohortId = useEspGpaStore((s) => s.selectedCohortId);
+  const espPlacementLevel = useEspGpaStore((s) => s.placementLevel);
 
   const grades = isEsp ? espGrades : commercialGrades;
+  const rawEspTerms = getEspTermsByCohortId(espCohortId);
+  const resolvedEspLevel = resolveEspPlacementLevel(espGrades, rawEspTerms, espPlacementLevel);
   const terms = isEsp
-    ? getEspTermsByCohortId(espCohortId)
+    ? getEspTermsForPlacement(rawEspTerms, resolvedEspLevel)
     : getTermsByCohortId(commercialCohortId);
 
   const {
@@ -57,31 +76,94 @@ export default function HomePage({ params }: Props) {
     completedCourses,
     approvedCourses,
     approvedCredits,
+    attemptedCredits,
     totalCredits,
     totalCourses,
   } = calculateGpa(grades, terms);
   const hasGrades = completedCourses > 0;
-  const honorStatus = hasGrades ? getHonorStatus(gpa) : null;
+  const standing =
+    hasGrades && !isEsp
+      ? getAcademicStanding(gpa, getRateOfProgress({ approvedCredits, attemptedCredits }))
+      : null;
+  const honorStatus = standing?.status ?? null;
   const { best, worst, bestCourses, worstCourses } = getBestAndWorstCourses(
     grades,
     terms,
   );
-  const termsCompleted = getCompletedTermsCount(grades, terms);
-  const { deansListCount, presidentsListCount } = getTermHonorCounts(
-    grades,
-    terms,
-  );
+  const espLevels = isEsp ? calculateEspLevelsCompleted(grades, terms) : null;
+  const termsCompleted = espLevels
+    ? espLevels.completed
+    : getCompletedTermsCount(grades, terms);
+  const termsTotal = espLevels ? espLevels.total : terms.length;
+  const { deansListCount, presidentsListCount } = isEsp
+    ? { deansListCount: 0, presidentsListCount: 0 }
+    : getTermHonorCounts(grades, terms);
+  const espCompletion = isEsp ? calculateEspCompletion(grades, terms) : null;
+  const espLabCompletion = isEsp ? calculateEspLabCompletion(grades, terms) : null;
+  const completedCoursesForDisplay = espCompletion
+    ? espCompletion.completedCourses
+    : approvedCourses;
+  const totalCoursesForDisplay = espCompletion
+    ? espCompletion.totalCourses
+    : totalCourses;
 
-  const isAtRisk =
-    honorStatus === "at_risk" || honorStatus === "sap_risk";
+  const riskAlertText =
+    standing?.riskReason && (honorStatus === "at_risk" || honorStatus === "sap_risk")
+      ? t(
+          `alert.${honorStatus}${standing.riskReason === "rate_of_progress" ? "_rop" : ""}`,
+          { rop: Math.round(standing.rateOfProgress * 100) },
+        )
+      : undefined;
+
+  const exhaustedCourses = terms
+    .flatMap((term) => Object.values(term.modules).flat())
+    .filter((course) => hasExhaustedAttempts(grades[course.courseCode] ?? null));
+  const exhaustedAlert =
+    exhaustedCourses.length > 0 ? (
+      <AttemptsExhaustedAlert
+        title={t("alert.attempts_exhausted_title")}
+        text={t(isEsp ? "alert.attempts_exhausted_esp" : "alert.attempts_exhausted", {
+          courses: exhaustedCourses.map((course) => tCourses(course.courseCode)).join(", "),
+        })}
+      />
+    ) : null;
+
+  const tInfo = useTranslations("home.stats_info");
+  const periodLabel = (ordinal: string) =>
+    tConfig(isEsp ? "level_label" : "term_label", { ordinal });
+  const gradeDetail = (
+    course: typeof best,
+    courses: NonNullable<typeof best>[],
+  ) =>
+    course
+      ? courses.length > 1
+        ? `${courses.length} ${t("stats.courses")}`
+        : `${tCourses(course.courseCode)} · ${periodLabel(course.termOrdinal)}`
+      : undefined;
+
+  const hasAttempted = attemptedCredits > 0;
+  const ropPercent = Math.round(getRateOfProgress({ approvedCredits, attemptedCredits }) * 100);
+  const startingLevelSource = espPlacementLevel
+    ? null
+    : isPlacementLevelDetected(espPlacementLevel, espGrades, rawEspTerms)
+      ? t("stats.starting_level_detected")
+      : t("stats.starting_level_default");
 
   const leftStats = [
     {
-      label: t("stats.completed_subjects"),
-      value: String(approvedCourses),
-      subvalue: `/ ${totalCourses}`,
+      label: t(isEsp ? "stats.completed_esp_courses" : "stats.completed_subjects"),
+      value: String(completedCoursesForDisplay),
+      subvalue: `/ ${totalCoursesForDisplay}`,
       icon: BookOpen,
-      tooltip: `${approvedCourses} approved · ${completedCourses} graded`,
+      info: tInfo(isEsp ? "completed_esp_courses" : "completed_subjects", {
+        total: totalCoursesForDisplay,
+      }),
+      detail: isEsp
+        ? undefined
+        : t("stats.completed_subjects_detail", {
+            approved: completedCoursesForDisplay,
+            graded: completedCourses,
+          }),
     },
     {
       label: t("stats.best_grade"),
@@ -96,24 +178,27 @@ export default function HomePage({ params }: Props) {
         best && letterGradesMap[best.grade!] >= 3.7
           ? ("success" as const)
           : ("default" as const),
-      tooltip: best
-        ? bestCourses.length > 1
-          ? `${bestCourses.length} courses`
-          : `${tCourses(best.courseCode)} — ${tConfig("term_label", { ordinal: best.termOrdinal })}`
-        : undefined,
+      info: tInfo("best_grade"),
+      detail: gradeDetail(best, bestCourses),
     },
     {
       label: t(isEsp ? "stats.levels_completed" : "stats.terms_completed"),
       value: String(termsCompleted),
-      subvalue: `${tc("of")} ${terms.length}`,
+      subvalue: `${tc("of")} ${termsTotal}`,
       icon: Timer,
+      info: tInfo(isEsp ? "levels_completed" : "terms_completed"),
     },
-    {
-      label: t(isEsp ? "stats.deans_list_levels" : "stats.deans_list_terms"),
-      value: String(deansListCount),
-      icon: Medal,
-      variant: deansListCount > 0 ? ("default" as const) : ("default" as const),
-    },
+    ...(isEsp
+      ? []
+      : [
+          {
+            label: t("stats.deans_list_terms"),
+            value: String(deansListCount),
+            icon: Medal,
+            variant: "default" as const,
+            info: tInfo("deans_list_terms"),
+          },
+        ]),
   ];
 
   const rightStats = [
@@ -132,19 +217,17 @@ export default function HomePage({ params }: Props) {
           : worst && letterGradesMap[worst.grade!] < 3.0
             ? ("warning" as const)
             : ("default" as const),
-      tooltip: worst
-        ? worstCourses.length > 1
-          ? `${worstCourses.length} courses`
-          : `${tCourses(worst.courseCode)} — ${tConfig("term_label", { ordinal: worst.termOrdinal })}`
-        : undefined,
+      info: tInfo("worst_grade"),
+      detail: gradeDetail(worst, worstCourses),
     },
-    isEsp
+    espLabCompletion
       ? {
-          label: t("stats.courses_passed"),
-          value: String(approvedCourses),
-          subvalue: `${tc("of")} ${totalCourses}`,
+          label: t("stats.completed_esp_labs"),
+          value: String(espLabCompletion.completedCourses),
+          subvalue: `${tc("of")} ${espLabCompletion.totalCourses}`,
           icon: CreditCard,
           variant: "success" as const,
+          info: tInfo("completed_esp_labs", { total: espLabCompletion.totalCourses }),
         }
       : {
           label: t("stats.earned_credits"),
@@ -152,33 +235,49 @@ export default function HomePage({ params }: Props) {
           subvalue: `${tc("of")} ${totalCredits}`,
           icon: CreditCard,
           variant: "success" as const,
+          info: tInfo("earned_credits"),
         },
     isEsp
       ? {
-          label: t("stats.courses_remaining"),
-          value: String(totalCourses - approvedCourses),
-          icon: BookMarked,
-          variant:
-            approvedCourses >= totalCourses
-              ? ("success" as const)
-              : ("default" as const),
+          label: t("stats.starting_level"),
+          value: tConfig("placement_level_option", { level: resolvedEspLevel }),
+          subvalue: startingLevelSource ?? undefined,
+          icon: Flag,
+          variant: "default" as const,
+          info: tInfo("starting_level"),
         }
       : {
-          label: t("stats.remaining_credits"),
-          value: String(totalCredits - approvedCredits),
-          icon: BookMarked,
-          variant:
-            approvedCredits >= totalCredits
-              ? ("success" as const)
-              : ("default" as const),
+          label: t("stats.rate_of_progress"),
+          value: hasAttempted ? `${ropPercent}%` : "—",
+          subvalue: t("stats.rate_of_progress_min", { min: SAP_MIN_RATE_OF_PROGRESS_PERCENT }),
+          icon: Gauge,
+          variant: !hasAttempted
+            ? ("default" as const)
+            : ropPercent < SAP_MIN_RATE_OF_PROGRESS_PERCENT
+              ? ("danger" as const)
+              : ropPercent < AT_RISK_MAX_RATE_OF_PROGRESS_PERCENT
+                ? ("warning" as const)
+                : ("default" as const),
+          info: tInfo("rate_of_progress"),
+          detail: hasAttempted
+            ? t("stats.rate_of_progress_detail", {
+                approved: approvedCredits,
+                attempted: attemptedCredits,
+              })
+            : undefined,
         },
-    {
-      label: t(isEsp ? "stats.presidents_list_levels" : "stats.presidents_list_terms"),
-      value: String(presidentsListCount),
-      icon: Trophy,
-      variant:
-        presidentsListCount > 0 ? ("gold" as const) : ("default" as const),
-    },
+    ...(isEsp
+      ? []
+      : [
+          {
+            label: t("stats.presidents_list_terms"),
+            value: String(presidentsListCount),
+            icon: Trophy,
+            variant:
+              presidentsListCount > 0 ? ("gold" as const) : ("default" as const),
+            info: tInfo("presidents_list_terms"),
+          },
+        ]),
   ];
 
   const thresholds = [
@@ -210,47 +309,44 @@ export default function HomePage({ params }: Props) {
                 <HonorBadge
                   status={honorStatus}
                   label={t(`honor.${honorStatus}`)}
-                  alertText={
-                    isAtRisk
-                      ? t(
-                          `alert.${honorStatus === "at_risk" ? "at_risk" : "sap_risk"}`,
-                        )
-                      : undefined
-                  }
+                  alertText={riskAlertText}
                 />
               )}
+              {exhaustedAlert}
 
-              <div className="flex items-center gap-10 mt-1">
-                {thresholds.map(({ threshold, label, color }) => {
-                  const isCurrentHonor =
-                    gpa >= threshold &&
-                    !thresholds.some(
-                      (t) => t.threshold > threshold && gpa >= t.threshold,
-                    );
-                  return (
-                    <div
-                      key={label}
-                      className="flex flex-col items-center gap-1.5"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`h-0.5 w-10 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
-                        />
+              {!isEsp && (
+                <div className="flex items-center gap-10 mt-1">
+                  {thresholds.map(({ threshold, label, color }) => {
+                    const isCurrentHonor =
+                      gpa >= threshold &&
+                      !thresholds.some(
+                        (t) => t.threshold > threshold && gpa >= t.threshold,
+                      );
+                    return (
+                      <div
+                        key={label}
+                        className="flex flex-col items-center gap-1.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-0.5 w-10 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                          />
+                          <span
+                            className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xl" : "text-base"}`}
+                          >
+                            {threshold.toFixed(2)}
+                          </span>
+                        </div>
                         <span
-                          className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xl" : "text-base"}`}
+                          className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-lg font-semibold" : "text-sm"}`}
                         >
-                          {threshold.toFixed(2)}
+                          {label}
                         </span>
                       </div>
-                      <span
-                        className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-lg font-semibold" : "text-sm"}`}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -277,48 +373,45 @@ export default function HomePage({ params }: Props) {
               <HonorBadge
                 status={honorStatus}
                 label={t(`honor.${honorStatus}`)}
-                alertText={
-                  isAtRisk
-                    ? t(
-                        `alert.${honorStatus === "at_risk" ? "at_risk" : "sap_risk"}`,
-                      )
-                    : undefined
-                }
+                alertText={riskAlertText}
               />
             )}
+            {exhaustedAlert}
 
-            <div className="flex items-center justify-center gap-4">
-              {thresholds.map(({ threshold, label, color }) => {
-                const isCurrentHonor =
-                  gpa >= threshold &&
-                  !thresholds.some(
-                    (t) => t.threshold > threshold && gpa >= t.threshold,
-                  );
-                return (
-                  <div key={label} className="flex flex-col items-center gap-0.5">
-                    <div className="flex items-center gap-1">
-                      <div
-                        className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
-                      />
+            {!isEsp && (
+              <div className="flex items-center justify-center gap-4">
+                {thresholds.map(({ threshold, label, color }) => {
+                  const isCurrentHonor =
+                    gpa >= threshold &&
+                    !thresholds.some(
+                      (t) => t.threshold > threshold && gpa >= t.threshold,
+                    );
+                  return (
+                    <div key={label} className="flex flex-col items-center gap-0.5">
+                      <div className="flex items-center gap-1">
+                        <div
+                          className={`h-0.5 w-5 rounded-full ${gpa >= threshold ? "opacity-80 bg-current" : "bg-border-strong"} ${color}`}
+                        />
+                        <span
+                          className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs" : "text-[10px]"}`}
+                        >
+                          {threshold.toFixed(1)}
+                        </span>
+                      </div>
                       <span
-                        className={`font-medium ${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs" : "text-[10px]"}`}
+                        className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs font-semibold" : "text-[9px]"}`}
                       >
-                        {threshold.toFixed(1)}
+                        {label}
                       </span>
                     </div>
-                    <span
-                      className={`${gpa >= threshold ? color : "text-text-muted"} ${isCurrentHonor ? "text-xs font-semibold" : "text-[9px]"}`}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-        <div data-tour="stat-cards-m" className="grid grid-cols-2 gap-2.5">
+        <div data-tour="stat-cards-m" className="grid grid-cols-2 auto-rows-fr gap-2.5">
           {[...leftStats, ...rightStats].map((stat, i) => (
             <StatCard key={stat.label} {...stat} delay={i * 0.05} />
           ))}

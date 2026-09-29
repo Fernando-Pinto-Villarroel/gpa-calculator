@@ -25,6 +25,11 @@ test.describe("Retake modal - edge cases", () => {
     const attempt1 = page.getByText("Attempt 1", { exact: true }).locator("../..");
     const attempt2 = page.getByText("Attempt 2", { exact: true }).locator("../..");
 
+    await attempt1.getByRole("button", { name: /^F/ }).click();
+    await page.getByRole("button", { name: "C", exact: true }).click();
+    await attempt2.locator("button").nth(1).click();
+    await page.getByRole("button", { name: "B", exact: true }).click();
+
     await attempt1.locator("button").last().click();
     await expect(attempt1.locator("button").last()).toHaveClass(/text-success/);
     await expect(attempt2.locator("button").last()).not.toHaveClass(/text-success/);
@@ -47,6 +52,8 @@ test.describe("Retake modal - edge cases", () => {
     await page.getByText("Add Attempt").click();
 
     const attempt1 = page.getByText("Attempt 1", { exact: true }).locator("../..");
+    await attempt1.getByRole("button", { name: /^F/ }).click();
+    await page.getByRole("button", { name: "C", exact: true }).click();
     await attempt1.locator("button").last().click();
     await expect(attempt1.locator("button").last()).toHaveClass(/text-success/);
 
@@ -126,10 +133,9 @@ test.describe("Retake modal - edge cases", () => {
     const attempt1 = page.getByText("Attempt 1", { exact: true }).locator("../..");
     await expect(attempt1.locator('input[type="number"]')).toHaveValue("3");
 
-    await attempt1.locator("button").last().click();
     await page.getByText("Save", { exact: true }).click();
 
     entry = await readFirstCourseEntry(page);
-    expect(entry).toEqual([{ credits: 3, grade: "F", approved: true }]);
+    expect(entry).toEqual([{ credits: 3, grade: "F", approved: false }]);
   });
 });
