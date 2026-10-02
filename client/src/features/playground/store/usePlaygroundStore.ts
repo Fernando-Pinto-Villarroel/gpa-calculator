@@ -24,6 +24,7 @@ interface PlaygroundState {
   removeGroup: (id: string) => void;
   resetGroups: (t: PlaygroundTranslator) => void;
   addAssignment: (assignment: Omit<PlaygroundAssignment, "id">) => void;
+  duplicateAssignment: (id: string) => void;
   updateAssignment: (id: string, patch: Partial<Omit<PlaygroundAssignment, "id">>) => void;
   removeAssignment: (id: string) => void;
   reorderAssignments: (assignments: PlaygroundAssignment[]) => void;
@@ -117,8 +118,24 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             id: generateId("assignment"),
           };
           return {
-            course: { ...state.course, assignments: [newAssignment, ...state.course.assignments] },
+            course: { ...state.course, assignments: [...state.course.assignments, newAssignment] },
           };
+        }),
+
+      duplicateAssignment: (id) =>
+        set((state) => {
+          if (!state.course) return state;
+          const index = state.course.assignments.findIndex((a) => a.id === id);
+          if (index < 0) return state;
+          const copy: PlaygroundAssignment = {
+            ...state.course.assignments[index],
+            id: generateId("assignment"),
+            tooltipKey: undefined,
+            nameCustomized: true,
+          };
+          const assignments = [...state.course.assignments];
+          assignments.splice(index + 1, 0, copy);
+          return { course: { ...state.course, assignments } };
         }),
 
       updateAssignment: (id, patch) =>

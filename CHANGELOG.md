@@ -26,6 +26,9 @@ Version 2 adds a second program, the **ESP (English for Specific Purposes for So
 #### Canvas Course Playground
 - Per-course playground to simulate a course grade from its assignments, assignment groups and weights.
 - Import a course directly from a Canvas grades PDF, and back up or restore a playground as JSON.
+- Canvas PDF import also reads courses whose assignment groups are not written in capitals and whose items are pending (for example Practicum II), in both the print-button and browser-print layouts.
+- New assignments are added at the end of the list, and any assignment can be duplicated.
+- A score can be left pending with `-` (shown as `- / 18`) and only counts in the total once it has a number; arrow keys and the stepper go below 0 to `-`.
 
 #### Grades, standing and rules
 - Cohort II - 2026 for Commercial Software Engineering (8 cohorts, I - 2023 through II - 2026).

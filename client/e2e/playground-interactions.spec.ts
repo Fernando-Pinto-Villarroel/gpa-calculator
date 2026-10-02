@@ -53,16 +53,16 @@ test.describe("Playground - fine-grained interactions", () => {
     expect(value.length).toBe(300);
   });
 
-  test("negative scores are clamped to 0", async ({ page }) => {
+  test("negative scores are not accepted: a score below 0 is pending and max points clamp to 0", async ({ page }) => {
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const scoreInputs = page.locator('input[type="number"]');
+    const scoreInputs = page.locator('input[inputmode="decimal"], input[type="number"]');
     await scoreInputs.nth(0).fill("-15");
     await scoreInputs.nth(1).fill("-8");
     await scoreInputs.nth(1).blur();
 
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const reopenedInputs = page.locator('input[type="number"]');
-    await expect(reopenedInputs.nth(0)).toHaveValue("0");
+    const reopenedInputs = page.locator('input[inputmode="decimal"], input[type="number"]');
+    await expect(reopenedInputs.nth(0)).toHaveValue("-");
     await expect(reopenedInputs.nth(1)).toHaveValue("0");
   });
 
@@ -76,7 +76,7 @@ test.describe("Playground - fine-grained interactions", () => {
 
   test("weighting Total shows two decimal places", async ({ page }) => {
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const scoreInputs = page.locator('input[type="number"]');
+    const scoreInputs = page.locator('input[inputmode="decimal"], input[type="number"]');
     await scoreInputs.nth(0).fill("17");
     await scoreInputs.nth(1).fill("20");
     await scoreInputs.nth(1).blur();
@@ -93,7 +93,7 @@ test.describe("Playground - fine-grained interactions", () => {
     page,
   }) => {
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const scoreInputs = page.locator('input[type="number"]');
+    const scoreInputs = page.locator('input[inputmode="decimal"], input[type="number"]');
     await scoreInputs.nth(0).fill("36");
     await page.locator('[data-tour="playground-title"]').first().click();
     await page.waitForTimeout(300);
@@ -105,7 +105,7 @@ test.describe("Playground - fine-grained interactions", () => {
     page,
   }) => {
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const scoreInputs = page.locator('input[type="number"]');
+    const scoreInputs = page.locator('input[inputmode="decimal"], input[type="number"]');
     await scoreInputs.nth(0).fill("36");
     await scoreInputs.nth(0).press("Tab");
 
@@ -134,5 +134,28 @@ test.describe("Playground - fine-grained interactions", () => {
 
     await page.getByRole("button", { name: "Add Assignment" }).click();
     await expect(page.getByTitle("Remove assignment")).toHaveCount(1);
+  });
+});
+
+test.describe("Playground - group dropdown stacking", () => {
+  test("an open group menu paints above the next row, even while a name is being edited", async ({ page }) => {
+    await seedProfile(page);
+    await gotoPlayground(page);
+    const rows = page.locator('[data-tour="playground-first-assignment"], [data-tour="playground-first-assignment"] ~ div');
+    const first = rows.first();
+    await first.locator("p").first().dblclick();
+    await first.getByTestId("playground-group-trigger").click();
+
+    const menu = first.getByTestId("playground-group-menu");
+    await expect(menu).toBeVisible();
+    const box = (await menu.boundingBox())!;
+    const topElement = await page.evaluate(
+      ({ x, y }) => {
+        const el = document.elementFromPoint(x, y);
+        return el?.closest('[data-testid="playground-group-menu"]') !== null;
+      },
+      { x: box.x + box.width / 2, y: box.y + box.height - 4 },
+    );
+    expect(topElement).toBe(true);
   });
 });

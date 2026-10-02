@@ -1,16 +1,22 @@
+import fs from "fs";
 import path from "path";
 import { test, expect } from "@playwright/test";
 import { seedProfile, gotoPlayground } from "./fixtures";
 
 const TEST_DATA = path.resolve(__dirname, "../../test-data");
 
-async function openCanvasImportDialog(page: import("@playwright/test").Page, file: string) {
+async function openCanvasImportDialog(
+  page: import("@playwright/test").Page,
+  file: string,
+) {
   await page.locator('[data-tour="playground-actions-menu"]').click();
   const fileChooserPromise = page.waitForEvent("filechooser");
   await page.locator('[data-tour="playground-action-import-canvas"]').click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(file);
-  await expect(page.getByText(/Found \d+ groups and \d+ assignments/)).toBeVisible({
+  await expect(
+    page.getByText(/Found \d+ groups and \d+ assignments/),
+  ).toBeVisible({
     timeout: 15_000,
   });
 }
@@ -21,7 +27,9 @@ test.describe("Playground - real Canvas print-grades PDF imports", () => {
     await gotoPlayground(page);
   });
 
-  test("ES export: Proyectos de Software y Startups (CSRP-486)", async ({ page }) => {
+  test("ES export: Proyectos de Software y Startups (CSRP-486)", async ({
+    page,
+  }) => {
     await openCanvasImportDialog(
       page,
       path.join(
@@ -36,7 +44,9 @@ test.describe("Playground - real Canvas print-grades PDF imports", () => {
 
     await page.getByRole("button", { name: "Yes, import" }).click();
     await expect(page.getByText("Course Imported")).toBeVisible();
-    await expect(page.locator('[data-tour="playground-title"]')).toContainText("Proyectos");
+    await expect(page.locator('[data-tour="playground-title"]')).toContainText(
+      "Proyectos",
+    );
   });
 
   test("ES export: Arquitectura de software 3 (CSAR-484)", async ({ page }) => {
@@ -116,7 +126,9 @@ test.describe("Playground - real Canvas print-grades PDF imports", () => {
     expect(dialogText).toMatch(/Found 6 groups and 26 assignments/);
   });
 
-  test("canceling the Canvas import leaves the default course untouched", async ({ page }) => {
+  test("canceling the Canvas import leaves the default course untouched", async ({
+    page,
+  }) => {
     await openCanvasImportDialog(
       page,
       path.join(
@@ -142,4 +154,48 @@ test.describe("Playground - real Canvas print-grades PDF imports", () => {
 
     await expect(page.getByText("Please upload a PDF file.")).toBeVisible();
   });
+});
+
+test.describe("Playground - Practicum II PDFs with mixed-case groups and pending items", () => {
+  const PRACTICUM_DIR = path.join(TEST_DATA, "grades-courses");
+  const files = [
+    "fer-swe-practicum-2.pdf",
+    fs
+      .readdirSync(PRACTICUM_DIR)
+      .find((name) => name.startsWith("Grades for")) ?? "",
+  ];
+
+  for (const file of files) {
+    test(`imports 10 assignments in 4 groups with pending items kept pending: ${file.slice(0, 30)}`, async ({
+      page,
+    }) => {
+      await seedProfile(page);
+      await gotoPlayground(page);
+      await openCanvasImportDialog(page, path.join(PRACTICUM_DIR, file));
+      await expect(
+        page.getByText("Found 4 groups and 10 assignments"),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Yes, import" }).click();
+      await expect(page.getByText("Course Imported")).toBeVisible();
+
+      const rows = page.locator('button[title="Remove assignment"]');
+      await expect(rows).toHaveCount(10);
+      await expect(
+        page
+          .getByTitle("Click to enter a score")
+          .filter({ hasText: /^- \/ \d+$/ }),
+      ).toHaveCount(4);
+      await expect(
+        page
+          .getByTitle("Click to enter a score")
+          .filter({ hasText: /^39 \/ 43$/ }),
+      ).toHaveCount(1);
+      await expect(
+        page.getByText("Weekly Hourly Timesheet (hours log)").first(),
+      ).toBeVisible();
+      await expect(
+        page.getByText("Final Practicum Performance Review").first(),
+      ).toBeVisible();
+    });
+  }
 });

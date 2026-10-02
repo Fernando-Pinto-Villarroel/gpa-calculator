@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, GripVertical, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, GripVertical, Trash2 } from "lucide-react";
 import { Reorder, useDragControls, motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { usePlaygroundStore } from "../store/usePlaygroundStore";
 import { PlaygroundAssignment, PlaygroundAssignmentGroup } from "../types";
 import { cn } from "@/core/lib/utils/cn";
 import { InfoTooltip } from "@/shared/components/ui/InfoTooltip";
+
+const PENDING_SCORE = "-";
 
 interface AssignmentRowTourIds {
   row?: string;
@@ -25,7 +27,7 @@ interface AssignmentRowProps {
 
 export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProps) {
   const t = useTranslations("playground");
-  const { updateAssignment, removeAssignment } = usePlaygroundStore();
+  const { updateAssignment, removeAssignment, duplicateAssignment } = usePlaygroundStore();
   const dragControls = useDragControls();
 
   const [editingName, setEditingName] = useState(false);
@@ -76,7 +78,7 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
   };
 
   const startEditingScore = () => {
-    setScoreInput(assignment.score !== null ? String(assignment.score) : "0");
+    setScoreInput(assignment.score !== null ? String(assignment.score) : PENDING_SCORE);
     setMaxInput(assignment.maxPoints !== null ? String(assignment.maxPoints) : "0");
     setEditingScore(true);
   };
@@ -88,17 +90,38 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
     return num < 0 ? "0" : value;
   };
 
+  const sanitizeScoreInput = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed === "" || trimmed === PENDING_SCORE) return trimmed;
+    return /^\d*\.?\d*$/.test(trimmed) ? trimmed : scoreInput;
+  };
+
+  const stepScore = (direction: 1 | -1) => {
+    const current = scoreInput === "" || scoreInput === PENDING_SCORE ? null : Number(scoreInput);
+    if (current === null || Number.isNaN(current)) {
+      setScoreInput(direction === 1 ? "0" : PENDING_SCORE);
+    } else if (current + direction < 0) {
+      setScoreInput(PENDING_SCORE);
+    } else {
+      setScoreInput(String(current + direction));
+    }
+    scoreInputRef.current?.focus();
+  };
+
   const saveScore = () => {
-    const parsedScore = scoreInput.trim() === "" ? 0 : Math.max(0, Number(scoreInput));
+    const parsedScore =
+      scoreInput.trim() === "" || scoreInput.trim() === PENDING_SCORE
+        ? null
+        : Math.max(0, Number(scoreInput));
     const parsedMax = maxInput.trim() === "" ? 0 : Math.max(0, Number(maxInput));
     updateAssignment(assignment.id, {
-      score: !Number.isNaN(parsedScore) ? parsedScore : 0,
+      score: parsedScore !== null && !Number.isNaN(parsedScore) ? parsedScore : null,
       maxPoints: !Number.isNaN(parsedMax) ? parsedMax : 0,
     });
     setEditingScore(false);
   };
 
-  const isGraded = assignment.score !== null && assignment.maxPoints !== null;
+  const isGraded = assignment.score !== null;
   const groupExists = groups.some((g) => g.id === assignment.groupId);
   const selectedGroup = groups.find((g) => g.id === assignment.groupId);
   const groupLabel = groupExists ? selectedGroup?.name : t("no_group");
@@ -113,7 +136,10 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
       as="div"
       data-tour={tourIds?.row}
       whileDrag={{ scale: 1.02, boxShadow: "0 8px 24px rgba(0,0,0,0.18)", zIndex: 10 }}
-      className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border-base bg-bg-surface relative"
+      className={cn(
+        "flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border-base bg-bg-surface relative",
+        groupMenuOpen && "z-30!",
+      )}
     >
       <button
         type="button"
@@ -223,17 +249,41 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
           >
             <input
               ref={scoreInputRef}
-              type="number"
-              min={0}
+              type="text"
+              inputMode="decimal"
               value={scoreInput}
-              onChange={(e) => setScoreInput(clampNonNegative(e.target.value))}
+              onChange={(e) => setScoreInput(sanitizeScoreInput(e.target.value))}
               onKeyDown={(e) => {
                 if (e.key === "Enter") saveScore();
                 if (e.key === "Escape") setEditingScore(false);
+                if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                  stepScore(e.key === "ArrowUp" ? 1 : -1);
+                }
               }}
               aria-label={t("score_placeholder")}
               className="w-14 text-sm text-right px-1.5 py-1 rounded border border-border-accent bg-bg-surface text-text-primary focus:outline-none"
             />
+            <div className="flex flex-col -mx-0.5">
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => stepScore(1)}
+                aria-label={t("score_increase")}
+                className="text-text-muted hover:text-text-primary leading-none"
+              >
+                <ChevronUp size={12} />
+              </button>
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => stepScore(-1)}
+                aria-label={t("score_decrease")}
+                className="text-text-muted hover:text-text-primary leading-none"
+              >
+                <ChevronDown size={12} />
+              </button>
+            </div>
             <span className="text-text-muted text-sm">/</span>
             <input
               type="number"
@@ -260,10 +310,19 @@ export function AssignmentRow({ assignment, groups, tourIds }: AssignmentRowProp
                 : "text-text-muted bg-bg-elevated/50 border border-dashed border-border-strong hover:border-border-accent",
             )}
           >
-            {isGraded ? `${assignment.score} / ${assignment.maxPoints}` : t("ungraded")}
+            {`${assignment.score ?? PENDING_SCORE} / ${assignment.maxPoints ?? 0}`}
           </button>
         )}
       </div>
+
+      <button
+        onClick={() => duplicateAssignment(assignment.id)}
+        title={t("duplicate_assignment")}
+        aria-label={t("duplicate_assignment")}
+        className="shrink-0 text-text-muted hover:text-text-primary transition-colors p-1"
+      >
+        <Copy size={14} />
+      </button>
 
       <button
         data-tour={tourIds?.deleteBtn}

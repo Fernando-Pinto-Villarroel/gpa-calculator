@@ -56,7 +56,7 @@ const TAB_LABEL_NOISE = [
 
 const DATE_PATTERNS = [
   /\d{1,2}\s+de\s+[a-zà-ÿ]+,?\s+(?:a las|en)\s+\d{1,2}:\d{2}/gi,
-  /[a-zà-ÿ]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?\s+at\s+\d{1,2}:\d{2}\s*(?:am|pm)?/gi,
+  /[a-zà-ÿ]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?\s+(?:at|by)\s+\d{1,2}:\d{2}\s*(?:am|pm)?/gi,
   /\d{1,2}\s+de\s+[a-zà-ÿ]+,?\s+às\s+\d{1,2}[:h]\d{2}/gi,
   // Jala's machine-translated locales sometimes render dates as broken
   // word-for-word substitutions (e.g. "11 the one and 19:45" instead of a
@@ -74,10 +74,19 @@ const GROUP_WORD = "[A-ZÀ-Ý]{2,}";
 const GROUP_CONNECTOR = `(?:\\s*[&,\\-]|\\s+${GROUP_WORD})`;
 const GROUP_NAME_SRC = `${GROUP_WORD}${GROUP_CONNECTOR}*`;
 
-const WEIGHT_ROW_RE = new RegExp(`(${GROUP_NAME_SRC})\\s+(\\d{1,3}(?:[.,]\\d+)?)\\s*%`, "g");
+const WEIGHT_ROW_RE = new RegExp(
+  `(${GROUP_NAME_SRC})\\s+(\\d{1,3}(?:[.,]\\d+)?)\\s*%`,
+  "g",
+);
 
 const NUM_SRC = "\\d+(?:[.,]\\d+)?";
-const SCORE_RE = new RegExp(`(-|${NUM_SRC})\\s*\\/\\s*(${NUM_SRC})`, "g");
+const STATUS_ICON_SRC = "[\\uE000-\\uF8FF]";
+const SCORE_RE = new RegExp(
+  `(-|${NUM_SRC})\\s{0,3}\\/\\s*(${NUM_SRC})|${STATUS_ICON_SRC}\\s*\\/\\s*(${NUM_SRC})`,
+  "g",
+);
+const GROUP_TOTAL_RE = /\d+\.\d{2}\s*\/\s*\d+\.\d{2}/g;
+const TOTAL_ROW_RE = /\bTotal\b/;
 const BARE_FRACTION_RE = /^[\d:.,\s-]*\/[\d:.,\s-]*$/;
 
 function parseLocaleNumber(value: string): number {
@@ -158,37 +167,95 @@ function buildGroups(
   const possibleByGroup = new Map<string, number>();
   for (const a of assignments) {
     if (a.maxPoints !== null && a.maxPoints > 0) {
-      possibleByGroup.set(a.groupName, (possibleByGroup.get(a.groupName) ?? 0) + a.maxPoints);
+      possibleByGroup.set(
+        a.groupName,
+        (possibleByGroup.get(a.groupName) ?? 0) + a.maxPoints,
+      );
     }
   }
-  const totalPossible = [...possibleByGroup.values()].reduce((sum, v) => sum + v, 0);
+  const totalPossible = [...possibleByGroup.values()].reduce(
+    (sum, v) => sum + v,
+    0,
+  );
 
   const groups = groupNames.map((name) => ({
     name,
     weightPercent:
       totalPossible > 0
-        ? Math.round(((possibleByGroup.get(name) ?? 0) / totalPossible) * 1000) / 10
+        ? Math.round(
+            ((possibleByGroup.get(name) ?? 0) / totalPossible) * 1000,
+          ) / 10
         : 0,
   }));
 
   if (totalPossible > 0 && groups.length > 0) {
-    const rounded = Math.round(groups.reduce((sum, g) => sum + g.weightPercent, 0) * 10) / 10;
+    const rounded =
+      Math.round(groups.reduce((sum, g) => sum + g.weightPercent, 0) * 10) / 10;
     const residual = Math.round((100 - rounded) * 10) / 10;
     if (residual !== 0) {
-      const largest = groups.reduce((max, g) => (g.weightPercent > max.weightPercent ? g : max));
-      largest.weightPercent = Math.round((largest.weightPercent + residual) * 10) / 10;
+      const largest = groups.reduce((max, g) =>
+        g.weightPercent > max.weightPercent ? g : max,
+      );
+      largest.weightPercent =
+        Math.round((largest.weightPercent + residual) * 10) / 10;
     }
   }
 
   return { groups, weightsWereDerived: true };
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function allDatesRegExp(): RegExp {
+  return new RegExp(DATE_PATTERNS.map((p) => p.source).join("|"), "gi");
+}
+
+function extractGroupNamesFromTotals(pages: string[]): string[] {
+  for (const page of pages) {
+    const totalIndex = page.search(TOTAL_ROW_RE);
+    if (totalIndex < 0) continue;
+    const block = page.slice(0, totalIndex);
+    const amounts = [...block.matchAll(GROUP_TOTAL_RE)];
+    if (amounts.length === 0) continue;
+
+    const names: string[] = [];
+    let chunkStart = 0;
+    amounts.forEach((match, index) => {
+      const matchStart = match.index ?? 0;
+      if (index === 0) {
+        const lastDate = [
+          ...block.slice(0, matchStart).matchAll(allDatesRegExp()),
+        ].pop();
+        chunkStart = lastDate
+          ? (lastDate.index ?? 0) + lastDate[0].length
+          : matchStart;
+      }
+      const name = block.slice(chunkStart, matchStart).trim();
+      chunkStart = matchStart + match[0].length;
+      if (name.length > 1 && !names.includes(name)) names.push(name);
+    });
+    return names;
+  }
+  return [];
+}
+
+function groupNameSource(knownGroups: string[]): string {
+  if (knownGroups.length === 0) return GROUP_NAME_SRC;
+  return [...knownGroups]
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp)
+    .join("|");
+}
+
 function extractTitleGroupPairs(
   titlePhaseText: string,
   carryTitle: string,
+  groupSrc: string,
 ): { pairs: { title: string; groupName: string }[]; danglingTitle: string } {
   const pairs: { title: string; groupName: string }[] = [];
-  const re = new RegExp(GROUP_NAME_SRC, "g");
+  const re = new RegExp(groupSrc, "g");
   let lastIndex = 0;
   let isFirstMatch = true;
   let m: RegExpExecArray | null;
@@ -213,10 +280,14 @@ function extractTitleGroupPairs(
   // (scores, totals) or a dangling title cut off by a page break. Only the
   // latter is short, letter-containing, and free of score fractions.
   const rawTail = titlePhaseText.slice(lastIndex).trim();
-  const beforeFirstSlash = rawTail.includes("/") ? rawTail.slice(0, rawTail.indexOf("/")) : rawTail;
+  const beforeFirstSlash = rawTail.includes("/")
+    ? rawTail.slice(0, rawTail.indexOf("/"))
+    : rawTail;
   const candidateTail = beforeFirstSlash.replace(/\d+\s*$/, "").trim();
   const danglingTitle =
-    candidateTail.length > 1 && candidateTail.length < 60 && /[a-zà-ÿ]/i.test(candidateTail)
+    candidateTail.length > 1 &&
+    candidateTail.length < 60 &&
+    /[a-zà-ÿ]/i.test(candidateTail)
       ? candidateTail
       : "";
 
@@ -226,7 +297,10 @@ function extractTitleGroupPairs(
 const PROFESSIONALISM_RE =
   /professionalism|profesionalismo|profissionalismo|attendance|asistencia|assist[êe]ncia|assiduidade/i;
 
-function isProfessionalismAssignment(title: string, groupName: string): boolean {
+function isProfessionalismAssignment(
+  title: string,
+  groupName: string,
+): boolean {
   return PROFESSIONALISM_RE.test(title) || PROFESSIONALISM_RE.test(groupName);
 }
 
@@ -259,14 +333,17 @@ function fixMergedGroupNames(assignments: CanvasParsedAssignment[]): void {
   }
 }
 
-function extractScores(text: string): { score: number | null; maxPoints: number }[] {
+function extractScores(
+  text: string,
+): { score: number | null; maxPoints: number }[] {
   const scores: { score: number | null; maxPoints: number }[] = [];
   const re = new RegExp(SCORE_RE.source, "g");
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
+    const isBlank = m[3] !== undefined;
     scores.push({
-      score: m[1] === "-" ? null : parseLocaleNumber(m[1]),
-      maxPoints: parseLocaleNumber(m[2]),
+      score: isBlank || m[1] === "-" ? null : parseLocaleNumber(m[1]),
+      maxPoints: parseLocaleNumber(isBlank ? m[3] : m[2]),
     });
   }
   return scores;
@@ -285,6 +362,7 @@ function stripPageHeader(text: string): string {
 function parsePage(
   pageText: string,
   carryTitle: string,
+  groupSrc: string,
 ): {
   pairs: { title: string; groupName: string }[];
   scores: { score: number | null; maxPoints: number }[];
@@ -296,7 +374,11 @@ function parsePage(
   cleaned = stripAll(cleaned, TAB_LABEL_NOISE);
   cleaned = stripAll(cleaned, DATE_PATTERNS);
 
-  const { pairs: allPairs, danglingTitle } = extractTitleGroupPairs(cleaned, carryTitle);
+  const { pairs: allPairs, danglingTitle } = extractTitleGroupPairs(
+    cleaned,
+    carryTitle,
+    groupSrc,
+  );
   const pairs = allPairs.filter(
     (p) => !BARE_FRACTION_RE.test(p.title) && p.title.length > 1,
   );
@@ -316,6 +398,13 @@ export async function parseCanvasPdfFile(
   }
 
   const fullText = pages.join(" ");
+  const totalsGroups = extractGroupNamesFromTotals(pages);
+  const knownGroups =
+    totalsGroups.length > 0 &&
+    totalsGroups.every((name) => /[a-zà-ÿ]/.test(name))
+      ? totalsGroups
+      : [];
+  const groupSrc = groupNameSource(knownGroups);
   const title = resolveCourseTitle(file.name, pages[0], fallbackTitle);
 
   const assignments: CanvasParsedAssignment[] = [];
@@ -323,7 +412,11 @@ export async function parseCanvasPdfFile(
   let carryTitle = "";
 
   for (const pageText of pages) {
-    const { pairs, scores, danglingTitle } = parsePage(pageText, carryTitle);
+    const { pairs, scores, danglingTitle } = parsePage(
+      pageText,
+      carryTitle,
+      groupSrc,
+    );
     carryTitle = danglingTitle;
     if (pairs.length !== scores.length) hasAlignmentWarning = true;
 
@@ -334,7 +427,10 @@ export async function parseCanvasPdfFile(
         groupName: pairs[i].groupName,
         score: scores[i].score,
         maxPoints: scores[i].maxPoints,
-        isProfessionalism: isProfessionalismAssignment(pairs[i].title, pairs[i].groupName),
+        isProfessionalism: isProfessionalismAssignment(
+          pairs[i].title,
+          pairs[i].groupName,
+        ),
       });
     }
     for (let i = count; i < pairs.length; i++) {
@@ -343,7 +439,10 @@ export async function parseCanvasPdfFile(
         groupName: pairs[i].groupName,
         score: null,
         maxPoints: null,
-        isProfessionalism: isProfessionalismAssignment(pairs[i].title, pairs[i].groupName),
+        isProfessionalism: isProfessionalismAssignment(
+          pairs[i].title,
+          pairs[i].groupName,
+        ),
       });
     }
   }
@@ -351,6 +450,10 @@ export async function parseCanvasPdfFile(
   fixMergedGroupNames(assignments);
 
   const { groups, weightsWereDerived } = buildGroups(fullText, assignments);
+  for (const name of knownGroups) {
+    if (!groups.some((g) => g.name === name))
+      groups.push({ name, weightPercent: 0 });
+  }
 
   if (assignments.length === 0 && groups.length === 0) {
     return { success: false, error: "no_data_found" };

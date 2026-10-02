@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Plus } from "lucide-react";
 import { Reorder } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -13,6 +14,8 @@ export function AssignmentsTable() {
   const t = useTranslations("playground");
   const { course, addAssignment, reorderAssignments } = usePlaygroundStore();
 
+  const listRef = useRef<HTMLDivElement>(null);
+
   if (!course) return null;
 
   const handleAdd = () => {
@@ -22,6 +25,9 @@ export function AssignmentsTable() {
       name: t("assignment_name_placeholder"),
       score: null,
       maxPoints: null,
+    });
+    requestAnimationFrame(() => {
+      listRef.current?.lastElementChild?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     });
   };
 
@@ -53,6 +59,7 @@ export function AssignmentsTable() {
       </div>
 
       <Reorder.Group
+        ref={listRef}
         as="div"
         axis="y"
         values={course.assignments}

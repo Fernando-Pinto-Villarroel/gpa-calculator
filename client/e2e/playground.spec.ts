@@ -18,10 +18,16 @@ test.describe("Canvas Course Playground", () => {
     await gotoPlayground(page);
 
     await expect(page.getByText("CANVAS COURSE PLAYGROUND")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Assignments", exact: true })).toBeVisible();
-    await expect(page.getByText("Total", { exact: true }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Assignments", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Total", { exact: true }).first(),
+    ).toBeVisible();
     await expect(page.getByText("100%")).toBeVisible();
-    await expect(page.locator('[data-tour="playground-total"]')).toContainText("%");
+    await expect(page.locator('[data-tour="playground-total"]')).toContainText(
+      "%",
+    );
   });
 
   test("double-click title to rename the course", async ({ page }) => {
@@ -36,44 +42,146 @@ test.describe("Canvas Course Playground", () => {
     await expect(page.getByText("My Test Course")).toBeVisible();
   });
 
-  test("adding an assignment inserts it at the top of the list", async ({ page }) => {
+  test("adding an assignment appends it to the end of the list as pending", async ({
+    page,
+  }) => {
     await gotoPlayground(page);
+    const names = page.locator('[data-tour="playground-title"]').first();
+    await expect(names).toBeVisible();
 
+    const rows = page.locator(
+      '[role="group"] > div, [data-tour="playground-first-assignment"]',
+    );
+    const before = await page
+      .locator('button[title="Remove assignment"]')
+      .count();
     await page.locator('[data-tour="playground-add-assignment"]').click();
-    const firstRowName = page.locator('[data-tour="playground-first-assignment"] p').first();
-    await expect(firstRowName).toHaveText("Assignment name");
+    await expect(page.locator('button[title="Remove assignment"]')).toHaveCount(
+      before + 1,
+    );
+
+    const lastRow = page
+      .locator('button[title="Remove assignment"]')
+      .last()
+      .locator("xpath=ancestor::div[contains(@class,'rounded-lg')][1]");
+    await expect(lastRow.locator("p").first()).toHaveText("Assignment name");
+    await expect(lastRow.getByTitle("Click to enter a score")).toHaveText(
+      "- / 0",
+    );
+    await expect(
+      page.locator('[data-tour="playground-first-assignment"] p').first(),
+    ).not.toHaveText("Assignment name");
+    void rows;
+  });
+
+  test("a task can be duplicated and the copy sits right below the original", async ({
+    page,
+  }) => {
+    await gotoPlayground(page);
+    const first = page.locator('[data-tour="playground-first-assignment"]');
+    const name = await first.locator("p").first().innerText();
+    const before = await page
+      .locator('button[title="Duplicate assignment"]')
+      .count();
+
+    await first.getByTitle("Duplicate assignment").click();
+    await expect(
+      page.locator('button[title="Duplicate assignment"]'),
+    ).toHaveCount(before + 1);
+    const second = page
+      .locator('button[title="Duplicate assignment"]')
+      .nth(1)
+      .locator("xpath=ancestor::div[contains(@class,'rounded-lg')][1]");
+    await expect(second.locator("p").first()).toHaveText(name);
+    await expect(second.getByTitle("Click to enter a score")).toHaveText(
+      await first.getByTitle("Click to enter a score").innerText(),
+    );
+  });
+
+  test("a score can be left pending (-) with its max points, and counts in the Total only once graded", async ({
+    page,
+  }) => {
+    await gotoPlayground(page);
+    await page.locator('[data-tour="playground-add-assignment"]').click();
+    const lastRow = page
+      .locator('button[title="Remove assignment"]')
+      .last()
+      .locator("xpath=ancestor::div[contains(@class,'rounded-lg')][1]");
+    const total = page.locator('[data-tour="playground-total"]');
+    const totalBefore = await total.innerText();
+
+    await lastRow.getByTitle("Click to enter a score").click();
+    await expect(lastRow.locator('input[inputmode="decimal"]')).toHaveValue(
+      "-",
+    );
+    await lastRow.locator('input[type="number"]').fill("18");
+    await lastRow.locator('input[type="number"]').blur();
+    await expect(lastRow.getByTitle("Click to enter a score")).toHaveText(
+      "- / 18",
+    );
+    expect(await total.innerText()).toBe(totalBefore);
+
+    await lastRow.getByTitle("Click to enter a score").click();
+    await lastRow.locator('input[inputmode="decimal"]').press("ArrowUp");
+    await expect(lastRow.locator('input[inputmode="decimal"]')).toHaveValue(
+      "0",
+    );
+    await lastRow.locator('input[inputmode="decimal"]').press("ArrowDown");
+    await expect(lastRow.locator('input[inputmode="decimal"]')).toHaveValue(
+      "-",
+    );
+    await lastRow.locator('input[inputmode="decimal"]').press("ArrowUp");
+    await lastRow.locator('input[inputmode="decimal"]').press("Enter");
+    await expect(lastRow.getByTitle("Click to enter a score")).toHaveText(
+      "0 / 18",
+    );
+    expect(await total.innerText()).not.toBe(totalBefore);
   });
 
   test("deleting an assignment removes it from the list", async ({ page }) => {
     await gotoPlayground(page);
 
-    const before = await page.locator('button[title="Remove assignment"]').count();
+    const before = await page
+      .locator('button[title="Remove assignment"]')
+      .count();
     await page.locator('[data-tour="playground-delete-assignment"]').click();
-    await expect(page.locator('button[title="Remove assignment"]')).toHaveCount(before - 1);
+    await expect(page.locator('button[title="Remove assignment"]')).toHaveCount(
+      before - 1,
+    );
   });
 
   test("grading an assignment updates the Total", async ({ page }) => {
     await gotoPlayground(page);
 
     await page.locator('[data-tour="playground-score-btn"]').click();
-    const scoreInputs = page.locator('input[type="number"]');
+    const scoreInputs = page.locator(
+      'input[inputmode="decimal"], input[type="number"]',
+    );
     await scoreInputs.nth(0).fill("100");
     await scoreInputs.nth(1).fill("100");
     await scoreInputs.nth(1).blur();
 
     await page.waitForTimeout(300);
-    const total = await page.locator('[data-tour="playground-total"]').innerText();
+    const total = await page
+      .locator('[data-tour="playground-total"]')
+      .innerText();
     expect(total).toMatch(/\d+\.\d{2}%/);
   });
 
-  test("editing a group's weight updates the total weight row", async ({ page }) => {
+  test("editing a group's weight updates the total weight row", async ({
+    page,
+  }) => {
     await gotoPlayground(page);
 
-    const firstWeightInput = page.locator('[data-tour="playground-groups-table"] input[type="number"]').first();
+    const firstWeightInput = page
+      .locator('[data-tour="playground-groups-table"] input[type="number"]')
+      .first();
     await firstWeightInput.fill("50");
     await firstWeightInput.blur();
 
-    await expect(page.getByText("Group weights don't add up to 100%")).toBeVisible().catch(() => {});
+    await expect(page.getByText("Group weights don't add up to 100%"))
+      .toBeVisible()
+      .catch(() => {});
   });
 
   test("add and remove a weight group", async ({ page }) => {
@@ -105,25 +213,37 @@ test.describe("Canvas Course Playground", () => {
       await page.waitForTimeout(150);
     }
 
-    await expect(page.getByRole("button", { name: "Remove group" })).toHaveCount(0);
-    await expect(page.locator('[data-tour="playground-total"]')).toContainText("—");
+    await expect(
+      page.getByRole("button", { name: "Remove group" }),
+    ).toHaveCount(0);
+    await expect(page.locator('[data-tour="playground-total"]')).toContainText(
+      "—",
+    );
     await expect(page.getByText("Weights must add up to 100%")).toBeVisible();
-    await expect(page.locator('[data-tour="playground-groups-table"]')).toContainText("0%");
+    await expect(
+      page.locator('[data-tour="playground-groups-table"]'),
+    ).toContainText("0%");
   });
 
   test("reset assignments restores the default template", async ({ page }) => {
     await gotoPlayground(page);
 
     await page.locator('[data-tour="playground-add-assignment"]').click();
-    const countAfterAdd = await page.locator('button[title="Remove assignment"]').count();
+    const countAfterAdd = await page
+      .locator('button[title="Remove assignment"]')
+      .count();
 
     await page.locator('[data-tour="playground-actions-menu"]').click();
     await page.locator('[data-tour="playground-action-reset"]').click();
-    await expect(page.getByText("This will restore the default assignments")).toBeVisible();
+    await expect(
+      page.getByText("This will restore the default assignments"),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Yes", exact: true }).click();
 
     await page.waitForTimeout(300);
-    const countAfterReset = await page.locator('button[title="Remove assignment"]').count();
+    const countAfterReset = await page
+      .locator('button[title="Remove assignment"]')
+      .count();
     expect(countAfterReset).toBe(countAfterAdd - 1);
   });
 
@@ -147,7 +267,13 @@ test.describe("Canvas Course Playground", () => {
         title: "Imported Course",
         groups: [{ id: "g1", name: "Group A", weightPercent: 100 }],
         assignments: [
-          { id: "a1", groupId: "g1", name: "Imported Assignment", score: 90, maxPoints: 100 },
+          {
+            id: "a1",
+            groupId: "g1",
+            name: "Imported Assignment",
+            score: 90,
+            maxPoints: 100,
+          },
         ],
       },
     };
@@ -161,7 +287,9 @@ test.describe("Canvas Course Playground", () => {
       mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(payload)),
     });
-    await expect(page.getByText("This will replace your current playground")).toBeVisible();
+    await expect(
+      page.getByText("This will replace your current playground"),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Yes", exact: true }).click();
 
     await expect(page.getByText("Imported Course")).toBeVisible();
@@ -177,7 +305,9 @@ test.describe("Canvas Course Playground", () => {
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(CANVAS_PDF);
 
-    await expect(page.getByText(/Found \d+ groups and \d+ assignments/)).toBeVisible({
+    await expect(
+      page.getByText(/Found \d+ groups and \d+ assignments/),
+    ).toBeVisible({
       timeout: 15_000,
     });
   });

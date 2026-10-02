@@ -12,15 +12,15 @@ test.describe("Playground - orphaned assignments after group deletion", () => {
       .getByText("Professionalism & Attendance", { exact: true })
       .locator("../../..");
     await professionalismRow.getByTitle("Click to enter a score").click();
-    const inputs = professionalismRow.locator('input[type="number"]');
+    const inputs = professionalismRow.locator('input[inputmode="decimal"], input[type="number"]');
     await inputs.nth(1).fill("0");
     await inputs.nth(1).blur();
   });
 
   async function gradeCapstone(page: import("@playwright/test").Page, score: string, max: string) {
     const row = page.getByText("Capstone Project", { exact: true }).locator("../../..");
-    await row.getByRole("button", { name: "Ungraded" }).click();
-    const inputs = row.locator('input[type="number"]');
+    await row.getByTitle("Click to enter a score").click();
+    const inputs = row.locator('input[inputmode="decimal"], input[type="number"]');
     await inputs.nth(0).fill(score);
     await inputs.nth(1).fill(max);
     await inputs.nth(1).blur();
