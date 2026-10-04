@@ -485,7 +485,11 @@ A sincere thank you to the students who tested the app during early development 
 
 ### Student Services & Registrar
 
-Special recognition to the **Jala University Student Services & Registrar team** for their patience in clarifying GPA calculation methodology, academic honors criteria, and program requirements, and to the **head of the ESP program** for reviewing how the ESP certificate works in the app. Their support was essential in validating the accuracy of this tool.
+Special recognition to the **Jala University Student Services & Registrar team** for their patience in clarifying GPA calculation methodology, academic honors criteria, and program requirements. Their support was essential in validating the accuracy of this tool.
+
+### ESP Program
+
+Special thanks to **Gabriela Gutierrez, the ESP Program Coordinator**, and the ESP team, for reviewing the ESP support and helping make it match how the program really works.
 
 ---
 
