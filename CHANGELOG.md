@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-04
 
 Version 2 adds a second program, the **ESP (English for Specific Purposes for Software Engineers) certificate**, alongside the Commercial Software Engineering degree, plus a Canvas course playground and a large round of accuracy and usability fixes. Grades saved with version 1 carry over automatically: the browser storage format is unchanged.
 

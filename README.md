@@ -481,6 +481,7 @@ A sincere thank you to the students who tested the app during early development 
 | Karen Ivonne Cruz Alvarez              | Cohort I – 2025  |
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |
+| Isabella Golubiewski Silva             | Cohort I – 2026  |
 
 ### Student Services & Registrar
 
