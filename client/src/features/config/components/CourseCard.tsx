@@ -210,6 +210,14 @@ export function CourseCard({
             {isEsp && course.optional && (
               <InfoTooltip text={t("special_lab_hint")} label={t("special_lab_hint")} />
             )}
+            {isEsp && course.placementTrack && course.placementAlternative && (
+              <InfoTooltip
+                text={t(`placement_alternative_${course.placementTrack === "level-1" ? "1" : "2"}`, {
+                  course: tCourses(course.placementAlternative),
+                })}
+                label={t("placement_alternative_label")}
+              />
+            )}
             {(canRetake || isFullRetake) && (
               <button
                 data-tour={tourIds?.retakeBtn}

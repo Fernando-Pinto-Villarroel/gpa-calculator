@@ -18,6 +18,7 @@ Version 2 adds a second program, the **ESP (English for Specific Purposes for So
 - ESP GPA as an equal-weight average of every course and lab, since the program carries no credits.
 - ESP completion based on the ESP courses of your level (6 at Level 1, 4 at Level 2): labs count toward the ESP GPA but never block completion, and Special Labs M12–M16 count only if you take them.
 - Labs cannot be retaken, and ESP retakes have no credits field.
+- Info icon on each course and lab that has an alternative, explaining which one replaces which between Level 1 and Level 2 (for example Lab M2L2 instead of ESP 1).
 - Cohort I - 2023 without ESP module 2 (no ESP 1 and no Lab M2L2), matching how that cohort took the program.
 - ESP-specific dashboard (Completed ESP Courses, Completed ESP Labs, Levels Completed, Starting Level), statistics, forecast, About sections and guided tour steps, all worded in levels instead of terms ("Level GPA", Level scope in the forecast).
 

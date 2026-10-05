@@ -14,6 +14,7 @@ export function baseTerms(): Term[] {
             credits: 0,
             gpaWeight: 1,
             placementTrack: "level-1",
+          placementAlternative: "ESP-201-M2L2",
           },
           {
             name: "Lab M3L1",
@@ -23,6 +24,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-1",
+          placementAlternative: "ESP-201-M3L2",
           },
           {
             name: "Lab M4L1",
@@ -32,6 +34,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-1",
+          placementAlternative: "ESP-201-M4L2",
           },
           {
             name: "ESP 2 - Beginning English for Software Engineers II",
@@ -40,6 +43,7 @@ export function baseTerms(): Term[] {
             credits: 0,
             gpaWeight: 1,
             placementTrack: "level-1",
+          placementAlternative: "ESP-201-M5L2",
           },
         ],
       },
@@ -57,6 +61,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-2",
+          placementAlternative: "ESP-101",
           },
           {
             name: "Lab M3L2",
@@ -66,6 +71,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-2",
+          placementAlternative: "ESP-101-M3L1",
           },
           {
             name: "Lab M4L2",
@@ -75,6 +81,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-2",
+          placementAlternative: "ESP-101-M4L1",
           },
           {
             name: "Lab M5L2",
@@ -84,6 +91,7 @@ export function baseTerms(): Term[] {
             gpaWeight: 1,
             retakable: false,
             placementTrack: "level-2",
+          placementAlternative: "ESP-201",
           },
           {
             name: "Lab M6",

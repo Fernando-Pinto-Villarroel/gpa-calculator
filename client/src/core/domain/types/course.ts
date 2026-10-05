@@ -7,6 +7,7 @@ export interface Course {
   optional?: boolean;
   retakable?: boolean;
   placementTrack?: "level-1" | "level-2";
+  placementAlternative?: string;
 }
 
 export interface Term {

@@ -212,3 +212,48 @@ test.describe("Special Labs explain when they apply", () => {
     await expect(regular.getByRole("button", { name: hint })).toHaveCount(0);
   });
 });
+
+test.describe("Alternative courses explain which one replaces which", () => {
+  const cardFor = (page: Page, code: string) =>
+    page
+      .getByText(code, { exact: true })
+      .locator("xpath=ancestor::div[contains(@class,'rounded-xl')][1]")
+      .first();
+
+  test("Level 1 cards say what Level 2 students take instead", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await gotoGrades(page);
+    const card = cardFor(page, "ESP-101");
+    await card.getByRole("button", { name: "Which course or lab replaces this one" }).hover();
+    const tip = page.getByRole("tooltip");
+    await expect(tip).toContainText("Level 1 option for this module");
+    await expect(tip).toContainText("Students placed in Level 2 take Lab M2L2 instead");
+  });
+
+  test("Level 2 labs say which Level 1 course they replace", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded-alt")) return;
+      sessionStorage.setItem("seeded-alt", "1");
+      localStorage.setItem(
+        "jala-esp-gpa-store",
+        JSON.stringify({
+          state: { gradesByCohort: {}, selectedCohortId: "cohort-2-2026", placementLevelByCohort: { "cohort-2-2026": "2" } },
+          version: 0,
+        }),
+      );
+    });
+    await gotoGrades(page);
+    const card = cardFor(page, "ESP-201-M5L2");
+    await card.getByRole("button", { name: "Which course or lab replaces this one" }).hover();
+    const tip = page.getByRole("tooltip");
+    await expect(tip).toContainText("Level 2 option for this module");
+    await expect(tip).toContainText("take ESP 2 - Beginning English for Software Engineers II instead");
+  });
+
+  test("shared labs carry no such tooltip", async ({ page }) => {
+    await seedProfile(page, { career: "esp" });
+    await gotoGrades(page);
+    await expect(cardFor(page, "ESP-201-M6").getByRole("button", { name: "Which course or lab replaces this one" })).toHaveCount(0);
+  });
+});
