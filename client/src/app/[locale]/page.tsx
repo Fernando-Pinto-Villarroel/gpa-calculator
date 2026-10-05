@@ -288,11 +288,11 @@ export default function HomePage({ params }: Props) {
 
   return (
     <>
-      <div className="hidden lg:flex flex-col h-full overflow-hidden px-8 py-6">
-        <div className="flex-1 flex items-center justify-center gap-12 min-h-0 max-w-7xl mx-auto w-full">
+      <div className="hidden lg:flex flex-col h-full overflow-y-auto px-8 py-6">
+        <div className="flex-1 flex items-center justify-center gap-12 max-w-7xl mx-auto w-full">
           <div
             data-tour="stat-cards"
-            className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]"
+            className="flex flex-col gap-3 w-1/4 min-w-[200px] max-w-[320px]"
           >
             {leftStats.map((stat, i) => (
               <StatCard key={stat.label} {...stat} delay={i * 0.08} isDesktop />
@@ -350,7 +350,7 @@ export default function HomePage({ params }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 w-1/4 min-w-[200px] max-w-[320px]">
+          <div className="flex flex-col gap-3 w-1/4 min-w-[200px] max-w-[320px]">
             {rightStats.map((stat, i) => (
               <StatCard
                 key={stat.label}

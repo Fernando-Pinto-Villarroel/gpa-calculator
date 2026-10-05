@@ -58,7 +58,7 @@ export function StatCard({
         "hover:border-border-strong transition-colors duration-200",
         variantStyles[variant],
         isDesktop
-          ? "items-center p-6 gap-5 min-h-[7.25rem]"
+          ? "items-center p-4 gap-4 h-28 overflow-hidden"
           : "flex-col items-center justify-center text-center h-[9.75rem] p-4 gap-2 sm:h-auto sm:flex-row sm:items-center sm:gap-4 sm:text-left sm:h-full",
       )}
     >
@@ -91,7 +91,7 @@ export function StatCard({
       >
         <p
           className={cn(
-            "text-text-muted leading-snug line-clamp-2",
+            "text-text-muted leading-tight line-clamp-2",
             isDesktop ? "text-sm" : "text-xs",
           )}
         >
@@ -108,7 +108,7 @@ export function StatCard({
         {subvalue && (
           <p
             className={cn(
-              "text-text-muted truncate leading-snug mt-0.5",
+              "text-text-muted truncate leading-tight mt-0.5",
               isDesktop ? "text-sm" : "text-xs",
             )}
           >
