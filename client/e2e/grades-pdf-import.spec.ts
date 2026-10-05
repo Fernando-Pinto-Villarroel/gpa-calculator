@@ -68,7 +68,7 @@ test.describe("Grades - real SIS PDF imports", () => {
     const espGrades = await getEspGrades(page);
     expect(espGrades["ESP-401"]).toBe("B+");
     expect(espGrades["ESP-201-M10"]).toBe("A-");
-    expect(espGrades["ESP-301"]).toBeNull();
+    expect(espGrades["ESP-301"] ?? null).toBeNull();
   });
 
   test("samuel.pdf: matches 9 ESP courses including Level 1", async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe("Grades - real SIS PDF imports", () => {
     expect(espGrades["ESP-101-M4L1"]).toBe("D");
     expect(espGrades["ESP-201"]).toBe("C");
     expect(espGrades["ESP-201-M10"]).toBe("F");
-    expect(espGrades["ESP-301-M15"]).toBeNull();
+    expect(espGrades["ESP-301-M15"] ?? null).toBeNull();
   });
 
   test("sergio.pdf: matches exactly 4 ESP courses (early-progress transcript)", async ({ page }) => {

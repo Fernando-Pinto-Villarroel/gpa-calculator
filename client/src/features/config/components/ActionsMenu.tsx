@@ -26,7 +26,7 @@ import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfPar
 import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
 import {
   EspPlacementLevel,
-  getPlacementLevelAfterImport,
+  getPlacementLevelForImport,
   resolveEspPlacementLevel,
 } from "@/features/esp/lib/placement";
 import Swal from "sweetalert2";
@@ -42,7 +42,6 @@ export function ActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
   const router = useRouter();
   const {
-    grades,
     importGrades,
     exportGrades,
     resetTermData,
@@ -339,22 +338,21 @@ export function ActionsMenu({ className }: { className?: string }) {
         if (result.success && matched > 0) {
           importGrades({
             cohortId: selectedCohortId,
-            grades: { ...grades, ...result.grades },
+            grades: result.grades,
           });
         }
         if (espResult.success && espMatched > 0) {
-          const mergedEspGrades = { ...espGrades, ...espResult.grades };
           const espTerms = getEspTermsByCohortId(espSelectedCohortId);
-          const placement = getPlacementLevelAfterImport(
-            mergedEspGrades,
+          const placement = getPlacementLevelForImport(
+            espResult.grades,
             espTerms,
             resolveEspPlacementLevel(espGrades, espTerms, espPlacementLevel),
           );
-          placementChangedTo = placement.changed ? placement.level : undefined;
+          placementChangedTo = placement.changed ? (placement.level ?? undefined) : undefined;
           importEspGrades({
             cohortId: espSelectedCohortId,
-            grades: mergedEspGrades,
-            placementLevel: placement.changed ? null : undefined,
+            grades: espResult.grades,
+            placementLevel: placement.level,
           });
         }
         const successText = t("pdf_success_text", {

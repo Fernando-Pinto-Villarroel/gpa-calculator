@@ -161,7 +161,7 @@
     "pdf_error_no_courses": "No courses with valid grades were found in this PDF. Make sure you are uploading the Consolidated Report Card from SIS.",
     "pdf_error_parse": "Could not read the PDF. Make sure it is a valid Jala University SIS Report Card (Consolidated > Report Cards, exported with Ctrl+Shift+P).",
     "pdf_confirm_title": "Import from SIS PDF",
-    "pdf_confirm_text": "{matched} courses with grades were found and matched to your cohort ({cohort}). This will replace existing grades for matched courses.",
+    "pdf_confirm_text": "{matched} courses with grades were found and matched to your cohort ({cohort}). This will replace all the existing grades of this cohort with the ones in the file.",
     "pdf_confirm_button": "Yes, import grades",
     "pdf_success": "PDF Imported",
     "pdf_success_text": "Successfully imported {matched} courses from the SIS PDF.",

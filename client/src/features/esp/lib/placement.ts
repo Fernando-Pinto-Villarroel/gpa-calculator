@@ -74,14 +74,13 @@ export function resolveEspPlacementLevel(
   );
 }
 
-export function getPlacementLevelAfterImport(
-  mergedGrades: Record<string, CourseGradeEntry>,
+export function getPlacementLevelForImport(
+  importedGrades: Record<string, CourseGradeEntry>,
   terms: Term[],
   previousLevel: EspPlacementLevel,
-): { level: EspPlacementLevel | undefined; changed: boolean } {
-  const inferred = inferEspPlacementLevel(mergedGrades, terms);
-  if (!inferred) return { level: undefined, changed: false };
-  return { level: inferred, changed: inferred !== previousLevel };
+): { level: EspPlacementLevel | null; changed: boolean } {
+  const level = inferEspPlacementLevel(importedGrades, terms);
+  return { level, changed: level !== null && level !== previousLevel };
 }
 
 export function getGradedOffLevelCourses(

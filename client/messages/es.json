@@ -161,7 +161,7 @@
     "pdf_error_no_courses": "No se encontraron materias con calificaciones válidas en este PDF. Asegúrate de estar subiendo la Libreta de Calificaciones Consolidada del SIS.",
     "pdf_error_parse": "No se pudo leer el PDF. Asegúrate de que sea una Libreta de Calificaciones válida del SIS de Jala University (Consolidated > Report Cards, exportado con Ctrl+Shift+P).",
     "pdf_confirm_title": "Importar desde PDF del SIS",
-    "pdf_confirm_text": "Se encontraron {matched} materias con calificaciones que coinciden con tu cohorte ({cohort}). Esto reemplazará las calificaciones existentes de las materias encontradas.",
+    "pdf_confirm_text": "Se encontraron {matched} materias con calificaciones que coinciden con tu cohorte ({cohort}). Esto reemplazará todas las calificaciones existentes de este cohort por las del archivo.",
     "pdf_confirm_button": "Sí, importar calificaciones",
     "pdf_success": "PDF Importado",
     "pdf_success_text": "Se importaron exitosamente {matched} materias desde el PDF del SIS.",

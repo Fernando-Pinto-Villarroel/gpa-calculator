@@ -1,6 +1,11 @@
 import path from "path";
 import { test, expect } from "@playwright/test";
-import { seedProfile, gotoGrades, readLocalStorageJson, switchCareer } from "./fixtures";
+import {
+  seedProfile,
+  gotoGrades,
+  readLocalStorageJson,
+  switchCareer,
+} from "./fixtures";
 
 const TEST_DATA = path.resolve(__dirname, "../../test-data");
 
@@ -8,29 +13,38 @@ interface CommercialStoreShape {
   state: { gradesByCohort: Record<string, Record<string, unknown>> };
 }
 interface EspStoreShape {
-  state: { selectedCohortId: string; gradesByCohort: Record<string, Record<string, unknown>> };
+  state: {
+    selectedCohortId: string;
+    gradesByCohort: Record<string, Record<string, unknown>>;
+  };
 }
 
 async function readCommercialGrades(page: import("@playwright/test").Page) {
-  const store = await readLocalStorageJson<CommercialStoreShape>(page, "jala-gpa-store");
+  const store = await readLocalStorageJson<CommercialStoreShape>(
+    page,
+    "jala-gpa-store",
+  );
   return store!.state.gradesByCohort["cohort-2-2026"];
 }
 
 async function readEspGrades(page: import("@playwright/test").Page) {
-  const store = await readLocalStorageJson<EspStoreShape>(page, "jala-esp-gpa-store");
+  const store = await readLocalStorageJson<EspStoreShape>(
+    page,
+    "jala-esp-gpa-store",
+  );
   const cohortId = store!.state.selectedCohortId;
   return store!.state.gradesByCohort[cohortId];
 }
 
-// The PDF confirm dialog explicitly promises: "This will replace existing
-// grades for matched courses." Courses the PDF never mentions must survive.
-test.describe("SIS PDF import - merges into existing grades, doesn't wipe unrelated courses", () => {
+// The PDF confirm dialog promises to replace all the grades of the cohort:
+// courses the PDF never mentions are cleared, in both careers, like in v1.
+test.describe("SIS PDF import - replaces the whole selected cohort in both careers", () => {
   test.beforeEach(async ({ page }) => {
     await seedProfile(page);
     await gotoGrades(page);
   });
 
-  test("a manually-graded Commercial SE course the PDF never mentions survives import", async ({
+  test("a manually-graded Commercial SE course the PDF never mentions is cleared by the import", async ({
     page,
   }) => {
     // sergio.pdf ("early-progress transcript") only matches Term I courses.
@@ -54,15 +68,16 @@ test.describe("SIS PDF import - merges into existing grades, doesn't wipe unrela
       timeout: 15000,
     });
     await page.getByRole("button", { name: "Yes, import grades" }).click();
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(
+      page.getByText(/Grades Imported|Successfully imported/),
+    ).toBeVisible();
 
     const grades = await readCommercialGrades(page);
-    expect(grades["CSPR-471"]).toBe("B+");
-    // Matched Term I courses are still overwritten as promised.
+    expect(grades["CSPR-471"]).toBeUndefined();
     expect(grades["CSPR-111"]).toBeDefined();
   });
 
-  test("a manually-graded ESP course the PDF never mentions survives import", async ({
+  test("a manually-graded ESP course the PDF never mentions is cleared by the import", async ({
     page,
   }) => {
     // sergio.pdf matches exactly ESP-201-M7, ESP-201-M5L2, ESP-201-M2L2,
@@ -87,12 +102,16 @@ test.describe("SIS PDF import - merges into existing grades, doesn't wipe unrela
     await page.getByText("Import from SIS PDF").click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(path.join(TEST_DATA, "sergio.pdf"));
-    await expect(page.getByText("Also found 4 ESP course grade(s)")).toBeVisible();
+    await expect(
+      page.getByText("Also found 4 ESP course grade(s)"),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Yes, import grades" }).click();
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(
+      page.getByText(/Grades Imported|Successfully imported/),
+    ).toBeVisible();
 
     const espGrades = await readEspGrades(page);
-    expect(espGrades["ESP-501"]).toBe("B");
+    expect(espGrades["ESP-501"]).toBeUndefined();
     expect(espGrades["ESP-201-M7"]).toBe("D");
   });
 });
@@ -137,5 +156,62 @@ test.describe("Backup JSON import - intentionally replaces the whole cohort", ()
     const grades = await readCommercialGrades(page);
     expect(grades["CSPR-111"]).toBe("C");
     expect(grades["CSPR-471"]).toBeUndefined();
+  });
+});
+
+test.describe("ESP SIS PDF import lands on the detected level", () => {
+  test("a Level 2 transcript replaces the cohort and leaves Level 2 selected", async ({
+    page,
+  }) => {
+    await seedProfile(page, { career: "esp" });
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded-esp-import")) return;
+      sessionStorage.setItem("seeded-esp-import", "1");
+      localStorage.setItem(
+        "jala-esp-gpa-store",
+        JSON.stringify({
+          state: {
+            gradesByCohort: {
+              "cohort-2-2026": {
+                "ESP-101": "A",
+                "ESP-101-M3L1": "B",
+                "ESP-501": "C",
+              },
+            },
+            selectedCohortId: "cohort-2-2026",
+            placementLevelByCohort: { "cohort-2-2026": "1" },
+          },
+          version: 0,
+        }),
+      );
+    });
+    await gotoGrades(page);
+    await page.locator('button[aria-label="Actions"]').click();
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page.getByText("Import from SIS PDF").click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(path.join(TEST_DATA, "sergio.pdf"));
+    await expect(
+      page.getByText(/will replace all the existing grades of this cohort/),
+    ).toBeVisible({
+      timeout: 15000,
+    });
+    await page.getByRole("button", { name: "Yes, import grades" }).click();
+    await expect(
+      page.getByText(/Grades Imported|Successfully imported/),
+    ).toBeVisible();
+
+    const espGrades = await readEspGrades(page);
+    expect(espGrades["ESP-101"]).toBeUndefined();
+    expect(espGrades["ESP-501"]).toBeUndefined();
+    expect(espGrades["ESP-201-M2L2"]).toBeDefined();
+
+    const store = await readLocalStorageJson<{
+      state: { placementLevelByCohort: Record<string, string | null> };
+    }>(page, "jala-esp-gpa-store");
+    expect(store!.state.placementLevelByCohort["cohort-2-2026"]).toBe("2");
+    await expect(
+      page.getByRole("button", { name: "Level 2", exact: true }).first(),
+    ).toHaveAttribute("aria-pressed", "true");
   });
 });

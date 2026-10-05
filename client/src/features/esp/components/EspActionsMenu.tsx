@@ -17,7 +17,7 @@ import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfPar
 import { getEspCohortById, getEspTermsByCohortId } from "@/features/gpa/data/esp";
 import {
   EspPlacementLevel,
-  getPlacementLevelAfterImport,
+  getPlacementLevelForImport,
   resolveEspPlacementLevel,
 } from "@/features/esp/lib/placement";
 import Swal from "sweetalert2";
@@ -41,7 +41,6 @@ export function EspActionsMenu({ className }: { className?: string }) {
     placementLevel: espPlacementLevel,
   } = useEspGpaStore();
   const {
-    grades: commercialGrades,
     importGrades: importCommercialGrades,
     selectedCohortId: commercialSelectedCohortId,
   } = useGpaStore();
@@ -262,24 +261,23 @@ export function EspActionsMenu({ className }: { className?: string }) {
       if (confirmed.isConfirmed) {
         let placementChangedTo: EspPlacementLevel | undefined;
         if (espResult.success && espMatched > 0) {
-          const mergedEspGrades = { ...grades, ...espResult.grades };
           const espTerms = getEspTermsByCohortId(selectedCohortId);
-          const placement = getPlacementLevelAfterImport(
-            mergedEspGrades,
+          const placement = getPlacementLevelForImport(
+            espResult.grades,
             espTerms,
             resolveEspPlacementLevel(grades, espTerms, espPlacementLevel),
           );
-          placementChangedTo = placement.changed ? placement.level : undefined;
+          placementChangedTo = placement.changed ? (placement.level ?? undefined) : undefined;
           importGrades({
             cohortId: selectedCohortId,
-            grades: mergedEspGrades,
-            placementLevel: placement.changed ? null : undefined,
+            grades: espResult.grades,
+            placementLevel: placement.level,
           });
         }
         if (commercialResult.success && commercialMatched > 0) {
           importCommercialGrades({
             cohortId: commercialSelectedCohortId,
-            grades: { ...commercialGrades, ...commercialResult.grades },
+            grades: commercialResult.grades,
           });
         }
         const successText = t("pdf_success_text", {
