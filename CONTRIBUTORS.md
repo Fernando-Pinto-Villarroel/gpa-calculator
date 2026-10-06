@@ -67,6 +67,7 @@ The following students acted as real users that validated the app during early d
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |
 | Isabella Golubiewski Silva             | Cohort I – 2026  |
+| Jose Carranza Angarita                 | Cohort I – 2026  |
 
 ---
 
