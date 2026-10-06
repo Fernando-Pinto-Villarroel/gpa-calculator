@@ -15,7 +15,7 @@ async function gradeKnownSet(page: import("@playwright/test").Page) {
     const trigger = page.getByRole("button", { name: "—" }).first();
     const wrapper = trigger.locator("..");
     await trigger.click();
-    await wrapper.getByRole("button", { name: g, exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: g, exact: true }).click();
     await page.waitForTimeout(150);
   }
 }

@@ -9,11 +9,17 @@ test.describe("Grades - Commercial Software Engineering", () => {
     await seedProfile(page);
   });
 
-  test("shows cohort/term selectors and default module grid", async ({ page }) => {
+  test("shows cohort/term selectors and default module grid", async ({
+    page,
+  }) => {
     await gotoGrades(page);
 
-    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("Cohort 8");
-    await expect(page.locator('[data-tour="term-selector"]')).toContainText("Term I");
+    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText(
+      "Cohort 8",
+    );
+    await expect(page.locator('[data-tour="term-selector"]')).toContainText(
+      "Term I",
+    );
     await expect(page.getByText("Term GPA:")).toBeVisible();
     await expect(page.getByText("0.00")).toBeVisible();
 
@@ -33,7 +39,9 @@ test.describe("Grades - Commercial Software Engineering", () => {
     await expect(page.getByText("4.00")).toBeVisible();
   });
 
-  test("switching cohort resets to term I and preserves per-cohort grades", async ({ page }) => {
+  test("switching cohort resets to term I and preserves per-cohort grades", async ({
+    page,
+  }) => {
     await gotoGrades(page);
 
     const firstCard = page.locator('[data-tour="first-course-card"]');
@@ -43,7 +51,9 @@ test.describe("Grades - Commercial Software Engineering", () => {
 
     await page.locator('[data-tour="cohort-selector"]').click();
     await page.getByRole("button", { name: /Cohort 1 \(I - 2023\)/ }).click();
-    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText("Cohort 1");
+    await expect(page.locator('[data-tour="cohort-selector"]')).toContainText(
+      "Cohort 1",
+    );
     await expect(page.getByText("0.00")).toBeVisible();
 
     await page.locator('[data-tour="cohort-selector"]').click();
@@ -100,7 +110,9 @@ test.describe("Grades - Commercial Software Engineering", () => {
     await page.getByRole("button", { name: "Yes, reset it" }).click();
 
     const firstCard = page.locator('[data-tour="first-course-card"]');
-    await expect(firstCard.getByRole("button", { name: "A", exact: true })).toBeVisible();
+    await expect(
+      firstCard.getByRole("button", { name: "A", exact: true }),
+    ).toBeVisible();
   });
 
   test("import a real Canvas SIS PDF report card", async ({ page }) => {
@@ -117,6 +129,54 @@ test.describe("Grades - Commercial Software Engineering", () => {
     });
     await page.getByRole("button", { name: "Yes, import grades" }).click();
 
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(
+      page.getByText(/Grades Imported|Successfully imported/),
+    ).toBeVisible();
   });
+});
+
+test.describe("Grade dropdown stays fully visible on a short or zoomed window", () => {
+  for (const [width, height] of [
+    [1347, 560],
+    [900, 480],
+    [390, 640],
+  ] as const) {
+    test(`the options are never cut off by the column or the header at ${width}x${height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await seedProfile(page);
+      await gotoGrades(page);
+      const trigger = page.getByRole("button", { name: "—" }).first();
+      await trigger.scrollIntoViewIfNeeded();
+      await trigger.click();
+
+      const menu = page
+        .locator('div[style*="position: fixed"]')
+        .filter({ hasText: "A-" })
+        .last();
+      await expect(menu).toBeVisible();
+      const box = (await menu.boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(height);
+
+      const topmost = await page.evaluate(
+        ({ x, y }) =>
+          document
+            .elementFromPoint(x, y)
+            ?.closest('div[style*="position: fixed"]') !== null,
+        { x: box.x + box.width / 2, y: box.y + Math.min(box.height / 2, 40) },
+      );
+      expect(topmost).toBe(true);
+
+      await page
+        .getByRole("button", { name: "A-", exact: true })
+        .last()
+        .click();
+      await expect(menu).toHaveCount(0);
+      await expect(
+        page.getByRole("button", { name: "A-", exact: true }),
+      ).toHaveCount(1);
+    });
+  }
 });

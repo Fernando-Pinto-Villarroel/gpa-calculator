@@ -72,7 +72,7 @@ test.describe("Forecast", () => {
       const trigger = dashes.first();
       const wrapper = trigger.locator("..");
       await trigger.click();
-      await wrapper.getByRole("button", { name: "A-", exact: true }).click();
+      await page.getByTestId("grade-menu").getByRole("button", { name: "A-", exact: true }).click();
       await page.waitForTimeout(150);
       remaining = await dashes.count();
       graded++;
@@ -98,7 +98,7 @@ test.describe("Forecast", () => {
     const trigger = page.getByRole("button", { name: "—" }).first();
     const wrapper = trigger.locator("..");
     await trigger.click();
-    await wrapper.getByRole("button", { name: "F", exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: "F", exact: true }).click();
     await page.mouse.click(5, 5);
 
     await gotoForecast(page);
@@ -124,7 +124,7 @@ test.describe("Forecast", () => {
       const trigger = dashes.first();
       const wrapper = trigger.locator("..");
       await trigger.click();
-      await wrapper.getByRole("button", { name: "A", exact: true }).click();
+      await page.getByTestId("grade-menu").getByRole("button", { name: "A", exact: true }).click();
       await page.waitForTimeout(150);
       remaining = await dashes.count();
     }

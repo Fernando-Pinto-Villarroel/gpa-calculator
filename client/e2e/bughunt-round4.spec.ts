@@ -225,7 +225,7 @@ test.describe("Switching the placement level warns about grades on the other lev
 
     const card = courseCard(page, "ESP-101");
     await card.getByRole("button", { name: "—" }).click();
-    await card.getByRole("button", { name: "A", exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: "A", exact: true }).click();
     await page.waitForTimeout(200);
 
     await page.getByRole("button", { name: "Level 2", exact: true }).first().click();

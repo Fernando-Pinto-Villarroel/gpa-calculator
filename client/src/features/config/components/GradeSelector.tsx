@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   LetterGrade,
   ALL_GRADES,
@@ -12,8 +13,47 @@ import {
 import { cn } from "@/core/lib/utils/cn";
 
 const MENU_MAX_HEIGHT = 192;
-const MENU_GAP = 8;
-const VIEWPORT_BOTTOM_RESERVED = 80;
+const MENU_MIN_HEIGHT = 96;
+const MENU_WIDTH = 96;
+const MENU_GAP = 4;
+const VIEWPORT_MARGIN = 8;
+
+interface MenuPosition {
+  left: number;
+  top?: number;
+  bottom?: number;
+  maxHeight: number;
+  openUp: boolean;
+}
+
+function computeMenuPosition(trigger: HTMLElement): MenuPosition {
+  const rect = trigger.getBoundingClientRect();
+  const nav = document.querySelector('[data-tour="bottom-nav"]');
+  const navRect = nav?.getBoundingClientRect();
+  const bottomEdge =
+    navRect && navRect.height > 0
+      ? Math.min(window.innerHeight, navRect.top)
+      : window.innerHeight;
+
+  const spaceBelow = bottomEdge - VIEWPORT_MARGIN - rect.bottom - MENU_GAP;
+  const spaceAbove = rect.top - VIEWPORT_MARGIN - MENU_GAP;
+  const openUp = spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
+  const space = openUp ? spaceAbove : spaceBelow;
+  const maxHeight = Math.max(MENU_MIN_HEIGHT, Math.min(MENU_MAX_HEIGHT, space));
+  const left = Math.max(
+    VIEWPORT_MARGIN,
+    Math.min(rect.left, window.innerWidth - MENU_WIDTH - VIEWPORT_MARGIN),
+  );
+
+  return openUp
+    ? {
+        left,
+        bottom: window.innerHeight - rect.top + MENU_GAP,
+        maxHeight,
+        openUp,
+      }
+    : { left, top: rect.bottom + MENU_GAP, maxHeight, openUp };
+}
 
 interface GradeSelectorProps {
   courseCode: string;
@@ -41,38 +81,54 @@ export function GradeSelector({
   onChange,
   noGradeLabel,
 }: GradeSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [openUp, setOpenUp] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<MenuPosition | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const open = position !== null;
 
   useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+    if (!open) return;
+    const close = () => setPosition(null);
+    function handlePointerDown(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      )
+        return;
+      close();
     }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    function handleScroll(e: Event) {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      close();
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
 
   const toggle = () => {
-    if (!open && ref.current) {
-      const rect = ref.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - VIEWPORT_BOTTOM_RESERVED - rect.bottom;
-      const needed = MENU_MAX_HEIGHT + MENU_GAP;
-      setOpenUp(spaceBelow < needed && rect.top > spaceBelow);
+    if (open) {
+      setPosition(null);
+    } else if (triggerRef.current) {
+      setPosition(computeMenuPosition(triggerRef.current));
     }
-    setOpen((v) => !v);
   };
 
   const select = (g: LetterGrade | null) => {
     onChange(courseCode, g);
-    setOpen(false);
+    setPosition(null);
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         onClick={toggle}
         className={cn(
           "flex items-center justify-between gap-1 w-full px-2.5 py-1.5 rounded-md text-xs font-semibold",
@@ -91,18 +147,27 @@ export function GradeSelector({
         />
       </button>
 
-      <AnimatePresence>
-        {open && (
+      {position &&
+        createPortal(
           <motion.div
-            initial={{ opacity: 0, y: openUp ? 4 : -4, scale: 0.97 }}
+            ref={menuRef}
+            data-testid="grade-menu"
+            initial={{
+              opacity: 0,
+              y: position.openUp ? 4 : -4,
+              scale: 0.97,
+            }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: openUp ? 4 : -4, scale: 0.97 }}
             transition={{ duration: 0.12 }}
-            className={cn(
-              "absolute left-0 w-24 rounded-lg border border-border-base bg-bg-surface shadow-xl z-20",
-              "overflow-hidden max-h-48 overflow-y-auto",
-              openUp ? "bottom-full mb-1" : "top-full mt-1",
-            )}
+            style={{
+              position: "fixed",
+              left: position.left,
+              top: position.top,
+              bottom: position.bottom,
+              maxHeight: position.maxHeight,
+              width: MENU_WIDTH,
+            }}
+            className="rounded-lg border border-border-base bg-bg-surface shadow-xl z-50 overflow-y-auto"
           >
             <button
               onClick={() => select(null)}
@@ -128,9 +193,9 @@ export function GradeSelector({
                 {g}
               </button>
             ))}
-          </motion.div>
+          </motion.div>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }

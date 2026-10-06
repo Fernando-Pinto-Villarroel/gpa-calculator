@@ -12,7 +12,7 @@ async function gradeAllVisibleWith(page: import("@playwright/test").Page, grade:
     const trigger = page.getByRole("button", { name: "—" }).first();
     const wrapper = trigger.locator("..");
     await trigger.click();
-    await wrapper.getByRole("button", { name: grade, exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: grade, exact: true }).click();
     if (grade === "F") {
       await page.mouse.click(5, 5);
     } else if (grade === "D-") {
@@ -82,7 +82,7 @@ test.describe("Cumulative GPA honor status - ESP parity", () => {
       const trigger = page.getByRole("button", { name: "—" }).first();
       const wrapper = trigger.locator("..");
       await trigger.click();
-      await wrapper.getByRole("button", { name: "F", exact: true }).click();
+      await page.getByTestId("grade-menu").getByRole("button", { name: "F", exact: true }).click();
       await page.waitForTimeout(150);
       await page.mouse.click(5, 5);
       await page.waitForTimeout(150);

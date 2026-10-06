@@ -11,7 +11,7 @@ async function gradeAllVisible(page: import("@playwright/test").Page, grade: str
     const trigger = page.getByRole("button", { name: "—" }).first();
     const wrapper = trigger.locator("..");
     await trigger.click();
-    await wrapper.getByRole("button", { name: grade, exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: grade, exact: true }).click();
     await page.waitForTimeout(300);
     remaining = await page.getByRole("button", { name: "—" }).count();
   }
@@ -68,7 +68,7 @@ test.describe("Honors - ESP", () => {
       const trigger = page.getByRole("button", { name: "—" }).first();
       const wrapper = trigger.locator("..");
       await trigger.click();
-      await wrapper.getByRole("button", { name: "A", exact: true }).click();
+      await page.getByTestId("grade-menu").getByRole("button", { name: "A", exact: true }).click();
       await page.waitForTimeout(50);
     }
 

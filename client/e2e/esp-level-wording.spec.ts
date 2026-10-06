@@ -130,7 +130,7 @@ test.describe("The 'Detected Level' notice only appears when the level came from
   async function grade(page: Page, code: string, value: string) {
     const trigger = card(page, code).getByRole("button", { name: "—" });
     await trigger.click();
-    await trigger.locator("..").getByRole("button", { name: value, exact: true }).click();
+    await page.getByTestId("grade-menu").getByRole("button", { name: value, exact: true }).click();
     await page.waitForTimeout(200);
   }
 

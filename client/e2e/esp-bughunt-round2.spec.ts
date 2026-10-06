@@ -19,7 +19,7 @@ async function gradeCard(card: Locator, page: Page, grade: string) {
   const trigger = card.getByRole("button", { name: "—" });
   const wrapper = trigger.locator("..");
   await trigger.click();
-  await wrapper.getByRole("button", { name: grade, exact: true }).click();
+  await page.getByTestId("grade-menu").getByRole("button", { name: grade, exact: true }).click();
   await page.waitForTimeout(150);
 }
 

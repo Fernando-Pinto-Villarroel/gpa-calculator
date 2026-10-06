@@ -81,7 +81,7 @@ test.describe("Reopening What's new from the About page", () => {
     await page.goto("/en/about", { waitUntil: "networkidle" });
     await expect(dialog(page)).toHaveCount(0);
 
-    const version = page.getByRole("button", { name: /Version 2\.0\.1/ });
+    const version = page.getByRole("button", { name: /Version 2\.0\.2/ });
     const before = await version.evaluate((el) => {
       const s = getComputedStyle(el);
       return { color: s.color, decoration: s.textDecorationLine };
