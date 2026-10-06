@@ -1,4 +1,4 @@
-import { LetterGrade, isFailingGrade } from "./letterGrades";
+import { LetterGrade, canBeMarkedAsPassed, isFailingGrade } from "./letterGrades";
 
 export type CourseAttempt = {
   credits: number;
@@ -17,7 +17,7 @@ export function isCreditOverrideOnly(entry: CourseGradeEntry): boolean {
 }
 
 export function isApprovedAttempt(attempt: CourseAttempt): boolean {
-  return attempt.approved && attempt.grade !== null && !isFailingGrade(attempt.grade);
+  return attempt.approved && canBeMarkedAsPassed(attempt.grade);
 }
 
 export function getEffectiveGrade(entry: CourseGradeEntry): LetterGrade | null {
@@ -43,7 +43,9 @@ export const MAX_COURSE_ATTEMPTS = 3;
 export function countFailedAttempts(entry: CourseGradeEntry): number {
   if (entry === null || entry === undefined) return 0;
   if (isCourseAttempts(entry)) {
-    return entry.filter((a) => a.grade !== null && isFailingGrade(a.grade)).length;
+    return entry.filter(
+      (a) => a.grade !== null && isFailingGrade(a.grade) && !isApprovedAttempt(a),
+    ).length;
   }
   return isFailingGrade(entry) ? 1 : 0;
 }

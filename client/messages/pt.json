@@ -148,7 +148,7 @@
     "retake_add_attempt": "Adicionar Tentativa",
     "retake_remove_attempt": "Remover",
     "retake_approved": "Aprovado",
-    "retake_approved_disabled_hint": "Uma nota reprovada (D- ou F) não pode ser marcada como aprovada.",
+    "retake_approved_disabled_hint": "Um F não pode ser marcado como aprovado.",
     "retake_credits": "Créditos",
     "retake_grade": "Nota",
     "retake_revert": "Reverter para nota única",

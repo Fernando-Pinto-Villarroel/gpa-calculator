@@ -16,7 +16,7 @@ test.describe("About page", () => {
     await expect(page.getByText("ESP GPA Calculation")).toHaveCount(0);
 
     await expect(page.getByRole("heading", { name: "ESP English Program" })).toBeVisible();
-    await expect(page.getByText("Version 2.0.0")).toBeVisible();
+    await expect(page.getByText("Version 2.0.1")).toBeVisible();
   });
 
   test("shows equal-weight ESP GPA Calculation instead of the credit-based one", async ({

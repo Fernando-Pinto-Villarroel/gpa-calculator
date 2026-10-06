@@ -148,7 +148,7 @@
     "retake_add_attempt": "Add Attempt",
     "retake_remove_attempt": "Remove",
     "retake_approved": "Passed",
-    "retake_approved_disabled_hint": "A failing grade (D- or F) can't be marked as passed.",
+    "retake_approved_disabled_hint": "An F can't be marked as passed.",
     "retake_credits": "Credits",
     "retake_grade": "Grade",
     "retake_revert": "Revert to single grade mode",

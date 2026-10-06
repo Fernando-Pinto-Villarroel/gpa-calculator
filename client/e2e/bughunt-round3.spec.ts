@@ -107,7 +107,7 @@ test.describe("A failing grade never counts as passed", () => {
     await courseCard(page, "CSPR-111").getByTitle("Mark as failed / manage retakes").click();
     await page.waitForTimeout(300);
 
-    const passedToggle = page.getByTitle("A failing grade (D- or F) can't be marked as passed.");
+    const passedToggle = page.getByTitle("An F can't be marked as passed.");
     await expect(passedToggle).toBeDisabled();
   });
 
@@ -131,7 +131,7 @@ test.describe("A failing grade never counts as passed", () => {
     await page.getByRole("button", { name: "F", exact: true }).last().click();
     await page.waitForTimeout(200);
 
-    await expect(page.getByTitle("A failing grade (D- or F) can't be marked as passed.")).toHaveCount(2);
+    await expect(page.getByTitle("An F can't be marked as passed.")).toHaveCount(2);
     await expect(page.getByText(/already has 2 failed attempts/)).toBeVisible();
   });
 });

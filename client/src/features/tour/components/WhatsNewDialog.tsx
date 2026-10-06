@@ -18,7 +18,7 @@ import { useTourStore } from "@/features/tour/store/useTourStore";
 import { usePathname, useRouter } from "@/core/lib/i18n/navigation";
 import { LOCALE_LABELS } from "@/core/lib/i18n/routing";
 import { cn } from "@/core/lib/utils/cn";
-import { APP_VERSION } from "@/core/config/app";
+import { WHATS_NEW_VERSION } from "@/core/config/app";
 import { useIsClient } from "@/shared/hooks/useIsClient";
 
 const HIGHLIGHTS: { key: string; icon: LucideIcon }[] = [
@@ -51,7 +51,7 @@ export function WhatsNewDialog() {
     isClient &&
     !isActive &&
     (whatsNewOpen ||
-      (guidedTourCompleted && whatsNewSeenVersion !== APP_VERSION));
+      (guidedTourCompleted && whatsNewSeenVersion !== WHATS_NEW_VERSION));
 
   useEffect(() => {
     if (!open) return;
@@ -99,7 +99,7 @@ export function WhatsNewDialog() {
                   id="whats-new-title"
                   className="text-base font-semibold text-text-primary"
                 >
-                  {t("title", { version: APP_VERSION })}
+                  {t("title", { version: WHATS_NEW_VERSION })}
                 </p>
                 <p className="text-xs text-text-muted mt-0.5">
                   {t("subtitle")}

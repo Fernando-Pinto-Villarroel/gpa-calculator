@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { APP_VERSION } from "@/core/config/app";
+import { WHATS_NEW_VERSION } from "@/core/config/app";
 
 interface TourState {
   guidedTourCompleted: boolean;
@@ -27,7 +27,7 @@ export const useTourStore = create<TourState>()(
       whatsNewSeenVersion: null,
       whatsNewOpen: false,
       openWhatsNew: () => set({ whatsNewOpen: true }),
-      markWhatsNewSeen: () => set({ whatsNewSeenVersion: APP_VERSION, whatsNewOpen: false }),
+      markWhatsNewSeen: () => set({ whatsNewSeenVersion: WHATS_NEW_VERSION, whatsNewOpen: false }),
       startTour: () => set({ isActive: true, globalStepIndex: 0 }),
       resumeTour: () => set({ isActive: true }),
       skipTour: () =>
@@ -35,14 +35,14 @@ export const useTourStore = create<TourState>()(
           isActive: false,
           guidedTourCompleted: true,
           globalStepIndex: 0,
-          whatsNewSeenVersion: APP_VERSION,
+          whatsNewSeenVersion: WHATS_NEW_VERSION,
         }),
       completeTour: () =>
         set({
           isActive: false,
           guidedTourCompleted: true,
           globalStepIndex: 0,
-          whatsNewSeenVersion: APP_VERSION,
+          whatsNewSeenVersion: WHATS_NEW_VERSION,
         }),
       setGlobalStepIndex: (index) => set({ globalStepIndex: index }),
       resetTour: () =>

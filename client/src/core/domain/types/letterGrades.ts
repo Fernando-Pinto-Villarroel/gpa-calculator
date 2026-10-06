@@ -31,6 +31,10 @@ export function isFailingGrade(grade: LetterGrade): boolean {
   return grade === "F" || grade === "D-";
 }
 
+export function canBeMarkedAsPassed(grade: LetterGrade | null): grade is LetterGrade {
+  return grade !== null && grade !== "F";
+}
+
 export const ALL_GRADES: LetterGrade[] = [
   "A",
   "A-",

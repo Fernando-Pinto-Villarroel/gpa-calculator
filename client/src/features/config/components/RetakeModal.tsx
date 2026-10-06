@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, RotateCcw, CheckCircle, Circle, Lightbulb, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Course } from "@/core/domain/types/course";
-import { LetterGrade, ALL_GRADES, letterGradesMap, isFailingGrade } from "@/core/domain/types/letterGrades";
+import { LetterGrade, ALL_GRADES, letterGradesMap, isFailingGrade, canBeMarkedAsPassed } from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
   CourseAttempt,
@@ -51,7 +51,7 @@ function AttemptRow({ attempt, index, totalAttempts, tConfig, onUpdate, onRemove
   const [gradeOpen, setGradeOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
-  const canApprove = attempt.grade !== null && !isFailingGrade(attempt.grade);
+  const canApprove = canBeMarkedAsPassed(attempt.grade);
 
   useEffect(() => {
     if (!gradeOpen) return;
@@ -242,7 +242,7 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = fa
 
   const handleUpdateAttempt = (index: number, requested: CourseAttempt) => {
     const updated =
-      requested.grade !== null && !isFailingGrade(requested.grade)
+      canBeMarkedAsPassed(requested.grade)
         ? requested
         : { ...requested, approved: false };
     setAttempts(attempts.map((a, i) => {

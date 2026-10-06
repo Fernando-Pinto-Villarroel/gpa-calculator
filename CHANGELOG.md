@@ -5,6 +5,11 @@ All notable changes to the Jala University GPA Calculator are documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-10-06
+
+### Fixed
+- In the retakes dialog, an attempt graded D- can be marked as passed again, as in version 1.x, because the university can approve a D- (a 62 on the internal scale) even though it earns low grade points. An F still cannot be marked as passed. The Grades page is unchanged: a single D- keeps being treated as failing there.
+
 ## [2.0.0] - 2026-10-05
 
 Version 2 adds a second program, the **ESP (English for Specific Purposes for Software Engineers) certificate**, alongside the Commercial Software Engineering degree, plus a Canvas course playground and a large round of accuracy and usability fixes. Grades saved with version 1 carry over automatically: the browser storage format is unchanged.
@@ -93,5 +98,6 @@ Version 2 adds a second program, the **ESP (English for Specific Purposes for So
 - Course codes and credits for several cohorts (II - 2023, I - 2024 and others).
 - Spanish and Portuguese translations.
 
+[2.0.1]: https://github.com/Fernando-Pinto-Villarroel/gpa-calculator/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Fernando-Pinto-Villarroel/gpa-calculator/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/Fernando-Pinto-Villarroel/gpa-calculator/releases/tag/v1.1.0
