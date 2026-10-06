@@ -13,8 +13,10 @@ async function gradeAllVisibleWith(page: import("@playwright/test").Page, grade:
     const wrapper = trigger.locator("..");
     await trigger.click();
     await wrapper.getByRole("button", { name: grade, exact: true }).click();
-    if (grade === "F" || grade === "D-") {
-      await page.getByText("No, keep single grade").click();
+    if (grade === "F") {
+      await page.mouse.click(5, 5);
+    } else if (grade === "D-") {
+      await page.getByText("Keep it as passed").click();
     }
     await page.waitForTimeout(200);
     remaining = await page.getByRole("button", { name: "—" }).count();
@@ -82,11 +84,8 @@ test.describe("Cumulative GPA honor status - ESP parity", () => {
       await trigger.click();
       await wrapper.getByRole("button", { name: "F", exact: true }).click();
       await page.waitForTimeout(150);
-      const keepSingleGrade = page.getByText("No, keep single grade");
-      if (await keepSingleGrade.count()) {
-        await keepSingleGrade.click();
-        await page.waitForTimeout(150);
-      }
+      await page.mouse.click(5, 5);
+      await page.waitForTimeout(150);
     }
     await gotoDashboard(page);
 

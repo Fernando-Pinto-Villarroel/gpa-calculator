@@ -170,9 +170,7 @@ test.describe("Gabi feedback #3 — labs can't be retaken, only ESP courses can"
     await page.getByRole("button", { name: "F", exact: true }).click();
     await page.waitForTimeout(300);
 
-    await expect(page.getByText("Did you fail this course?")).toBeVisible();
-    await page.getByText("Yes, mark as retaken").click();
-    await page.waitForTimeout(200);
+    await expect(page.getByText("Did you fail this course?")).toHaveCount(0);
     await expect(page.getByText("Attempt 1")).toBeVisible();
   });
 });
@@ -185,8 +183,6 @@ test.describe("Gabi feedback #4 — no Credits field in the ESP retake modal", (
     await courseCard(page, "ESP-101").getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
     await page.waitForTimeout(300);
-    await page.getByText("Yes, mark as retaken").click();
-    await page.waitForTimeout(200);
 
     await expect(page.getByText("Grade", { exact: true })).toBeVisible();
     await expect(page.getByText("Passed", { exact: true })).toBeVisible();
@@ -292,7 +288,7 @@ test.describe("Gabi feedback #6 — completion doesn't depend on labs, no bogus 
     await card.getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
     await page.waitForTimeout(300);
-    await page.getByText("No, keep single grade").click();
+    await page.mouse.click(5, 5);
     await page.waitForTimeout(300);
 
     await gotoStatistics(page);

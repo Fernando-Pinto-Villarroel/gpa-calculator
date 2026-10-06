@@ -99,7 +99,7 @@ test.describe("Forecast", () => {
     const wrapper = trigger.locator("..");
     await trigger.click();
     await wrapper.getByRole("button", { name: "F", exact: true }).click();
-    await page.getByText("No, keep single grade").click();
+    await page.mouse.click(5, 5);
 
     await gotoForecast(page);
     await page.getByRole("button", { name: "Cumulative", exact: true }).click();

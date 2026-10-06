@@ -165,3 +165,72 @@ test.describe("Retake modal: a D- can be marked as passed, an F cannot", () => {
     expect(text).toMatch(/Completed Subjects\s*\n\s*0\s*\n\s*\/ 52/);
   });
 });
+
+test.describe("A single D- counts as passed by default, an F opens the retakes dialog", () => {
+  test("picking a D- keeps it passed, and the dialog explains how to register a retake instead", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const card = courseCard(page, "CSPR-111");
+    await card.getByRole("button", { name: "—" }).click();
+    await page.getByRole("button", { name: "D-", exact: true }).click();
+
+    await expect(
+      page.getByText(
+        /the university sometimes approves it, so it is counted as passed/,
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Register it as a retake" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Keep it as passed" }).click();
+
+    await gotoDashboard(page);
+    const text = await page.locator("main").innerText();
+    expect(text).toMatch(/Completed Subjects\s*\n\s*1\s*\n\s*\/ 52/);
+    expect(text).toMatch(/Earned Credits\s*\n\s*2\s*\n\s*of 133/);
+  });
+
+  test("choosing to register a D- as a retake makes it count as failed", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const card = courseCard(page, "CSPR-111");
+    await card.getByRole("button", { name: "—" }).click();
+    await page.getByRole("button", { name: "D-", exact: true }).click();
+    await page.getByRole("button", { name: "Register it as a retake" }).click();
+    await expect(page.getByText("Attempt 1")).toBeVisible();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+
+    await gotoDashboard(page);
+    const text = await page.locator("main").innerText();
+    expect(text).toMatch(/Completed Subjects\s*\n\s*0\s*\n\s*\/ 52/);
+  });
+
+  test("picking an F goes straight to the attempts list, with no question first", async ({
+    page,
+  }) => {
+    await seedProfile(page);
+    await gotoGrades(page);
+
+    const card = courseCard(page, "CSPR-111");
+    await card.getByRole("button", { name: "—" }).click();
+    await page.getByRole("button", { name: "F", exact: true }).click();
+
+    await expect(page.getByText("Did you fail this course?")).toHaveCount(0);
+    await expect(page.getByText("Attempt 1")).toBeVisible();
+    await expect(page.getByTitle(PASSED_HINT)).toBeDisabled();
+  });
+
+  test("a single F left alone still counts as not passed", async ({ page }) => {
+    await seedProfile(page);
+    await seedGrades(page, { "CSPR-111": "F" });
+    await gotoDashboard(page);
+    const text = await page.locator("main").innerText();
+    expect(text).toMatch(/Completed Subjects\s*\n\s*0\s*\n\s*\/ 52/);
+  });
+});

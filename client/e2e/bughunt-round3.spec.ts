@@ -49,7 +49,7 @@ test.describe("A failing grade never counts as passed", () => {
     await card.getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
     await page.waitForTimeout(300);
-    await page.getByText("No, keep single grade").click();
+    await page.mouse.click(5, 5);
     await page.waitForTimeout(300);
 
     await card.getByText(/^\d cr$/).first().dblclick();

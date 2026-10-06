@@ -16,7 +16,6 @@ test.describe("Dashboard Best/Lowest Grade stats respect retake approval", () =>
     // First course: fail it, then retake and approve an A.
     await page.getByRole("button", { name: "—" }).first().click();
     await page.getByRole("button", { name: "F", exact: true }).click();
-    await page.getByText("Yes, mark as retaken").click();
     await page.getByText("Add Attempt").click();
 
     const attempt2 = page.getByText("Attempt 2", { exact: true }).locator("../..");

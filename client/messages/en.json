@@ -144,6 +144,9 @@
     "failed_course_question": "Did you fail this course? If so, you can register each attempt separately with its credits and grade.",
     "failed_course_confirm": "Yes, mark as retaken",
     "failed_course_cancel": "No, keep single grade",
+    "d_minus_question": "A D- is below the passing grade in the catalog, but the university sometimes approves it, so it is counted as passed. If you did not pass the course, register it as a retake instead.",
+    "d_minus_confirm": "Register it as a retake",
+    "d_minus_cancel": "Keep it as passed",
     "retake_attempt": "Attempt {n}",
     "retake_add_attempt": "Add Attempt",
     "retake_remove_attempt": "Remove",
@@ -359,7 +362,7 @@
       "col_grade": "Grade",
       "col_percentage": "Score Range",
       "col_points": "Quality Points",
-      "failing_note": "A grade of D− or lower is considered failing and requires repeating the course in all programs.",
+      "failing_note": "A grade of D− or lower is considered failing and requires repeating the course in all programs. Because the university sometimes approves a D- (a 62), the app counts a single D- as passed unless you register it as a retake.",
       "standing": {
         "title": "Satisfactory Academic Progress (SAP)",
         "title_esp": "Academic standing in ESP",
@@ -669,7 +672,7 @@
       "offline": "Works offline: after your first visit the app loads without a connection and your grades keep saving on your device.",
       "import": "Import your SIS PDF or a backup into either program, including your ESP grades and retakes, and the app detects which program each grade belongs to.",
       "tooltips": "Every dashboard card has an info icon that explains what it measures.",
-      "speed": "Faster navigation, plus many accuracy fixes (a failing grade never counts as passed)."
+      "speed": "Faster navigation, plus many accuracy fixes (an F never counts as passed)."
     },
     "take_tour": "Take the tour",
     "later": "Maybe later"

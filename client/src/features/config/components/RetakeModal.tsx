@@ -196,7 +196,10 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = fa
     if (isOpen) {
       const isSingleApproved =
         isCourseAttempts(entry) && entry.length === 1 && entry[0].approved && entry[0].grade !== null;
-      if (isCourseAttempts(entry) && entry.length > 0 && !isCreditOverrideOnly(entry) && !isSingleApproved) {
+      if (entry === "F") {
+        setView("managing");
+        setAttempts([{ credits: course.credits, grade: "F", approved: false }]);
+      } else if (isCourseAttempts(entry) && entry.length > 0 && !isCreditOverrideOnly(entry) && !isSingleApproved) {
         setView("managing");
         setAttempts([...entry] as CourseAttempt[]);
       } else {
@@ -204,7 +207,7 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = fa
         setAttempts([]);
       }
     }
-  }, [isOpen, entry]);
+  }, [isOpen, entry, course.credits]);
 
   const handleConfirmFailed = () => {
     const existingGrade = typeof entry === "string" ? entry : null;
@@ -232,6 +235,7 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = fa
     ]);
   };
 
+  const isDMinus = getEffectiveGrade(entry) === "D-";
   const failedAttempts = countFailedAttempts(attempts);
   const hasApprovedAttempt = attempts.some(isApprovedAttempt);
   const atAttemptLimit = attempts.length >= MAX_COURSE_ATTEMPTS;
@@ -315,20 +319,20 @@ export function RetakeModal({ isOpen, course, entry, onSave, onClose, isEsp = fa
           {view === "asking" ? (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-text-secondary">
-                {tConfig("failed_course_question")}
+                {tConfig(isDMinus ? "d_minus_question" : "failed_course_question")}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={handleConfirmFailed}
                   className="flex-1 py-2 rounded-lg text-xs font-semibold bg-danger/10 text-danger border border-danger/30 hover:bg-danger/15 transition-colors"
                 >
-                  {tConfig("failed_course_confirm")}
+                  {tConfig(isDMinus ? "d_minus_confirm" : "failed_course_confirm")}
                 </button>
                 <button
                   onClick={onClose}
                   className="flex-1 py-2 rounded-lg text-xs font-semibold border border-border-base text-text-secondary hover:bg-bg-elevated transition-colors"
                 >
-                  {tConfig("failed_course_cancel")}
+                  {tConfig(isDMinus ? "d_minus_cancel" : "failed_course_cancel")}
                 </button>
               </div>
             </div>

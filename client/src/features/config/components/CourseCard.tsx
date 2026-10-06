@@ -2,7 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Course, isRetakable } from "@/core/domain/types/course";
-import { LetterGrade, letterGradesMap, isFailingGrade } from "@/core/domain/types/letterGrades";
+import {
+  LetterGrade,
+  letterGradesMap,
+  isFailingGrade,
+  canBeMarkedAsPassed,
+} from "@/core/domain/types/letterGrades";
 import {
   CourseGradeEntry,
   CourseAttempt,
@@ -160,18 +165,14 @@ export function CourseCard({
         : null;
 
     if (overrideCredits !== null && overrideCredits !== course.credits) {
-      if (canRetake && isFailingGrade(grade)) {
-        setRetakeModalOpen(true);
-      } else {
-        onChange(courseCode, [
-          { credits: overrideCredits, grade, approved: true },
-        ]);
-      }
+      onChange(courseCode, [
+        { credits: overrideCredits, grade, approved: canBeMarkedAsPassed(grade) },
+      ]);
     } else {
       onChange(courseCode, grade);
-      if (canRetake && isFailingGrade(grade)) {
-        setRetakeModalOpen(true);
-      }
+    }
+    if (canRetake && isFailingGrade(grade)) {
+      setRetakeModalOpen(true);
     }
   };
 

@@ -35,7 +35,7 @@ export function getEffectiveGrade(entry: CourseGradeEntry): LetterGrade | null {
 export function isCourseApproved(entry: CourseGradeEntry): boolean {
   if (entry === null || entry === undefined) return false;
   if (isCourseAttempts(entry)) return entry.some(isApprovedAttempt);
-  return !isFailingGrade(entry);
+  return canBeMarkedAsPassed(entry);
 }
 
 export const MAX_COURSE_ATTEMPTS = 3;
@@ -47,7 +47,7 @@ export function countFailedAttempts(entry: CourseGradeEntry): number {
       (a) => a.grade !== null && isFailingGrade(a.grade) && !isApprovedAttempt(a),
     ).length;
   }
-  return isFailingGrade(entry) ? 1 : 0;
+  return canBeMarkedAsPassed(entry) ? 0 : 1;
 }
 
 export function hasExhaustedAttempts(entry: CourseGradeEntry): boolean {

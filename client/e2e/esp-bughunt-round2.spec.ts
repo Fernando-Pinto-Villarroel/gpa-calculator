@@ -296,7 +296,7 @@ test.describe("ESP has no SAP or projected-honor standing", () => {
     await courseCard(page, "CSPR-111").getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
     await page.waitForTimeout(300);
-    await page.getByText("No, keep single grade").click();
+    await page.mouse.click(5, 5);
     await page.waitForTimeout(300);
     await gotoDashboard(page);
     await expect(page.getByText("SAP Risk", { exact: true }).first()).toBeVisible();
@@ -442,8 +442,6 @@ test.describe("Commercial SE courses cap at three attempts too, per the student 
     const card = courseCard(page, "CSPR-111");
     await card.getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
-    await page.waitForTimeout(300);
-    await page.getByRole("button", { name: "Yes, mark as retaken" }).click();
     await page.waitForTimeout(300);
 
     await expect(page.getByText("Add Attempt")).toBeVisible();

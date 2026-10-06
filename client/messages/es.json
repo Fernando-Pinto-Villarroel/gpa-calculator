@@ -144,6 +144,9 @@
     "failed_course_question": "¿Reprobaste esta materia? Si es así, puedes registrar cada intento por separado con sus créditos y nota.",
     "failed_course_confirm": "Sí, marcar como reprobada",
     "failed_course_cancel": "No, mantener nota única",
+    "d_minus_question": "Una D- está por debajo de la nota aprobatoria del catálogo, pero la universidad a veces la aprueba, así que se cuenta como aprobada. Si no aprobaste la materia, regístrala como reintento.",
+    "d_minus_confirm": "Registrarla como reintento",
+    "d_minus_cancel": "Dejarla como aprobada",
     "retake_attempt": "Intento {n}",
     "retake_add_attempt": "Agregar Intento",
     "retake_remove_attempt": "Eliminar",
@@ -359,7 +362,7 @@
       "col_grade": "Nota",
       "col_percentage": "Rango de Puntaje",
       "col_points": "Puntos de Calidad",
-      "failing_note": "Una nota de D− o inferior se considera reprobada y requiere repetir el curso en todos los programas.",
+      "failing_note": "Una nota de D− o inferior se considera reprobada y requiere repetir el curso en todos los programas. Como la universidad a veces aprueba una D- (un 62), la app cuenta una D- suelta como aprobada a menos que la registres como reintento.",
       "standing": {
         "title": "Progreso Académico Satisfactorio (SAP)",
         "title_esp": "Situación académica en ESP",
@@ -669,7 +672,7 @@
       "offline": "Funciona sin conexión: después de tu primera visita la app carga sin internet y tus notas se siguen guardando en tu dispositivo.",
       "import": "Importa tu PDF del SIS o un respaldo en cualquiera de los programas, incluidas tus notas y reintentos de ESP, y la app detecta a qué programa pertenece cada nota.",
       "tooltips": "Cada tarjeta del panel tiene un ícono de información que explica qué mide.",
-      "speed": "Navegación más rápida y muchas correcciones de precisión (una nota reprobatoria nunca cuenta como aprobada)."
+      "speed": "Navegación más rápida y muchas correcciones de precisión (una F nunca cuenta como aprobada)."
     },
     "take_tour": "Ver el tour",
     "later": "Más tarde"

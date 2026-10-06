@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2026-10-06
 
 ### Fixed
-- In the retakes dialog, an attempt graded D- can be marked as passed again, as in version 1.x, because the university can approve a D- (a 62 on the internal scale) even though it earns low grade points. An F still cannot be marked as passed. The Grades page is unchanged: a single D- keeps being treated as failing there.
+- A D- now counts as passed by default again, as in version 1.x, because the university sometimes approves a D- (a 62 on the internal scale). Picking a D- opens the retakes dialog, which now explains that it will be counted as passed and offers "Register it as a retake" for students who did not pass. An F still never counts as passed.
+- In the retakes dialog, an attempt graded D- can be marked as passed again; only an F cannot. An approved D- no longer counts as a failed attempt toward the three-attempt limit.
+- Picking an F now opens the list of attempts directly instead of asking first, since an F always means the course was not passed.
 
 ## [2.0.0] - 2026-10-05
 

@@ -125,11 +125,10 @@ test.describe("Retake modal - edge cases", () => {
     await page.locator('[data-tour="first-course-card"]').getByRole("button", { name: "—" }).click();
     await page.getByRole("button", { name: "F", exact: true }).click();
 
-    await expect(page.getByText("Did you fail this course?")).toBeVisible();
+    await expect(page.getByText("Did you fail this course?")).toHaveCount(0);
     entry = await readFirstCourseEntry(page);
-    expect(entry).toEqual([{ credits: 3, grade: null, approved: false }]);
+    expect(entry).toEqual([{ credits: 3, grade: "F", approved: false }]);
 
-    await page.getByText("Yes, mark as retaken").click();
     const attempt1 = page.getByText("Attempt 1", { exact: true }).locator("../..");
     await expect(attempt1.locator('input[type="number"]')).toHaveValue("3");
 
