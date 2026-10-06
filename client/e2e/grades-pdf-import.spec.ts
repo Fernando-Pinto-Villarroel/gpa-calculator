@@ -11,7 +11,8 @@ interface EspStoreShape {
 async function openPdfImportDialog(page: import("@playwright/test").Page, file: string) {
   await page.locator('button[aria-label="Actions"]').click();
   const fileChooserPromise = page.waitForEvent("filechooser");
-  await page.getByText("Import from SIS PDF").click();
+  await page.getByText("Import SIS grades").click();
+  await page.getByRole("button", { name: "Upload PDF" }).click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(file);
   await expect(page.getByText(/courses with grades were found/)).toBeVisible({ timeout: 15_000 });
@@ -38,7 +39,7 @@ test.describe("Grades - real SIS PDF imports", () => {
     await expect(page.getByText("Also found 10 ESP course grade(s)")).toBeVisible();
 
     await page.getByRole("button", { name: "Yes, import grades" }).click();
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(page.getByText(/Successfully imported/)).toBeVisible();
 
     const espGrades = await getEspGrades(page);
     expect(espGrades["ESP-501"]).toBe("A");
@@ -112,7 +113,8 @@ test.describe("Grades - real SIS PDF imports", () => {
   test("rejects a file that isn't a PDF", async ({ page }) => {
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: "notes.txt",
@@ -126,7 +128,8 @@ test.describe("Grades - real SIS PDF imports", () => {
   test("shows a parse error for a corrupted PDF", async ({ page }) => {
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: "corrupted.pdf",

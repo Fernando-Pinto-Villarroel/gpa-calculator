@@ -22,13 +22,7 @@ import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
 import { getCohortById } from "@/features/gpa/data/software-engineering-design-architecture";
 import { splitImportPayload } from "@/features/config/lib/splitImportPayload";
-import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
-import { getEspTermsByCohortId } from "@/features/gpa/data/esp";
-import {
-  EspPlacementLevel,
-  getPlacementLevelForImport,
-  resolveEspPlacementLevel,
-} from "@/features/esp/lib/placement";
+import { useSisImport } from "@/features/config/hooks/useSisImport";
 import Swal from "sweetalert2";
 
 const TOUR_TARGETED_ITEMS = [
@@ -41,23 +35,12 @@ const TOUR_TARGETED_ITEMS = [
 export function ActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
   const router = useRouter();
-  const {
-    importGrades,
-    exportGrades,
-    resetTermData,
-    resetCohortData,
-    selectedCohortId,
-  } = useGpaStore();
-  const {
-    grades: espGrades,
-    importGrades: importEspGrades,
-    selectedCohortId: espSelectedCohortId,
-    placementLevel: espPlacementLevel,
-  } = useEspGpaStore();
+  const { importGrades, exportGrades, resetTermData, resetCohortData } = useGpaStore();
+  const { importGrades: importEspGrades } = useEspGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
+  const { loading: pdfLoading, importFromPdf, openSourcePicker } = useSisImport("commercial");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -70,10 +53,7 @@ export function ActionsMenu({ className }: { className?: string }) {
     typeof currentTourTarget === "string" &&
     TOUR_TARGETED_ITEMS.includes(currentTourTarget);
 
-  useEffect(() => {
-    if (!tourActive) return;
-    setOpen(tourWantsMenuOpen);
-  }, [tourActive, tourWantsMenuOpen]);
+  const menuOpen = tourActive ? tourWantsMenuOpen : open;
 
   useEffect(() => {
     if (tourActive) return;
@@ -253,125 +233,7 @@ export function ActionsMenu({ className }: { className?: string }) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
-
-    const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") ||
-      file.type === "application/pdf";
-    if (!isPdf) {
-      toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
-      return;
-    }
-
-    setPdfLoading(true);
-
-    try {
-      const [result, espResult] = await Promise.all([
-        parsePdfFile(file, selectedCohortId),
-        parseEspPdfFile(file, espSelectedCohortId),
-      ]);
-
-      if (!result.success && !espResult.success) {
-        const description =
-          result.error === "no_courses_found"
-            ? t("pdf_error_no_courses")
-            : t("pdf_error_parse");
-        toast.error(t("pdf_error"), { description });
-        return;
-      }
-
-      const matched = result.success ? result.matched : 0;
-      const espMatched = espResult.success ? espResult.matched : 0;
-
-      let warningText = "";
-      if (result.success && result.unrecognized.length > 0) {
-        warningText = t("pdf_unrecognized_codes", {
-          codes: result.unrecognized.join(", "),
-        });
-      }
-
-      let remapText = "";
-      if (result.success && result.remapped.length > 0) {
-        const items = result.remapped
-          .map((r) => `${r.from} → ${r.to}`)
-          .join(", ");
-        remapText = t("pdf_remapped_codes", { codes: items });
-      }
-
-      let creditText = "";
-      if (result.success && result.creditOverrides.length > 0) {
-        const items = result.creditOverrides
-          .map((c) => `${c.courseCode}: ${c.expected} → ${c.actual}`)
-          .join(", ");
-        creditText = t("pdf_credit_overrides", { codes: items });
-      }
-
-      const cohort = getCohortById(selectedCohortId);
-      const cohortLabel = cohort
-        ? `${cohort.ordinal} - ${cohort.year}`
-        : selectedCohortId;
-
-      const espText =
-        espMatched > 0
-          ? `<p style="font-size: 0.85em; color: #10b981; margin-top: 8px">${t("pdf_esp_matched", { matched: String(espMatched) })}</p>`
-          : "";
-
-      const confirmed = await Swal.fire({
-        title: t("pdf_confirm_title"),
-        html: `
-          <p style="margin-bottom: 8px">${t("pdf_confirm_text", { matched: String(matched), cohort: cohortLabel })}</p>
-          ${espText}
-          ${remapText ? `<p style="font-size: 0.85em; color: #3b82f6; margin-top: 8px">${remapText}</p>` : ""}
-          ${creditText ? `<p style="font-size: 0.85em; color: #8b5cf6; margin-top: 8px">${creditText}</p>` : ""}
-          ${warningText ? `<p style="font-size: 0.85em; color: #f59e0b; margin-top: 8px">${warningText}</p>` : ""}
-        `,
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: t("pdf_confirm_button"),
-        cancelButtonText: t("cancel"),
-        ...swalBase,
-      });
-
-      if (confirmed.isConfirmed) {
-        let placementChangedTo: EspPlacementLevel | undefined;
-        if (result.success && matched > 0) {
-          importGrades({
-            cohortId: selectedCohortId,
-            grades: result.grades,
-          });
-        }
-        if (espResult.success && espMatched > 0) {
-          const espTerms = getEspTermsByCohortId(espSelectedCohortId);
-          const placement = getPlacementLevelForImport(
-            espResult.grades,
-            espTerms,
-            resolveEspPlacementLevel(espGrades, espTerms, espPlacementLevel),
-          );
-          placementChangedTo = placement.changed ? (placement.level ?? undefined) : undefined;
-          importEspGrades({
-            cohortId: espSelectedCohortId,
-            grades: espResult.grades,
-            placementLevel: placement.level,
-          });
-        }
-        const successText = t("pdf_success_text", {
-          matched: String(matched + espMatched),
-        });
-        toast.success(t("pdf_success"), {
-          description: placementChangedTo
-            ? `${successText} ${t("pdf_placement_level_adjusted", { level: placementChangedTo })}`
-            : successText,
-        });
-      }
-    } catch (err) {
-      const detail = err instanceof Error ? err.message : String(err);
-      toast.error(t("pdf_error"), {
-        description: `${t("pdf_error_parse")} [${detail}]`,
-      });
-    } finally {
-      setPdfLoading(false);
-    }
+    await importFromPdf(file);
   };
 
   const handleCanvasPlayground = () => {
@@ -413,7 +275,7 @@ export function ActionsMenu({ className }: { className?: string }) {
       </motion.button>
 
       <AnimatePresence>
-        {open && (
+        {menuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -458,7 +320,7 @@ export function ActionsMenu({ className }: { className?: string }) {
               data-tour="action-pdf"
               onClick={() => {
                 setOpen(false);
-                pdfInputRef.current?.click();
+                openSourcePicker(() => pdfInputRef.current?.click());
               }}
               disabled={pdfLoading}
               className={cn(

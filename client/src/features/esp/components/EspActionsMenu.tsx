@@ -13,13 +13,8 @@ import { useTourStore } from "@/features/tour/store/useTourStore";
 import { useTourSteps } from "@/features/tour/hooks/useTourSteps";
 import { cn } from "@/core/lib/utils/cn";
 import { splitImportPayload } from "@/features/config/lib/splitImportPayload";
-import { parsePdfFile, parseEspPdfFile } from "@/features/config/services/pdfParser";
-import { getEspCohortById, getEspTermsByCohortId } from "@/features/gpa/data/esp";
-import {
-  EspPlacementLevel,
-  getPlacementLevelForImport,
-  resolveEspPlacementLevel,
-} from "@/features/esp/lib/placement";
+import { useSisImport } from "@/features/config/hooks/useSisImport";
+import { getEspCohortById } from "@/features/gpa/data/esp";
 import Swal from "sweetalert2";
 
 const TOUR_TARGETED_ITEMS = [
@@ -32,22 +27,12 @@ const TOUR_TARGETED_ITEMS = [
 export function EspActionsMenu({ className }: { className?: string }) {
   const t = useTranslations("config");
   const router = useRouter();
-  const {
-    grades,
-    importGrades,
-    exportGrades,
-    resetCohortData,
-    selectedCohortId,
-    placementLevel: espPlacementLevel,
-  } = useEspGpaStore();
-  const {
-    importGrades: importCommercialGrades,
-    selectedCohortId: commercialSelectedCohortId,
-  } = useGpaStore();
+  const { importGrades, exportGrades, resetCohortData } = useEspGpaStore();
+  const { importGrades: importCommercialGrades } = useGpaStore();
   const { theme } = useThemeStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
+  const { loading: pdfLoading, importFromPdf, openSourcePicker } = useSisImport("esp");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -60,11 +45,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
     typeof currentTourTarget === "string" &&
     TOUR_TARGETED_ITEMS.includes(currentTourTarget);
 
-  useEffect(() => {
-    if (!tourActive) return;
-     
-    setOpen(tourWantsMenuOpen);
-  }, [tourActive, tourWantsMenuOpen]);
+  const menuOpen = tourActive ? tourWantsMenuOpen : open;
 
   useEffect(() => {
     if (tourActive) return;
@@ -204,99 +185,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
-
-    const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") ||
-      file.type === "application/pdf";
-    if (!isPdf) {
-      toast.error(t("pdf_error"), { description: t("pdf_error_not_pdf") });
-      return;
-    }
-
-    setPdfLoading(true);
-
-    try {
-      const [espResult, commercialResult] = await Promise.all([
-        parseEspPdfFile(file, selectedCohortId),
-        parsePdfFile(file, commercialSelectedCohortId),
-      ]);
-
-      if (!espResult.success && !commercialResult.success) {
-        const description =
-          espResult.error === "no_courses_found"
-            ? t("pdf_error_no_courses")
-            : t("pdf_error_parse");
-        toast.error(t("pdf_error"), { description });
-        return;
-      }
-
-      const espMatched = espResult.success ? espResult.matched : 0;
-      const commercialMatched = commercialResult.success ? commercialResult.matched : 0;
-
-      const cohort = getEspCohortById(selectedCohortId);
-      const cohortLabel = cohort
-        ? `${cohort.ordinal} - ${cohort.year}`
-        : selectedCohortId;
-
-      const commercialText =
-        commercialMatched > 0
-          ? `<p style="font-size: 0.85em; color: #10b981; margin-top: 8px">${t("pdf_commercial_matched", { matched: String(commercialMatched) })}</p>`
-          : "";
-
-      const confirmed = await Swal.fire({
-        title: t("pdf_confirm_title"),
-        html: `
-          <p style="margin-bottom: 8px">${t("pdf_confirm_text", { matched: String(espMatched), cohort: cohortLabel })}</p>
-          ${commercialText}
-        `,
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: t("pdf_confirm_button"),
-        cancelButtonText: t("cancel"),
-        ...swalBase,
-      });
-
-      if (confirmed.isConfirmed) {
-        let placementChangedTo: EspPlacementLevel | undefined;
-        if (espResult.success && espMatched > 0) {
-          const espTerms = getEspTermsByCohortId(selectedCohortId);
-          const placement = getPlacementLevelForImport(
-            espResult.grades,
-            espTerms,
-            resolveEspPlacementLevel(grades, espTerms, espPlacementLevel),
-          );
-          placementChangedTo = placement.changed ? (placement.level ?? undefined) : undefined;
-          importGrades({
-            cohortId: selectedCohortId,
-            grades: espResult.grades,
-            placementLevel: placement.level,
-          });
-        }
-        if (commercialResult.success && commercialMatched > 0) {
-          importCommercialGrades({
-            cohortId: commercialSelectedCohortId,
-            grades: commercialResult.grades,
-          });
-        }
-        const successText = t("pdf_success_text", {
-          matched: String(espMatched + commercialMatched),
-        });
-        toast.success(t("pdf_success"), {
-          description: placementChangedTo
-            ? `${successText} ${t("pdf_placement_level_adjusted", { level: placementChangedTo })}`
-            : successText,
-        });
-      }
-    } catch (err) {
-      const detail = err instanceof Error ? err.message : String(err);
-      toast.error(t("pdf_error"), {
-        description: `${t("pdf_error_parse")} [${detail}]`,
-      });
-    } finally {
-      setPdfLoading(false);
-    }
+    await importFromPdf(file);
   };
 
   const handleCanvasPlayground = () => {
@@ -338,7 +227,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
       </motion.button>
 
       <AnimatePresence>
-        {open && (
+        {menuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -383,7 +272,7 @@ export function EspActionsMenu({ className }: { className?: string }) {
               data-tour="action-pdf"
               onClick={() => {
                 setOpen(false);
-                pdfInputRef.current?.click();
+                openSourcePicker(() => pdfInputRef.current?.click());
               }}
               disabled={pdfLoading}
               className={cn(

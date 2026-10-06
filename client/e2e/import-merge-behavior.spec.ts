@@ -61,7 +61,8 @@ test.describe("SIS PDF import - replaces the whole selected cohort in both caree
 
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(path.join(TEST_DATA, "sergio.pdf"));
     await expect(page.getByText(/courses with grades were found/)).toBeVisible({
@@ -69,7 +70,7 @@ test.describe("SIS PDF import - replaces the whole selected cohort in both caree
     });
     await page.getByRole("button", { name: "Yes, import grades" }).click();
     await expect(
-      page.getByText(/Grades Imported|Successfully imported/),
+      page.getByText(/Successfully imported/),
     ).toBeVisible();
 
     const grades = await readCommercialGrades(page);
@@ -99,7 +100,8 @@ test.describe("SIS PDF import - replaces the whole selected cohort in both caree
 
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(path.join(TEST_DATA, "sergio.pdf"));
     await expect(
@@ -107,7 +109,7 @@ test.describe("SIS PDF import - replaces the whole selected cohort in both caree
     ).toBeVisible();
     await page.getByRole("button", { name: "Yes, import grades" }).click();
     await expect(
-      page.getByText(/Grades Imported|Successfully imported/),
+      page.getByText(/Successfully imported/),
     ).toBeVisible();
 
     const espGrades = await readEspGrades(page);
@@ -188,7 +190,8 @@ test.describe("ESP SIS PDF import lands on the detected level", () => {
     await gotoGrades(page);
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(path.join(TEST_DATA, "sergio.pdf"));
     await expect(
@@ -198,7 +201,7 @@ test.describe("ESP SIS PDF import lands on the detected level", () => {
     });
     await page.getByRole("button", { name: "Yes, import grades" }).click();
     await expect(
-      page.getByText(/Grades Imported|Successfully imported/),
+      page.getByText(/Successfully imported/),
     ).toBeVisible();
 
     const espGrades = await readEspGrades(page);

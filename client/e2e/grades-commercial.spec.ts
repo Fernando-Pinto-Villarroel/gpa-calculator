@@ -108,7 +108,8 @@ test.describe("Grades - Commercial Software Engineering", () => {
 
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(FER_PDF);
 
@@ -117,6 +118,6 @@ test.describe("Grades - Commercial Software Engineering", () => {
     });
     await page.getByRole("button", { name: "Yes, import grades" }).click();
 
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(page.getByText(/Successfully imported/)).toBeVisible();
   });
 });

@@ -385,20 +385,19 @@ export function buildEspGradesFromPdfEntries(
   };
 }
 
-export async function parsePdfFile(
-  file: File,
-  cohortId: string,
-): Promise<PdfParseResult> {
-  const text = await extractTextFromPdf(file);
-  const entries = parsePdfText(text);
-  return buildGradesFromPdfEntries(entries, cohortId);
+const MIN_READABLE_TEXT_LENGTH = 50;
+
+export function hasReadableText(rawText: string): boolean {
+  return rawText.replace(/\s+/g, "").length >= MIN_READABLE_TEXT_LENGTH;
 }
 
-export async function parseEspPdfFile(
-  file: File,
+export function parseSisText(
+  rawText: string,
+  commercialCohortId: string,
   espCohortId: string,
-): Promise<PdfParseResult> {
-  const text = await extractTextFromPdf(file);
-  const entries = parseEspPdfText(text);
-  return buildEspGradesFromPdfEntries(entries, espCohortId);
+): { commercial: PdfParseResult; esp: PdfParseResult } {
+  return {
+    commercial: buildGradesFromPdfEntries(parsePdfText(rawText), commercialCohortId),
+    esp: buildEspGradesFromPdfEntries(parseEspPdfText(rawText), espCohortId),
+  };
 }

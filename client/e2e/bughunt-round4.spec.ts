@@ -59,7 +59,8 @@ test.describe("SIS PDF import keeps the placement level consistent with the tran
 
     await page.locator('button[aria-label="Actions"]').click();
     const chooser = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     await (await chooser).setFiles(path.join(TEST_DATA, "irwin.pdf"));
     await page.getByRole("button", { name: "Yes, import grades" }).click({ timeout: 20_000 });
 
@@ -84,11 +85,12 @@ test.describe("SIS PDF import keeps the placement level consistent with the tran
 
     await page.locator('button[aria-label="Actions"]').click();
     const chooser = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     await (await chooser).setFiles(path.join(TEST_DATA, "samuel.pdf"));
     await page.getByRole("button", { name: "Yes, import grades" }).click({ timeout: 20_000 });
 
-    await expect(page.getByText("PDF Imported")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Grades Imported")).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/Placement level set to/)).toHaveCount(0);
     await expect(
       page.getByRole("button", { name: "Level 1", exact: true }).first(),

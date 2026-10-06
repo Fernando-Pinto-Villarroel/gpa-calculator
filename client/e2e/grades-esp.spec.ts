@@ -61,7 +61,7 @@ test.describe("Grades - ESP", () => {
     await page.locator('button[aria-label="Actions"]').click();
     await expect(page.getByText("Import Cohort Backup")).toBeVisible();
     await expect(page.getByText("Export Cohort Backup")).toBeVisible();
-    await expect(page.getByText("Import from SIS PDF")).toBeVisible();
+    await expect(page.getByText("Import SIS grades")).toBeVisible();
     await expect(page.getByText("Canvas Course Playground")).toBeVisible();
     await expect(page.getByText("Reset Data")).toBeVisible();
   });
@@ -102,7 +102,8 @@ test.describe("Grades - ESP", () => {
 
     await page.locator('button[aria-label="Actions"]').click();
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByText("Import from SIS PDF").click();
+    await page.getByText("Import SIS grades").click();
+    await page.getByRole("button", { name: "Upload PDF" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(path.join(TEST_DATA, "fer.pdf"));
 
@@ -114,7 +115,7 @@ test.describe("Grades - ESP", () => {
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Yes, import grades" }).click();
-    await expect(page.getByText(/Grades Imported|Successfully imported/)).toBeVisible();
+    await expect(page.getByText(/Successfully imported/)).toBeVisible();
 
     const espGrades = await getStoreGrades(page, "jala-esp-gpa-store");
     expect(espGrades["ESP-501"]).toBe("A");

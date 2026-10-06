@@ -242,7 +242,8 @@ test.describe("Guided tour target resolution survives a fully-disabled first lev
 async function openPdfImportDialog(page: Page, filePath: string) {
   await page.locator('button[aria-label="Actions"]').click();
   const fileChooserPromise = page.waitForEvent("filechooser");
-  await page.getByText("Import from SIS PDF").click();
+  await page.getByText("Import SIS grades").click();
+  await page.getByRole("button", { name: "Upload PDF" }).click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(filePath);
   // PDF parsing is CPU-heavy — wait for the confirm dialog instead of a
@@ -275,7 +276,7 @@ test.describe("Placement level inference against real SIS transcripts", () => {
       await gotoGrades(page);
       await openPdfImportDialog(page, path.join(TEST_DATA, file));
       await page.getByRole("button", { name: "Yes, import grades" }).click();
-      await expect(page.getByText("PDF Imported")).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("Grades Imported")).toBeVisible({ timeout: 10_000 });
       await page.waitForTimeout(300);
 
       expect(errors).toEqual([]);

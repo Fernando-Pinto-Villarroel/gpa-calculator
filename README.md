@@ -122,8 +122,8 @@ Existing GPA calculators require manually entering credit hours for every course
       <td>GPA progression charts (cumulative and per-term), grade distribution, credit accumulation, and honors overview</td>
     </tr>
     <tr>
-      <td><strong>SIS PDF Import</strong></td>
-      <td>Upload your Report Card PDF from the official SIS and have Software Engineering and ESP grades imported automatically — with course code mapping, credit adjustment, retake detection and ESP placement level detection</td>
+      <td><strong>SIS Grades Import</strong></td>
+      <td>Upload your Report Card PDF from the official SIS, or paste the copied page text, and have Software Engineering and ESP grades imported automatically — with course code mapping, credit adjustment, retake detection and ESP placement level detection</td>
     </tr>
     <tr>
       <td><strong>Canvas Course Playground</strong></td>
@@ -209,7 +209,12 @@ On the **Grades** page (`/grades`), select your cohort and term, then enter grad
 
 Course catalogs are pre-loaded per cohort. No manual credit-hour entry is required. On desktop, all three modules are displayed side by side; on mobile, they are presented as tabs.
 
-**SIS PDF Import** — Instead of entering grades manually, you can upload your Report Card PDF directly from Jala University's official SIS (Consolidated > Report Cards, saved with Ctrl+Shift+P). The parser automatically:
+**SIS Grades Import** — Instead of entering grades manually, you can bring your Report Card straight from Jala University's official SIS (Consolidated > Report Cards) in two ways, both from the **Import SIS grades** option of the actions menu:
+
+- **Upload a PDF** — press Ctrl+P on the page and choose **Save as PDF** as the destination. Do not use **Microsoft Print to PDF**: it saves the page without selectable text and the app cannot read it.
+- **Paste the text** — press Ctrl+A and then Ctrl+C on the page and paste it into the app. It is the fallback when a PDF has no readable text.
+
+In both cases the importer replaces the grades of the selected cohort and automatically:
 
 - Extracts all courses with their grades, credits, and course codes
 - Routes ESP (English program) grades to the ESP career, which keeps its own separate GPA
@@ -482,6 +487,7 @@ A sincere thank you to the students who tested the app during early development 
 | Jhaziel Mamani Marca                   | Cohort II – 2025 |
 | Adriano Pereira da Silva               | Cohort I – 2026  |
 | Isabella Golubiewski Silva             | Cohort I – 2026  |
+| Jose Carranza Angarita                 | Cohort I – 2026  |
 
 ### Student Services & Registrar
 
